@@ -83,3 +83,10 @@ if (seletorCodigo.indexOf("sistemamultas.com.br") > -1 || seletorCodigo.indexOf(
 	window.addEventListener("load", eta_message, false);
 
 }
+if (seletorCodigo.indexOf("lwtecnologia.atlassian.net") > -1 ) {
+
+	var s = document.createElement("script");
+	s.src = "chrome-extension://" + extVSMonitorId + "/injectable-scripts/jira.js";
+	document.body.appendChild(s);
+
+}
