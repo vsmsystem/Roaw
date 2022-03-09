@@ -567,6 +567,12 @@
 
 						<li><a href="./pages/icons.html" target="_blank">Template e Icones</a></li> 
 						<li role="separator" class="divider"></li> 
+
+						<li><a href="#" class="alterarClienteClick">91</a></li>
+						<li><a href="#" class="alterarClienteClick">4</a></li>
+						<li><a href="#" class="alterarClienteClick">31</a></li>
+
+						<li role="separator" class="divider"></li> 
 						<li><a href="#"><label><input checked="checked" type="radio" /> Modal<label></a></li> 
 						<li><a href="#"><label><input disabled type="radio" /> Debug Page</a></label></li> 
 
@@ -591,13 +597,23 @@ $("#vsm-nav-input").on("keyup",function(e){
 	}
 })
 
+$(".alterarClienteClick").on("click",function(e){
+	e.preventDefault();
+	alterarCliente(e.target.innerText);
+})
+
+if($("input[name=id_multa]").val() && $("#tab1")){
+	$(".page-header").append(` &nbsp;<span class="label label-primary">idMulta: ${$("input[name=id_multa]").val()}</span>`)
+}
 
 
-function alterarCliente(){
+function alterarCliente(idParam){
 	var host = window.location.host;
 	var id_cliente = $("#vsm-nav-input").val()
 	id_cliente = id_cliente.replace("cli ","")
 	id_cliente = id_cliente.trim()
+
+	id_cliente = idParam ? idParam : id_cliente
 
 	$.ajax("Alterar_Cliente.php")
 	
