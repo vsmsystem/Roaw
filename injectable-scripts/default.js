@@ -686,6 +686,7 @@ function buscarAuto(auto) {
 			bootbox.alert({
 				"title":a.autoInfracao,
 				"message":`
+				<div>idMulta: ${a.id}</div>
 				<div>Placa: ${a.placa}</div>
 				<div>Auto Infração: <a href="MultaDetalhada.php?p=${a.link}"> ${a.autoInfracao} </a> </div>
 				<div>ID Veiculo: ${a.idVeiculo}</div>
