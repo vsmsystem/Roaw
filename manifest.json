@@ -1,7 +1,7 @@
 {
   "name": "Roaw",
   "version": "0.0.1",
-  "manifest_version": 3,
+  "manifest_version": 2,
   "description": "Ideias em desenvolvimento",
   "author": "Valdecir Merli",
   "options_ui": {
