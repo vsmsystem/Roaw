@@ -1,0 +1,1 @@
+document.getElementById('jumbobtn').innerHTML="Versão atual: <strong>"+chrome.app.getDetails().version+"</strong></div> ";

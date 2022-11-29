@@ -1,0 +1,742 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="A basic template for a Chrome Extension using Twitter Bootstrap 3">
+	<meta name="author" content="Elliot Hesp">
+
+	<title>VSM</title>
+
+	<!-- Scripts -->
+	<!-- <script src="js/jquery-2.0.3.min.js"></script> -->
+	<script src="js/jquery-3.6.0.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+
+	<!-- Cascading Style Sheets -->
+	<link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+	<link href="css/custom.css" rel="stylesheet" media="screen">
+	<link href="css/bootstrap-theme.min.css" rel="stylesheet" media="screen">
+
+
+
+	<style>
+		.night {
+			background-color: #111;
+			color: #ccc;
+		}
+
+		body {
+			transition: all 0.5s ease-in-out;
+		}
+		/*
+		body{
+		background-color: #111;
+		color:#ccc;
+		}
+		*/
+
+		.night .navbar {
+			background-color: #0a0a0a;
+		}
+
+		.night .navbar-default {
+			/* background-color: #f8f8f8; */
+			border-color: #111;
+		}
+
+		/* menu dropdown, deixar comentado pra esse tema */
+		.night .navbar-top-links .dropdown-menu li a {
+			/* color:#f00; */
+			/* background-color: #0f0; */
+		}
+
+		.night .btn-block {
+			background-color: #404040;
+			color: #ddd;
+		}
+
+		.night .page-header {
+			border-bottom: 1px solid #111;
+		}
+
+		/* sidebar menu selecionado */
+		.night .sidebar ul li a.active {
+			background-color: #333;
+		}
+
+		/* elementos do canto superior esquerdo hover */
+		.night .nav>li>a:focus,
+		.night .nav>li>a:hover {
+			background-color: #222;
+		}
+
+		/* elementos do canto superior esquerdo quando clicados */
+		.night .nav .open>a,
+		.night .nav .open>a:focus,
+		.night .nav .open>a:hover {
+			background-color: #222;
+		}
+
+		/* o dropdown do relogio */
+		.night .dropdown-menu {
+			border: solid 1px #555;
+			background-color: #222;
+		}
+
+		.night .dropdown-menu>li>a:focus,
+		.night .dropdown-menu>li>a:hover {
+			color: #fff;
+			/* border:solid 1px #f00; */
+			background-color: transparent;
+		}
+
+		.night .dropdown-menu .divider {
+
+			background-color: #555;
+		}
+
+		.night .botaoAlternaMenu {
+			background-color: #222;
+			border-color: #333;
+			color: #ccc;
+		}
+
+		.night .botaoAlternaMenu:hover {
+			background-color: #111;
+			border: none;
+			color: #aaa;
+		}
+
+		.night .botaoAlternaMenu:active {
+			background-color: #111;
+			border: none;
+			color: #aaa;
+		}
+
+		.night .botaoAlternaMenu:focus {
+			background-color: #111;
+			border: solid 1px #444;
+			color: #aaa;
+		}
+
+		.night .sidebar ul li {
+			border-bottom: none;
+			background-color: #111;
+		}
+
+		.night .nav li a {
+			color: #ddd;
+		}
+
+		.night #page-wrapper {
+			background-color: #222;
+			border-left: none;
+		}
+
+		.night textarea:focus,
+		.night select:focus,
+		.night input[type="text"]:focus,
+		.night input[type="password"]:focus,
+		.night input[type="datetime"]:focus,
+		.night input[type="datetime-local"]:focus,
+		.night input[type="date"]:focus,
+		.night input[type="month"]:focus,
+		.night input[type="time"]:focus,
+		.night input[type="week"]:focus,
+		.night input[type="number"]:focus,
+		.night input[type="email"]:focus,
+		.night input[type="url"]:focus,
+		.night input[type="search"]:focus,
+		.night input[type="tel"]:focus,
+		.night input[type="color"]:focus,
+		.night .uneditable-input:focus {
+			border-color: #0f0;
+			box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px #0f0;
+			outline: 0 none;
+		}
+
+		.night textarea,
+		.night input[type="text"],
+		.night input[type="password"],
+		.night input[type="datetime"],
+		.night input[type="datetime-local"],
+		.night input[type="date"],
+		.night input[type="month"],
+		.night input[type="time"],
+		.night input[type="week"],
+		.night input[type="number"],
+		.night input[type="email"],
+		.night input[type="url"],
+		.night input[type="search"],
+		.night input[type="tel"],
+		.night input[type="color"],
+		.night .uneditable-input {
+			background-color: #111;
+			border: solid 1px #333;
+		}
+
+		.night .form-control {
+			background-color: #111;
+			border: solid 1px #333;
+			color: #ccc;
+		}
+
+		.night .table-bordered {
+			border: 1px solid #000;
+		}
+
+		.night .table-hover tbody tr:hover td,
+		.night .table-hover tbody tr:hover th {
+			background-color: #333;
+		}
+
+		/* 
+		.night .table-striped > tbody > tr:nth-child(2n+1) > td, .night  .table-striped > tbody > tr:nth-child(2n+1) > th {
+		background-color: #1f1f1f;
+		} */
+		.night .table-striped>tbody>tr:nth-of-type(odd) {
+			background-color: #191919;
+		}
+
+		.night table.dataTable thead .sorting:after {
+			color: #999;
+		}
+
+		.night .table-bordered>tbody>tr>td,
+		.night .table-bordered>tbody>tr>th,
+		.night .table-bordered>tfoot>tr>td,
+		.night .table-bordered>tfoot>tr>th,
+		.night .table-bordered>thead>tr>td,
+		.night .table-bordered>thead>tr>th {
+			border: solid 1px #000;
+		}
+
+		.night .pagination>li>a,
+		.night .pagination>li>span {
+			color: #337ab7;
+			background-color: #333;
+			border: 1px solid #444;
+		}
+
+		.night .pagination>.disabled>a,
+		.night .pagination>.disabled>a:focus,
+		.night .pagination>.disabled>a:hover,
+		.night .pagination>.disabled>span,
+		.night .pagination>.disabled>span:focus,
+		.night .pagination>.disabled>span:hover {
+			color: #777;
+			background-color: #555;
+			border-color: #666;
+		}
+
+		.night .pagination>.active>a,
+		.night .pagination>.active>a:focus,
+		.night .pagination>.active>a:hover,
+		.night .pagination>.active>span,
+		.night .pagination>.active>span:focus,
+		.night .pagination>.active>span:hover {
+			color: #fff;
+			background-color: #337ab7;
+			border-color: #337ab7;
+		}
+
+
+		.night .well {
+			background-color: #333;
+			border: 1px solid #000;
+		}
+
+		.night .notificacoes {
+			padding: 0.2rem 0.5rem;
+			color: #FFFFFF;
+			font-size: 0.8rem;
+			border-radius: 10rem;
+			background-color: #f06960;
+			font-weight: bold;
+			position: absolute;
+			top: 1em;
+			right: 1em;
+		}
+
+		/* Scrollbar */
+		::-webkit-scrollbar {
+			width: 10px;
+		}
+
+		::-webkit-scrollbar-track {
+			background: #000;
+		}
+
+		::-webkit-scrollbar-thumb {
+			background: #333;
+		}
+
+		::-webkit-scrollbar-thumb:hover {
+			background: #555;
+		}
+
+
+		/* Loading */
+
+		.loader {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 100%;
+			padding: 0px;
+			margin: 20px;
+		}
+
+		.loading-contents {
+			perspective: 200px;
+		}
+
+		.flipper {
+			transition: all 0.6s;
+			animation: flip 4s infinite;
+			transform-style: preserve-3d;
+		}
+
+		.flipper,
+		.front,
+		.back {
+			width: 70px;
+			height: 70px;
+		}
+
+		.front,
+		.back {
+			position: absolute;
+			top: 0;
+			left: 0;
+			backface-visibility: hidden;
+		}
+
+		.front {
+			transform: rotateY(0);
+			background-image: url("https://www.sistemamultas.com.br/img/Logo_LW_Azul.png");
+			background-repeat: no-repeat;
+			background-size: 80px 80px;
+			background-position: center;
+		}
+
+		.back {
+			transform: rotateY(180deg);
+			background-image: url("https://www.sistemamultas.com.br/img/Logo_LW_Azul.png");
+			background-repeat: no-repeat;
+			background-size: 80px 80px;
+			background-position: center;
+		}
+
+		@keyframes flip {
+			25% {
+				transform: rotateY(180deg);
+			}
+
+			50% {
+				transform: rotateZ(180deg);
+			}
+
+			74.999% {
+				transform: rotateX(179deg);
+			}
+
+			75% {
+				transform: rotateX(180deg);
+			}
+		}
+
+		.darkbg {
+			background: none repeat scroll 0 0 black;
+			display: block;
+			height: 100%;
+			left: 0;
+			opacity: 0.8;
+			position: fixed;
+			top: 0;
+			z-index: 9999;
+			margin: auto;
+			width: 100%;
+			padding: 10px;
+		}
+
+		.night .panel-lwt1 {
+			background-image: linear-gradient(to bottom right, #0e0e0f, #4D4D4D);
+			border-radius: 25px;
+			color: #FFFFFF;
+		}
+
+		.night .panel-lwt2 {
+			background-image: linear-gradient(to bottom right, #020202, #4D4D4D);
+			border-radius: 25px;
+			color: #FFFFFF;
+		}
+
+		.night .panel-lwt3 {
+			background-image: linear-gradient(to bottom right, #000000, #4D4D4D);
+			border-radius: 25px;
+			color: #FFFFFF;
+		}
+
+		.night .panel-lwt4 {
+			background-image: linear-gradient(to bottom right, #333435, #000000);
+			border-radius: 25px;
+			color: #FFFFFF;
+		}
+
+		.night .panel-lwt-m {
+			background-image: linear-gradient(to bottom right, #000000, #3a3939);
+			color: #FFFFFF !important;
+			padding: 2%;
+		}
+
+		.night .panel-footer-lwt {
+			background-image: linear-gradient(to bottom right, #000000, #2b2b2b);
+			color: #1fadd6;
+		}
+
+		.night .list-group-item {
+			color: #ccc;
+			background-color: #191919;
+			border: 1px solid #4c4c4c;
+		}
+
+
+		a.list-group-item:focus,
+		a.list-group-item:hover,
+		button.list-group-item:focus,
+		button.list-group-item:hover {
+			color: #333;
+			text-decoration: none;
+			background-color: #c5c5c5;
+		}
+
+
+		.night .panel-default {
+			border-color: #000;
+		}
+
+		.night .panel {
+			background-color: #000;
+		}
+
+		.night .nav-tabs {
+			border-bottom: 1px solid #7d7d7d;
+		}
+
+		.night .nav-tabs>li.active>a,
+		.night .nav-tabs>li.active>a:focus,
+		.night .nav-tabs>li.active>a:hover {
+			background-color: #4c4c4c;
+			border: 1px solid #7d7d7d;
+		}
+
+		.night .btn-default {
+			color: #f5f5f5;
+			background-color: #3a3a3a;
+			border-color: #000;
+		}
+
+		.night .modal-content {
+			background-color: #292929;
+		}
+
+		.night .modal-footer {
+			border-top: 1px solid #484848;
+		}
+
+		.night hr {
+			border-top: 1px solid #3a3a3a;
+		}
+
+		.night .aits>label {
+			border: solid 1px #ccc;
+			background-color: #3c3c3c;
+			color: #cacaca;
+		}
+
+		.night .aits>label:hover {
+			background-color: #6f6f6f;
+			color: #333;
+			border-color: #777;
+		}
+
+		.night .panel-default>.panel-heading {
+			color: #fff;
+			background-color: #191919;
+			border-color: #333;
+		}
+
+		.night .status {
+			background-color: transparent;
+		}
+
+		.night .sessao {
+			background-color: #1b1919;
+		}
+
+		.select2-container--bootstrap .select2-selection {
+			background-color: #222;
+			border: 1px solid #000;
+			color: #fff;
+		}
+
+
+		.night tr.odd td {
+			background-color: #222;
+			border: none;
+		}
+
+		.night tr.even td {
+			background-color: #2a2a2a;
+			border: none;
+		}
+
+		.night .table>thead>tr>th {
+			border-bottom: 2px solid #000;
+		}
+
+		.night .border {
+			border: solid 1px #777;
+		}
+
+		.night .select2-container--default .select2-selection--single {
+			background-color: #111;
+			border: 1px solid #555;
+			border-radius: 4px;
+		}
+
+		.night .select2-dropdown {
+			background-color: #111;
+			border: 1px solid #555;
+		}
+
+		/* .night .btn-primary {
+			color: #fff;
+			background-color: #00325d;
+			border-color: #2e6da4;
+		} */
+
+		.toggle-on.btn {
+			padding-right: 24px;
+		}
+
+		.toggle-on {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 50%;
+			margin: 0;
+			border: 0;
+			border-radius: 0;
+		}
+
+		.night .btn-success {
+			color: #fff;
+			background-color: #043e04;
+			border-color: #4cae4c;
+		}
+
+		.night .btn-danger.active,
+		.night .btn-danger:active,
+		.night .open>.dropdown-toggle.btn-danger {
+			color: #fff;
+			background-color: #730805;
+			border-color: #ac2925;
+		}
+
+		.night .btn-warning {
+			color: #fff;
+			background-color: #9a5f0b;
+			border-color: #eea236;
+		}
+
+		.night .btn-info {
+			color: #fff;
+			background-color: #006c8c;
+			border-color: #46b8da;
+		}
+
+		.night .table .table {
+			background-color: #101010;
+		}
+
+		.night thead th {
+			background-color: #0a0a0a;
+		}
+
+		.night .table>thead>tr>th {
+			border-bottom: 2px solid #000;
+			background-color: #0a0a0a;
+		}
+
+		.night .panel-footer {
+			padding: 10px 15px;
+			background-color: #060606;
+			border-top: 1px solid #000;
+			border-bottom-right-radius: 3px;
+			border-bottom-left-radius: 3px;
+		}
+
+		.night .div-form {
+			background-color: #0c0c0c;
+		}
+	</style>
+
+	<style>
+		.tabela td {
+			white-space: nowrap;
+		}
+
+		.night {
+			background-color: black;
+		}
+
+		.night section {
+			background-color: black;
+		}
+
+		.night .panel-default>.panel-heading {
+			background-image: -webkit-linear-gradient(top, #f5f5f5 0, #e8e8e8 100%);
+			background-image: linear-gradient(to bottom, #000000 0, #464444 100%);
+			background-repeat: repeat-x;
+			filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#fff5f5f5', endColorstr='#ffe8e8e8', GradientType=0);
+		}
+
+		.night .panel-default>.panel-heading {
+			color: #fff;
+			background-color: #0e0e0e;
+			border-color: #000;
+		}
+
+		.night .panel-body {
+			padding: 15px;
+			background-color: #1b1b1b;
+		}
+
+		.night .panel-footer {
+			background-color: #292828;
+
+		}
+
+		.night .panel-default {
+			border-color: #444343;
+		}
+		
+
+	</style>
+</head>
+
+<body class="night">
+
+	<nav id="navbar" class="navbar navbar-default navbar-fixed-top navbar-inverse" role="navigation">
+		
+			
+		<div class="navbar-header">
+			<a class="navbar-brand" href="#">
+				Roaw!<img style="width: 40px;float:left;margin-top:-10px; transform: scaleX(-1);opacity:0.2;" src="128.png" class="" alt="">
+			</a>
+		</div>
+		<div class="collapse navbar-collapse navbar-ex1-collapse">
+			<ul class="nav navbar-nav">
+				<li class="active">
+					<a href="#home" aria-controls="home">Novidades</a>
+				</li>
+				<li class="dropdown">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+						aria-expanded="false"> <i class="glyphicon glyphicon-globe"></i>Ferramentas <span
+							class="caret"></span></a>
+					<ul class="dropdown-menu">
+						<li>
+							<a target="_blank" href="Vweb/sistemas.html"><i class="glyphicon glyphicon-th-list"></i>
+								Links / Sistemas</a>
+						</li>
+						<li role="separator" class="divider"></li>
+	
+						<li>
+							<a href="#"><i class="glyphicon glyphicon-unchecked"></i> Fila de Retorno</a>
+						</li>
+					</ul>
+
+				</li>
+				<div class="navbar-form navbar-left">
+					<div class="form-group"> <input type="text" id="gsearchtext" class="form-control"
+							placeholder="Dinossauros?"> </div>
+					<button id="gsearch" type="submit" class="btn btn-primary">ok</button>
+				</div>
+
+			</ul>
+			<ul class="nav navbar-nav navbar-right">
+				<li class="dropdown">
+					<a href="#" id="ajustartema" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+						aria-expanded="false"> <i class="glyphicon glyphicon-adjust"></i> 
+					</a>
+				</li>
+				<li class="dropdown">
+					<a  href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+						aria-expanded="false"> 
+						<i class="glyphicon glyphicon-cog"></i> <span class="caret"></span>
+						&nbsp;&nbsp;</a>
+					<ul class="dropdown-menu">
+						<li><a target="_blank"
+								href="https://chrome.google.com/webstore/detail/vsmonitor-ext/mhdhcccejcjfanablmohbpdbepdkokkj?hl=pt-BR">Atualização</a>
+						</li>
+						<li role="separator" class="divider"></li>
+						<li><a href="Vweb/options.html" target="_blank">Opções</a></li>
+					</ul>
+				</li>
+
+			</ul>
+		</div>
+	</nav>
+	<div style="height:55px;">&nbsp;</div>
+	<section>
+		<div style="width: 29%;float:left;margin:2px">
+			<ul class="list-group">
+				<button type="button" class="list-group-item"><span class="badge">0</span> Tarefas</button>
+				<button type="button" class="list-group-item"><span class="badge">0</span> Agenda</button>
+				<button type="button" class="list-group-item"><span class="badge">0</span> Documentação</button>
+				<button type="button" class="list-group-item"><span class="badge">0</span> Testes</button>
+				<button type="button" class="list-group-item"><span class="badge">0</span> Inputs</button>
+				<button type="button" class="list-group-item"> Config</button>
+
+			</ul>
+		</div>
+		<div id="toolnow" style="width:70%;padding:2px;overflow:auto;float:right;overflow-wrap: break-word;">
+
+
+			<div>
+				<div class="panel panel-default" style="margin-bottom:0px;">
+					<div class="panel-heading">
+						<span class="glyphicon glyphicon-info-sign"></span> <span id="url-aba"></span>
+					</div>
+					<div class="panel-body">
+						<div class="row">
+							<div class="col-xs-12">
+								<ul class="demo2" style="height:300px;">
+									<textarea name="roawConfigs" id="roawConfigs" style="width:100%;height:100%"></textarea>
+								</ul>
+							</div>
+						</div>
+					</div>
+					<div class="panel-footer">
+						<div class="input-group"> 
+							<input class="form-control" aria-label="Text input with multiple buttons">
+							<div class="input-group-btn"> 
+								<button type="button" class="btn btn-primary" aria-label="Help"><span class="glyphicon glyphicon-question-sign"></span></button>
+								<button type="button" class="btn btn-primary">ok</button> 
+							</div>
+						</div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<script src='popup.js'></script>
+</body>
+
+</html>

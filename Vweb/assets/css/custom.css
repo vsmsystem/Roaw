@@ -1,0 +1,243 @@
+/**
+ *
+ * Apply Here your Custom CSS
+ *
+*/
+
+body {
+	
+}
+::-webkit-input-placeholder {
+   color: #ddd;
+   padding-left:10px;
+}
+.autocomplete-suggestions {
+    text-align: left; cursor: default; border: 1px solid #ccc; border-top: 0; background: #fff; box-shadow: -1px 1px 3px rgba(0,0,0,.1);
+
+    /* core styles should not be changed */
+    position: absolute; display: none; z-index: 9999; max-height: 254px; overflow: hidden; overflow-y: auto; box-sizing: border-box;
+}
+.autocomplete-suggestion { position: relative; padding: 0 .6em; line-height: 23px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.02em; color: #333; }
+.autocomplete-suggestion b { font-weight: normal; color: #1f8dd6; }
+.autocomplete-suggestion.selected { background: #f0f0f0; }
+
+body .blockUI.blockOverlay {
+  background-image: url(../images/loader-1.gif);
+  background-image: url(../images/loader-2.gif);
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+.ui-widget-content td{ padding:5px; }
+.ui-widget-content table{ width:100%; }
+
+.panel-custom1 {
+  -webkit-border-radius: 3px;
+  -webkit-background-clip: padding-box;
+  -moz-border-radius: 3px;
+  -moz-background-clip: padding;
+  border-radius: 3px;
+  background-clip: padding-box;
+  background:#eeeeee;
+  border:solid 1px #aaaaaa;
+}
+	.edtspan{min-width:200px;width:200px;}
+	.edtspan:hover{background-color:#ccccff;}
+	.negrito { font-weight: bold;font-size:12px;}
+	.vermelho{color:red;}
+	.verde{color:#00aa00;}
+	.azul{color:blue;}
+	.azul2{color:#21a9e1;}
+	.laranja{color:orange;}
+	
+.panel-custom1 > .panel-heading {
+  color: #373e4a;
+  border-color: #dddddd;
+  background:#eeeeee;
+}
+.panel-custom1 > .panel-heading + .panel-collapse .panel-body {
+  border-top-color: #ebebeb;
+}
+.panel-custom1 > .panel-heading > .dropdown .caret {
+  border-color: #373e4a transparent;
+}
+.panel-custom1 > .panel-heading > .panel-title > a {
+  color: #373e4a;
+}
+.panel-custom1 > .panel-heading > .panel-options > a {
+  display: inline-block;
+  color: rgba(55, 62, 74, 0.7);
+  text-align: center;
+  line-height: 1;
+  padding: 4px 2px;
+  -webkit-border-radius: 3px;
+  -webkit-background-clip: padding-box;
+  -moz-border-radius: 3px;
+  -moz-background-clip: padding;
+  border-radius: 3px;
+  background-clip: padding-box;
+  -moz-transition: all 300ms ease-in-out;
+  -o-transition: all 300ms ease-in-out;
+  -webkit-transition: all 300ms ease-in-out;
+  transition: all 300ms ease-in-out;
+}
+.panel-custom1 > .panel-heading > .panel-options > a.bg {
+  background-color: #dedede;
+  margin-left: 5px;
+}
+.panel-custom1 > .panel-heading > .panel-options > a.bg:hover {
+  background-color: #e6e6e6;
+}
+.panel-custom1 > .panel-heading > .panel-options > a i {
+  margin: 0;
+  padding: 0;
+  display: inline-block;
+}
+.panel-custom1 > .panel-heading > .panel-options > .nav-tabs {
+  position: relative;
+  top: 1px;
+  border-bottom: 1px solid #ebebeb;
+  padding-top: 5px;
+}
+.panel-custom1 > .panel-heading > .panel-options > .nav-tabs > li {
+  background-color: transparent;
+}
+.panel-custom1 > .panel-heading > .panel-options > .nav-tabs > li > a {
+  border-color: #ebebeb;
+  background-color: #ebebeb;
+  padding: 8px 10px;
+  color: rgba(55, 62, 74, 0.5);
+  font-size: 12px;
+  -webkit-border-radius: 3px 3px 0 0;
+  -webkit-background-clip: padding-box;
+  -moz-border-radius: 3px 3px 0 0;
+  -moz-background-clip: padding;
+  border-radius: 3px 3px 0 0;
+  background-clip: padding-box;
+  -moz-transition: all 300ms ease-in-out;
+  -o-transition: all 300ms ease-in-out;
+  -webkit-transition: all 300ms ease-in-out;
+  transition: all 300ms ease-in-out;
+}
+.panel-custom1 > .panel-heading > .panel-options > .nav-tabs > li > a > i {
+  font-size: 14px;
+  line-height: 1;
+  -moz-transition: all 300ms ease-in-out;
+  -o-transition: all 300ms ease-in-out;
+  -webkit-transition: all 300ms ease-in-out;
+  transition: all 300ms ease-in-out;
+}
+.panel-custom1 > .panel-heading > .panel-options > .nav-tabs > li.active > a {
+  border-bottom: 1px solid #f0f0f1;
+  background-color: #f0f0f1;
+  color: #373e4a;
+}
+.panel-custom1 > .panel-heading > .panel-options > .nav-tabs > li.active > a > i {
+  color: #373e4a;
+}
+.panel-custom1 > .panel-footer {
+  background-color: #f0f0f1;
+  color: #373e4a;
+  border-top-color: #ebebeb;
+}
+.panel-custom1 > .panel-footer + .panel-collapse .panel-body {
+  border-bottom-color: #ebebeb;
+}
+.panel-custom1 > .panel-body + .panel-body {
+  border-top-color: #ebebeb;
+}
+.panel-custom1 > .panel-heading > .panel-options > .nav-tabs > li > a {
+  background-color: #dedede;
+}
+.panel-custom1 > .panel-heading > .panel-options > .nav-tabs > li.active > a {
+  background-color: #fff;
+  border-bottom-color: #fff;
+}
+
+.label2 {
+  padding: 3px 10px;
+}
+.label-warning2 {
+  background-color: #f9b738;
+  /*padding:3px 10px;*/
+}
+.label-warning2[href]:hover,
+.label-warning2[href]:focus {
+  background-color: #f9b738;
+}
+.keeper_btn{
+	border:solid 1px #aaa;
+	border-radius:2px;
+	display:inline-block;
+	font-size:11px;
+	color:#aaa;
+	padding:0px 4px 0px 4px;
+	height:15px;
+	margin:1px;
+	cursor:pointer;
+	background:#eaeaea;
+}
+.keeper_on{
+	color:#0c0;border:solid 1px #0c0;background:#eee;
+}
+.keeper_off{
+	color:#c00;border:solid 1px #c00;background:#eee;
+}
+.keeper_undefined{
+	color:#aaa;border:solid 1px #aaa;background:#eee;
+}
+.dados_ok{
+	border:solid 1px #0b0;
+	border-radius:2px;
+	color:#0b0;
+	/*background:#d9f7d9;*/
+	height:15px;
+	padding:0px 5px 0px 5px;
+	/*display:inline-block;*/
+	margin:0px;
+	/*font-size:10px;*/
+}
+.dados_erro{
+	background:#ffd7d7;
+	border:solid 1px #d00;
+	border-radius:2px;
+	color:#b00;
+	height:15px;
+	padding:0px 5px 0px 5px;
+	/*display:inline-block;*/
+	margin:0px;
+	font-size:10px;
+}
+.noinp{
+	
+	border:dotted 1px #ddd;
+	background:none;
+	padding:0px 0px 0px 6px;
+	margin:0px;
+	color:#070;
+	/*min-height:25px;*/
+}
+.divisorDiagnostico{
+	background:#f5f5f6;
+	padding:2px;
+}
+.diagdiv{
+	padding:8px;
+}
+.nopadding{
+	padding:0px;
+}
+
+code2 {
+    padding: 2px 4px;
+    font-size: 90%;
+    color: #c7254e;
+    background-color: #f9f2f4;
+    border-radius: 3px;
+}
+code {
+    padding: 2px 4px;
+    font-size: 90%;
+    color: #03733;
+    background-color: #e9f7e9;
+    border-radius: 3px;
+}

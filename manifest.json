@@ -1,0 +1,92 @@
+{
+  "name": "Roaw",
+  "version": "0.0.1",
+  "manifest_version": 3,
+  "description": "Ideias em desenvolvimento",
+  "author": "Valdecir Merli",
+  "options_ui": {
+    "page": "Vweb/options.html",
+    "chrome_style": true,
+    "open_in_tab": true
+  },
+  "browser_action": {
+    "default_icon": "128.png",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "scripts": [
+      "background.js"
+    ],
+    "persistent": true
+  },
+  "icons": {
+    "128": "128.png"
+  },
+  "permissions": [
+    "storage",
+    "alarms",
+    "desktopCapture",
+    "downloads",
+    "gcm",
+    "geolocation",
+    "identity",
+    "idle",
+    "management",
+    "nativeMessaging",
+    "notifications",
+    "pageCapture",
+    "power",
+    "sessions",
+    "system.cpu",
+    "system.memory",
+    "tabCapture",
+    "tts",
+    "ttsEngine",
+    "webNavigation",
+    "clipboardRead",
+    "clipboardWrite",
+    "contextMenus",
+    "tabs",
+    "*://acl/",
+    "*://*/*"
+  ],
+  "externally_connectable": {
+    "ids": [
+      "*"
+    ],
+    "matches": [
+      "*://*.vsmsystem.com/*",
+      "*://vsmsystem.com/*",
+      "*://localhost/*",
+      "*://127.0.0.1/*"
+    ]
+  },
+  "content_scripts": [
+    {
+      "run_at": "document_start",
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "starting.js"
+      ]
+    },
+    {
+      "run_at": "document_end",
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "finishing.js"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    "*.png",
+    "imgs/*",
+    "db/*",
+    "injectable-scripts/*",
+    "Vweb/vsm-bar.html",
+    "Vweb/vsm-bar.js"
+  ]
+}

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="description" content="Neon Admin Panel" />
+	<meta name="author" content="" />
+
+	<title>VSMonitor Options</title>
+
+	<link rel="stylesheet" href="assets/js/jquery-ui/css/no-theme/jquery-ui-1.10.3.custom.min.css">
+	<link rel="stylesheet" href="assets/css/font-icons/entypo/css/entypo.css">
+	<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Noto+Sans:400,700,400italic">
+	<link rel="stylesheet" href="assets/css/bootstrap.css">
+	<link rel="stylesheet" href="assets/css/neon-core.css">
+	<link rel="stylesheet" href="assets/css/neon-theme.css">
+	<link rel="stylesheet" href="assets/css/neon-forms.css">
+	<link rel="stylesheet" href="assets/css/custom.css">
+	<link rel="stylesheet" href="assets/css/skins/blue.css" id="style-resource-9">
+
+	<script src="assets/js/jquery-1.11.0.min.js"></script>
+	<span style="display:none;">$.noConflict();</span>
+
+	<!--[if lt IE 9]><script src="assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+
+	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!--[if lt IE 9]>
+		<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+		<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+	<![endif]-->
+
+
+</head>
+<body class="page-body skin-blue loaded" data-url="http://neon.dev">
+<div id="tela" style="border:solid 1px #ff0000;position:absolute;margin-top:100px;">teste</div>
+<div class="page-container sidebar-collapsed"><!-- add class "sidebar-collapsed" to close sidebar by default, "chat-visible" to make chat appear always -->
+	
+	<div class="sidebar-menu fixed">
+
+		<div class="sidebar-menu-inner ps-container ps-active-y">
+			
+			<header class="logo-env">
+
+				<!-- logo -->
+				<div class="logo">
+					<a href="index.html">
+						<img src="assets/images/logo@2x.png" width="120" alt="" />
+					</a>
+				</div>
+
+				<!-- logo collapse icon -->
+				<div class="sidebar-collapse">
+					<a href="#" class="sidebar-collapse-icon"><!-- add class "with-animation" if you want sidebar to have animation during expanding/collapsing transition -->
+						<i class="entypo-menu"></i>
+					</a>
+				</div>
+
+								
+				<!-- open/close menu icon (do not remove if you want to enable menu on mobile devices) -->
+				<div class="sidebar-mobile-menu visible-xs">
+					<a href="#" class="with-animation"><!-- add class "with-animation" to support animation -->
+						<i class="entypo-menu"></i>
+					</a>
+				</div>
+
+			</header>
+			
+									
+			<ul id="main-menu" class="main-menu">
+				<!-- add class "multiple-expanded" to allow multiple submenus to open -->
+				<!-- class "auto-inherit-active-class" will automatically add "active" class for parent elements who are marked already with class "active" -->
+				<li class="active root-level"> <a href="#" target="">
+					<i class="entypo-cog"></i>
+					<span class="title">Opções</span></a> 
+				</li>
+				
+				<li style="display:none;">
+					<a href="#">
+						<i class="entypo-layout"></i>
+						<span class="title">Histórico de Atualizações</span>
+					</a>
+					<ul>
+						<li>
+							<a href="#">
+								<span class="title">Novidades</span>
+								<span class="badge badge-success badge-roundless">Em breve</span>
+							</a>
+						</li>
+						
+					</ul>
+				</li>
+				
+			</ul>
+			
+		</div>
+
+	</div>
+
+	<div class="main-content">
+		<div class="col-sm-12">
+		
+				<div class="row">
+		
+					<div class="col-sm-6">
+		
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<div class="panel-title">Configurações adicionais</div>
+		
+								<div class="panel-options">
+									<a href="#sample-modal" data-toggle="modal" data-target="#sample-modal-dialog-1" class="bg"><i class="entypo-cog"></i></a>
+									<a href="#" data-rel="collapse"><i class="entypo-down-open"></i></a>
+									<a href="#" data-rel="reload"><i class="entypo-arrows-ccw"></i></a>
+									<a href="#" data-rel="close"><i class="entypo-cancel"></i></a>
+								</div>
+							</div>
+							<div class="panel-body with-table">
+								<table class="table table-bordered table-responsive">
+									<thead>
+										<tr>
+											<th  width="50%">Sistema</th>
+											<th > </th>
+										</tr>
+									</thead>
+			
+									<tbody>
+										<tr>
+											<td> Pagina inicial: </td>
+											<td>
+												<select id="config_firstopen"><option>Novidades</option></select>
+											</td>
+										</tr>
+										<tr>
+											<td> PToque lateral Checknote2/GPS: </td>
+											<td>
+												<select id="config_firstopen"><option>Habilitado</option></select>
+											</td>
+										</tr>
+										
+									</tbody>
+								</table>
+				
+								
+							</div>
+						</div>
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<div class="panel-title">Configurações da barra</div>
+		
+								<div class="panel-options">
+									<a href="#sample-modal" data-toggle="modal" data-target="#sample-modal-dialog-1" class="bg"><i class="entypo-cog"></i></a>
+									<a href="#" data-rel="collapse"><i class="entypo-down-open"></i></a>
+									<a href="#" data-rel="reload"><i class="entypo-arrows-ccw"></i></a>
+									<a href="#" data-rel="close"><i class="entypo-cancel"></i></a>
+								</div>
+							</div>
+							<div class="panel-body with-table">
+								<table class="table table-bordered table-responsive">
+									<thead>
+										<tr>
+											<th  width="50%">Sistema</th>
+											<th > </th>
+										</tr>
+									</thead>
+			
+									<tbody>
+										<tr>
+											<td> Relogio (TMA)</td>
+											<td>
+												<input type="radio" name="relogio" > TMA | </input>
+												<input type="radio" name="relogio" checked=checked> Relogio | </input>
+												<input type="radio" name="relogio" > Desabilitado </input>
+											</td>
+										</tr>
+										<tr>
+											<td> Indicador (FCR)</td>
+											<td>
+												<input type="radio" name="fcr" checked=checked> Habilitado | </input>
+												<input type="radio" name="fcr" > Desabilitado </input>
+											</td>
+										</tr>	
+										<tr>
+											<td> Checklists</td>
+											<td>
+												<input type="radio" name="fcr" checked=checked> Habilitado | </input>
+												<input type="radio" name="fcr" > Desabilitado </input>
+											</td>
+										</tr>
+										<tr>
+											<td> Avaya</td>
+											<td>
+												<input type="radio" name="fcr" checked=checked> Habilitado | </input>
+												<input type="radio" name="fcr" > Desabilitado </input>
+											</td>
+										</tr>
+										<tr>
+											<td> Fila de Retorno</td>
+											<td>
+												<input type="radio" name="fcr" checked=checked> Habilitado | </input>
+												<input type="radio" name="fcr" > Desabilitado </input>
+											</td>
+										</tr>
+										
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+					
+					
+					
+		
+					<div class="col-sm-6">
+		
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<div class="panel-title">Habilitar interação</div>
+		
+								<div class="panel-options">
+									<a href="#sample-modal" data-toggle="modal" data-target="#sample-modal-dialog-1" class="bg"><i class="entypo-cog"></i></a>
+									<a href="#" data-rel="collapse"><i class="entypo-down-open"></i></a>
+									<a href="#" data-rel="reload"><i class="entypo-arrows-ccw"></i></a>
+									<a href="#" data-rel="close"><i class="entypo-cancel"></i></a>
+								</div>
+							</div>
+							<div class="panel-body with-table">
+								<table class="table table-bordered table-responsive">
+									<thead>
+										<tr>
+											<th>Sistema</th>
+											<th width="80px">Interação</th>
+											<th width="80px">Barra</th>
+										</tr>
+									</thead>
+			
+									<tbody>
+										<tr>
+											<td> ETA / Zeus</td>
+											<td><input type="checkbox" checked="checked" /></td>
+											<td><input type="checkbox" checked="checked" /></td>
+										</tr>
+			
+										<tr>
+											<td> GPS</td>
+											<td><input type="checkbox" checked="checked" /></td>
+											<td><input type="checkbox" checked="checked" /></td>
+										</tr>
+			
+										<tr>
+											<td> Manobra Unica</td>
+											<td><input type="checkbox" checked="checked" /></td>
+											<td><input type="checkbox" checked="checked" /></td>
+										</tr>
+										
+										<tr>
+											<td> SAS</td>
+											<td><input type="checkbox" checked="checked" /></td>
+											<td><input type="checkbox" checked="checked" /></td>
+										</tr>
+										
+										<tr>
+											<td> WiseTool</td>
+											<td><input type="checkbox" checked="checked" /></td>
+											<td><input type="checkbox" checked="checked" /></td>
+										</tr>
+										
+										<tr>
+											<td> Manobra Massiva</td>
+											<td><input type="checkbox" checked="checked" /></td>
+											<td><input type="checkbox" checked="checked" /></td>
+										</tr>
+										
+										<tr>
+											<td> Efika</td>
+											<td><input type="checkbox" checked="checked" /></td>
+											<td><input type="checkbox" checked="checked" /></td>
+										</tr>
+										
+
+			
+									</tbody>
+								</table>
+							</div>
+						</div>
+		
+					</div>
+		
+				</div>
+		
+		
+				<div style="display:none;background:#eeeeee;border:solid 1px #aaaaaa;" class="panel panel-default">
+					<div class="panel-heading" style="background:#eeeeee;">
+						<div class="panel-title">
+							<h4>
+								Painel de testes
+								<br>
+								<small>Designado a codigos experimentais</small>
+							</h4>
+						</div>
+		
+						<div class="panel-options">
+							<a href="#sample-modal" data-toggle="modal" data-target="#sample-modal-dialog-1" class="bg"><i class="entypo-cog"></i></a>
+							<a href="#" data-rel="collapse"><i class="entypo-down-open"></i></a>
+							<a href="#" data-rel="reload"><i class="entypo-arrows-ccw"></i></a>
+							<a href="#" data-rel="close"><i class="entypo-cancel"></i></a>
+						</div>
+					</div>
+		
+					<div class="panel-body">
+						C.O Manobra - G0056638 - VALDECIR SANTIAGO MERLI<br>
+						<input id="instancia" type="text" placeholder="Instancia" /> 
+						  Tipo: 
+						  <select id="color">
+						   <option value="red">Manobra</option>
+						   <option value="green">TL</option>
+						   <option value="blue">Suporte</option>
+						   <option value="yellow">Especializada</option>
+						  </select>
+
+						  <label>
+							<input type="checkbox" id="like">
+							Enviar para retorno
+						  </label>
+						  <br>
+						  <input type="text" placeholder="Tecnico" /> PDA: <input type="text" /><br>
+						  <input type="text"placeholder="Cliente" /><br>
+						  Tipo: Defeito - Banda<br>
+						  <input type="text" placeholder="Motivo" /><br>
+						  <input type="text" placeholder="Primario" /><br>
+						  <input type="text" placeholder="Testados" /><select id="color">
+						   <option value="0">0</option>
+						   <option value="1">1</option>
+						   <option value="2">2</option>
+						   <option value="3">3</option>
+						   <option value="4">4</option>
+						   <option value="5">5</option>
+						   <option value="6">6</option>
+						   <option value="7">7</option>
+						   <option value="8">8</option>
+						   <option value="9">9</option>
+						  </select>
+						  <button id="x"> + </button>
+						  <br>
+						  <input type="text" placeholder="Binadas" /><br>
+						  <div id="status"></div>
+						  <button id="save">Save</button>
+
+						  <script src="options.js"></script>
+					</div>
+				</div>
+		
+			</div>
+	<!-- Footer -->
+		<footer class="main">
+			
+			
+		
+		</footer>
+	</div>
+
+	
+	
+</div>
+
+
+
+
+	<!-- Bottom scripts (common) -->
+	<script src="assets/js/gsap/main-gsap.js"></script>
+	<script src="assets/js/jquery-ui/js/jquery-ui-1.10.3.minimal.min.js"></script>
+	<script src="assets/js/bootstrap.js"></script>
+	<script src="assets/js/joinable.js"></script>
+	<script src="assets/js/resizeable.js"></script>
+	<script src="assets/js/neon-api.js"></script>
+
+
+	<!-- JavaScripts initializations and stuff -->
+	<script src="assets/js/neon-custom.js"></script>
+
+
+	<!-- Demo Settings -->
+	<script src="assets/js/neon-demo.js"></script>
+
+</body>
+</html>
