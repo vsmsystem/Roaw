@@ -695,12 +695,13 @@
 	<section>
 		<div style="width: 29%;float:left;margin:2px">
 			<ul class="list-group">
-				<button type="button" class="list-group-item"><span class="badge">0</span> Tarefas</button>
-				<button type="button" class="list-group-item"><span class="badge">0</span> Agenda</button>
-				<button type="button" class="list-group-item"><span class="badge">0</span> Documentação</button>
-				<button type="button" class="list-group-item"><span class="badge">0</span> Testes</button>
-				<button type="button" class="list-group-item"><span class="badge">0</span> Inputs</button>
-				<button type="button" class="list-group-item"> Config</button>
+				<button type="button" class="list-group-item" id="menuTask"><span class="badge">0</span> Tarefas</button>
+				<button type="button" class="list-group-item" id="menuSchedule"><span class="badge">0</span> Agenda</button>
+				<button type="button" class="list-group-item" id="menuDoc"><span class="badge">0</span> Documentação</button>
+				<button type="button" class="list-group-item" id="menuTest"><span class="badge">0</span> Testes</button>
+				<button type="button" class="list-group-item" id="menuInputs"><span class="badge">0</span> Inputs</button>
+				<button type="button" class="list-group-item" id="menuPlanning"><span class="badge">0</span> Planning</button>
+				<button type="button" class="list-group-item" id="menuConfig"> Config</button>
 
 			</ul>
 		</div>
@@ -713,11 +714,65 @@
 						<span class="glyphicon glyphicon-info-sign"></span> <span id="url-aba"></span>
 					</div>
 					<div class="panel-body">
-						<div class="row">
-							<div class="col-xs-12">
-								<ul class="demo2" style="height:300px;">
-									<textarea name="roawConfigs" id="roawConfigs" style="width:100%;height:100%"></textarea>
-								</ul>
+						<div id="config" class="screens">
+							<div class="row">
+								<div class="col-xs-12">
+									<ul class="demo2" style="height:300px;">
+										<textarea name="roawConfigs" id="roawConfigs" style="width:100%;height:100%"></textarea>
+									</ul>
+								</div>
+							</div>
+						</div>
+						<div id="planning" class="screens" style="display: none;">
+							<div class="row">
+								<div class="col-xs-12">
+									<table class="table table-hover table-bordered" style="width: 100%;">
+										<thead>
+											<tr>
+												<th>Story Point</th>
+												<th>Tempo</th>
+												<th>Dias</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td>1</td>
+												<td>1m ~ 2h</td>
+												<td> - </td>
+											</tr>
+											<tr>
+												<td>2</td>
+												<td>2h ~ 4h</td>
+												<td> - </td>
+											</tr>
+											<tr>
+												<td>3</td>
+												<td>4h ~ 6h</td>
+												<td>1</td>
+											</tr>
+											<tr>
+												<td>5</td>
+												<td>6h ~ 10h</td>
+												<td>1,5</td>
+											</tr>
+											<tr>
+												<td>8</td>
+												<td>10h ~ 20h</td>
+												<td>3</td>
+											</tr>
+											<tr>
+												<td>13</td>
+												<td>20h ~ 30h</td>
+												<td>5</td>
+											</tr>
+											<tr>
+												<td>21</td>
+												<td>30h ~ 60h</td>
+												<td>10</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
 							</div>
 						</div>
 					</div>
