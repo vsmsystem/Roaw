@@ -1,3 +1,4 @@
+window.roawInfo={};
 function pageLoaded() {
 
 }
@@ -369,7 +370,7 @@ window.speechSynthesis.onvoiceschanged = function() {
   
       [...window.speechSynthesis.getVoices()].forEach(function(e,i){
           if(e.voiceURI.toLowerCase().indexOf("brasil")>-1){
-          console.log(e,i)
+          roawInfo.voice={"index":i,"persona":e}
           text.voiceURI = e.voiceURI
           text.lang = e.lang
           text.localService = true;
