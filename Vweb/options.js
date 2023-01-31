@@ -138,3 +138,128 @@ function msTime2(ms){
 
 
 //msTime(new Date().getTime() - start_date);
+
+
+
+
+
+
+/*
+I need to create a function to list tabs, and choose a tab to attach debugger
+*/
+requestHistory=[];
+var currentTab;
+var version = "1.0";
+
+// chrome.tabs.query( //get current Tab
+// {
+//     currentWindow: true,
+//     active: true
+// },
+// function(tabArray) {
+//     currentTab = tabArray[0];
+//         chrome.debugger.attach({ //debug at current tab
+//             tabId: currentTab.id
+//         }, version, onAttach.bind(null, currentTab.id));
+//     }
+// )
+function getTabs(string){
+	var currentTab;
+	var version = "1.0";
+
+	chrome.tabs.query({},
+	function(tabArray) {
+		currentTab = tabArray[0];
+		
+		tabArray.forEach(t =>{
+			if(!string){
+				console.log(t)
+			}else{
+				if(t.url.indexOf(string) > -1){
+					console.log(t.id, t)
+					window.currentTab={}
+					window.currentTab.id=t.id
+				}
+
+			}
+		})
+		}
+	)
+}
+
+
+function activateDebug(id){
+	chrome.debugger.attach({ //debug at current tab
+			tabId: currentTab.id
+		}, version, onAttach.bind(null, currentTab.id)
+	);
+}
+function onAttach(tabId) {
+
+    chrome.debugger.sendCommand({ //first enable the Network
+        tabId: tabId
+    }, "Network.enable");
+
+    chrome.debugger.onEvent.addListener(allEventHandler);
+
+}
+
+
+function allEventHandler(debuggeeId, message, params) {
+
+
+    if (currentTab.id != debuggeeId.tabId) {
+        return;
+    }
+
+    if (message == "Network.responseReceived") { //response return 
+        chrome.debugger.sendCommand({
+            tabId: debuggeeId.tabId
+        }, "Network.getResponseBody", {
+            "requestId": params.requestId
+        }, function(response) {
+            if(response){
+                // chrome storage has a limitation of 200 request per minute
+                // chromeStorage.pushItem("requestHistory", response)
+                try{
+                    var parsed = JSON.parse(response.body)
+                    requestHistory.unshift(parsed);
+					showQuestionInfo(parsed)
+                }catch(error){
+                    //
+                }
+            }
+            // jsonDesc = JSON.parse(response.body)
+            // console.log("Questions", jsonDesc.data.questionById.contentsByQuestionIdList[0].textByTextId.body,  jsonDesc.data.questionById.assertionsByQuestionIdList)
+            // you get the response body here!
+            // you can close the debugger tips by:
+            // chrome.debugger.detach(debuggeeId);
+        });
+    }
+
+}
+
+
+function listRequestHistory(){
+    requestHistory.forEach(item => {
+        console.log(item)
+    })
+}
+
+function listQuestions(){
+    requestHistory.forEach(item => {
+		showQuestionInfo(item)
+        
+    })
+}
+
+function showQuestionInfo(item){
+	if(res = item?.data?.questionById){
+		// console.log(res)
+		var el = document.createElement('html')
+		el.innerHTML=res.contentsByQuestionIdList[0].textByTextId.body;
+
+		console.log(el.innerText)
+		console.table(res.assertionsByQuestionIdList)
+	}
+}

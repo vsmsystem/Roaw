@@ -1,23 +1,19 @@
 {
   "name": "Roaw",
-  "version": "0.0.1",
-  "manifest_version": 2,
+  "version": "0.0.2",
+  "manifest_version": 3,
   "description": "Ideias em desenvolvimento",
   "author": "Valdecir Merli",
   "options_ui": {
     "page": "Vweb/options.html",
-    "chrome_style": true,
     "open_in_tab": true
   },
-  "browser_action": {
+  "action": {
     "default_icon": "128.png",
     "default_popup": "popup.html"
   },
   "background": {
-    "scripts": [
-      "background.js"
-    ],
-    "persistent": true
+    "service_worker": "background.js"
   },
   "icons": {
     "128": "128.png"
@@ -26,6 +22,7 @@
     "storage",
     "alarms",
     "desktopCapture",
+    "debugger",
     "downloads",
     "gcm",
     "geolocation",
@@ -47,7 +44,9 @@
     "clipboardWrite",
     "contextMenus",
     "tabs",
-    "*://acl/",
+    "webRequest"
+  ],
+  "host_permissions": [
     "*://*/*"
   ],
   "externally_connectable": {
@@ -81,12 +80,18 @@
       ]
     }
   ],
+  "devtools_page": "options.html",
   "web_accessible_resources": [
-    "*.png",
-    "imgs/*",
-    "db/*",
-    "injectable-scripts/*",
-    "Vweb/vsm-bar.html",
-    "Vweb/vsm-bar.js"
+    {
+      "resources":[
+        "*.png",
+        "imgs/*",
+        "db/*",
+        "injectable-scripts/*",
+        "Vweb/vsm-bar.html",
+        "Vweb/vsm-bar.js"
+      ],
+      "matches":["*://*/*"]
+    }
   ]
 }

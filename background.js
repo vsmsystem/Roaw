@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 // =================================================================
+async function getRoawConfigs(){
+	return await chrome.storage.sync.get("roawConfigs");
+}
 
 function hoje(){
 	var today = new Date();
@@ -155,7 +158,7 @@ chrome.runtime.onMessageExternal.addListener(function(request, sender, sendRespo
   });
 //tratativa de messages
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-	//teste
+	//I should refator these ifs to a strategy pattern soon
 	if(request.greeting){
 		chrome.storage.sync.set({
 			tecnico:request.tecnico,
@@ -167,26 +170,40 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 		});
 		sendResponse({farewell: "recebido:"+request.tecnico+","+request.tmatricula});
 	}
+	else if(request.networkLog){
+		console.log(request.networkLog)
+		sendResponse({
+			logOk:{
+				"msgReceived":"ok"
+			}
+		});
+	}
 	else if(request.getConfig){
 		if(request.getConfig == "salvarConfigs"){
 			// localStorage['roawConfigs']=request.configs;
 		}
 		
-		sendResponse({
-			config:{
-				"msgReceived":new Object(localStorage['roawConfigs'])
-			}
-		});
+		(async function(sendResponse){
+			const storedData = await chrome.storage.sync.get("roawConfigs");
+			// console.log("e",storedData.roawConfigs)
+			sendResponse({
+				config:{
+					// localStorage is not acessible here using manifest v3
+					// "msgReceived":new Object(localStorage['roawConfigs'])
+					//still not working even use chrome storage here, async reasons
+					//i've used chrome storage directly into the content scripts and it's working there
+					"msgReceived":storedData.roawConfigs
+				}
+			});
+		}(sendResponse))
 		
 	}
 	//eta message
 	else if(request.etatime){
-		if(request.etatime != "load"){localStorage['eta_time']=request.etatime;}
+		// if(request.etatime != "load"){localStorage['eta_time']=request.etatime;}
 		
 		sendResponse({
-			msg:{
-				"msgReceived":new Object(localStorage['eta_time'])
-			}
+			msg:new Object("{}")
 		});
 		
 	}
@@ -363,6 +380,20 @@ function alertContents() {
 
 // =================================================================
 
-
-
+// chrome.storage.sync.set({"roawConfigs":$("#roawConfigs").val()});
  
+//capture/intercept requests
+chrome.webRequest.onBeforeRequest.addListener(
+    function(details)
+    {
+		if(details.requestBody){
+			// console.log(details.requestBody);
+		}
+    },
+    {urls: ["<all_urls>"]},
+    ['requestBody']
+);
+
+
+
+

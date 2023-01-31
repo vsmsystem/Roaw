@@ -695,13 +695,14 @@
 	<section>
 		<div style="width: 29%;float:left;margin:2px">
 			<ul class="list-group">
-				<button type="button" class="list-group-item" id="menuTask"><span class="badge">0</span> Tarefas</button>
-				<button type="button" class="list-group-item" id="menuSchedule"><span class="badge">0</span> Agenda</button>
-				<button type="button" class="list-group-item" id="menuDoc"><span class="badge">0</span> Documentação</button>
-				<button type="button" class="list-group-item" id="menuTest"><span class="badge">0</span> Testes</button>
-				<button type="button" class="list-group-item" id="menuInputs"><span class="badge">0</span> Inputs</button>
-				<button type="button" class="list-group-item" id="menuPlanning"><span class="badge">0</span> Planning</button>
-				<button type="button" class="list-group-item" id="menuConfig"> Config</button>
+				<button type="button" class="sideMenu list-group-item" view="task"><span class="badge">0</span> Tarefas</button>
+				<button type="button" class="sideMenu list-group-item" view="schedule"><span class="badge">0</span> Agenda</button>
+				<button type="button" class="sideMenu list-group-item" view="doc"><span class="badge">0</span> Documentação</button>
+				<button type="button" class="sideMenu list-group-item" view="test"><span class="badge">0</span> Testes</button>
+				<button type="button" class="sideMenu list-group-item" view="inputs"><span class="badge">0</span> Inputs</button>
+				<button type="button" class="sideMenu list-group-item" view="planning"><span class="badge">0</span> Planning</button>
+				<button type="button" class="sideMenu list-group-item" view="network"><span class="badge">0</span> Network</button>
+				<button type="button" class="sideMenu list-group-item" view="config"> Config</button>
 
 			</ul>
 		</div>
@@ -714,6 +715,9 @@
 						<span class="glyphicon glyphicon-info-sign"></span> <span id="url-aba"></span>
 					</div>
 					<div class="panel-body">
+						<div id="network" class="screens" style="display: none;">
+							teste _______________
+						</div>
 						<div id="config" class="screens">
 							<div class="row">
 								<div class="col-xs-12">
@@ -792,6 +796,7 @@
 	</section>
 
 	<script src='popup.js'></script>
+	<script src='injectable-scripts/roaw-functions.js'></script>
 </body>
 
 </html>

@@ -8,12 +8,20 @@ const {host, hostname, href, origin, pathname, port} = document.location; //matc
 getFromStorage();
 setVsmId(extVSMonitorId);
 
-chrome.runtime.sendMessage({
-	getConfig: "all"
-}, function (response) {
+
+(async function(){
+	let response = await chrome.runtime.sendMessage({
+		getConfig: "all"
+	})
 	configs = {};
+	// console.log("getConfig",response)
+
+	novoModo = await chrome.storage.sync.get("roawConfigs");
+	// console.log("novoModo",novoModo.roawConfigs)
+
 	try{
-		configs = JSON.parse(response.config.msgReceived)
+		// configs = JSON.parse(response.config.msgReceived)
+		configs = JSON.parse(novoModo.roawConfigs)
 	}catch(errorMsg){
 		throw new Error("Erro: "+errorMsg)
 	}
@@ -31,12 +39,12 @@ chrome.runtime.sendMessage({
 	}
 
 	console.log("roawConfig",{
-		"raw":response,
+		"raw":novoModo,
 		"parsed":configs,
 		"selected":hostAlias,
 		"params":configs[hostAlias]
 	})
-});
+}())
 
 if (seletorCodigo.indexOf("atlassian.net") > -1 ) {
 	var s = document.createElement("script");
@@ -57,24 +65,26 @@ function injectScript(scriptFile){
 }
 
 //Message
-function roaw_message_load() {
-	setTimeout(function () {
-		// console.log("msgSend - " + localStorage['time']);
-		chrome.runtime.sendMessage({
-			etatime: "load"
-		}, function (response) {
-			// console.log(response.msg);
-			const received = JSON.parse(response.msg.msgReceived)
-			received.forEach((e,i)=>{
-				//ja funciona, mas é ideia criar a opção de habilitar e desabilitar a função de preencher inputs
-				// if(e.id) document.getElementById(e.id).value = e.value
-			})
+async function roaw_message_load() {
 
-		});
+	const response = await chrome.runtime.sendMessage({
+		etatime: "load"
+	});
+	// console.log("messageReturned",response);
+
+	  
+	// function (response) {
+	// 	// console.log(response.msg);
+	// 	const received = JSON.parse(response.msg.msgReceived)
+	// 	received.forEach((e,i)=>{
+	// 		//ja funciona, mas é ideia criar a opção de habilitar e desabilitar a função de preencher inputs
+	// 		// if(e.id) document.getElementById(e.id).value = e.value
+	// 	})
+
+	// }
 
 		
 
-	}, 1);
 }
 
 function roaw_message_event() {
@@ -95,12 +105,16 @@ function roaw_message_event() {
 		}
 	}
 
-
+	try{
 		chrome.runtime.sendMessage({
 			etatime: JSON.stringify(fullList)
 		}, function (response) {
 			//nada
 		});
+	}catch(e){
+		console.info("Error",e)
+	}
+
 }
 
 function getFromStorage() {
