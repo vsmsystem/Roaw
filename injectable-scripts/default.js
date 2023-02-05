@@ -170,9 +170,19 @@
 			}
 			
 			.night #page-wrapper{
-			background-color: #222;
 			border-left:none;
+			background-color: #222;
+			background-image: url(https://cdn.wallpapersafari.com/31/90/apuLOm.jpeg);
+			background-repeat: no-repeat;
+			background-size: cover;
+		    background-attachment: fixed;
 			}
+
+			.night table{
+				opacity:0.9;
+			}
+
+
 			.night textarea:focus,
 			.night select:focus,
 			.night input[type="text"]:focus,
@@ -193,6 +203,7 @@
 			border-color: #0f0;
 			box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px #0f0;
 			outline: 0 none;
+			opacity:0.9;
 			}
 			
 			.night textarea,
@@ -218,6 +229,7 @@
 			background-color: #111;
 			border: solid 1px #333;
 			color:#ccc;
+			opacity:0.9;
 			}
 			
 			.night .table-bordered {
@@ -275,6 +287,7 @@
 			.night .well {
 			background-color: #333;
 			border: 1px solid #000;
+			opacity: 0.9;
 			}
 			
 			.night .notificacoes {
@@ -430,6 +443,7 @@
 			}
 			.night .panel{
 				background-color: #000;
+				opacity:0.9;
 			} 
 
 			.night .nav-tabs {
@@ -787,12 +801,62 @@ function nomeFantasiaClienteAtual(){
 		// console.log(localStorage['time']);
 	}
 
+
+
 	if(login100more = document.querySelector(".login100-more")){
 		document.querySelector(".login100-more").innerHTML=`
 		<video class="video-intro" autoplay="" loop="" muted="">
 		<source src="https://mdbootstrap.com/img/video/animation-intro.mp4" type="video/mp4">
 		</video>
 		`;
+	}
+
+	function setLoginBackground(url){
+		if(login100more = document.querySelector(".login100-more")){
+			document.querySelector(".login100-more").innerHTML=`
+			<video class="video-intro" autoplay="" loop="" muted="">
+			<source src="${url}" type="video/mp4">
+			</video>
+			`;
+		}else{
+			console.log("erro")
+		}
+	}
+
+	function loginBackgroundRotator(){
+		var init = 1;
+		var limit = 27;
+		setInterval(function(){
+			var ajuste = init.toString();
+			setLoginBackground(`./videos/${ajuste}.mp4`)
+			if(init == limit){init = 0}
+			init++;
+		},3000)
+	}
+
+	window.initVid = 0;
+	window.limitVid = 27;
+	window.addEventListener("keydown", e => {
+		if(e.key == "Alt"){
+			if(e.ctrlKey){
+				ajeita()
+			}
+			var ajuste = initVid.toString();
+			console.log(ajuste)
+			setLoginBackground(`./videos/${ajuste}.mp4`)
+			if(initVid == limitVid){initVid = 0}
+			initVid++;
+		}
+	})
+	function loginBackgroundRotator(){
+		var init = 1;
+		var limit = 27;
+		setInterval(function(){
+			var ajuste = init.toString();
+			setLoginBackground(`./videos/${ajuste}.mp4`)
+			if(init == limit){init = 0}
+			init++;
+		},3000)
 	}
 
 	
@@ -837,3 +901,249 @@ function nomeFantasiaClienteAtual(){
 	}
 
     
+	
+	function ajeita(){
+	if(!document.querySelector("#browserAutoFill")){
+		$("head").append(`
+		<style id="browserAutoFill">
+			/* Change the white to any color */
+			input:-webkit-autofill,
+			input:-webkit-autofill:hover,
+			input:-webkit-autofill:focus,
+			input:-webkit-autofill:active,
+			input:-webkit-autofill,
+			input:-internal-autofill-selected,
+			input:-internal-autofill-previewed {
+				-webkit-box-shadow: 0 0 0 30px black inset !important; 
+				-webkit-text-fill-color: rgba(255, 255, 255, 0.7) !important; 
+				color: black !important; 
+				appearance: menulist-button; 
+				background-image: none !important; 
+				background-color: -internal-light-dark(rgb(232, 240, 254), rgba(70, 90, 126, 0.4)) !important; 
+				-webkit-animation-delay: 1s; 
+				/* Safari support - any positive time runs instantly */
+				-webkit-animation-name: autofill; 
+				-webkit-animation-fill-mode: both; 
+				-webkit-background-clip: text; 
+				-webkit-transition: "color 99999s ease-out, background-color 9999s ease-out"; 
+				-webkit-transition-delay: 99999s;
+				/* 
+					Curioiso... o autocompletar do chrome cria um estilo de user agent em alguns inputs, fica uma cor que incomoda quando em contraste com certas estilizações, corrigir isso, essa foi a unica coisa que funcionou para o meu caso.
+					Curious... chrome autofill creates a style sheet for some inputs with a color which bother when contrasts with certain other styles, thats the only way I was able to get it done
+				*/
+			}
+		</style>
+		`);
+	}
+	$("head").append(`
+		<style>
+		.login100-form-title, 
+		.imgAjuste, 
+		.login100-form, 
+		.login100-form, 
+		.wrap-login100, 
+		.wrap-login100, 
+		.limiter, 
+		.container-login100 {
+			background:none;
+		}
+
+		input{
+			background-color: transparent;
+		} 
+		.validate-input, .has-val, .input100{
+			/* background-color: black; */
+			border:none;
+			border-radius:15px;
+		}
+		.wrap-input100{
+			background-color: black;
+			border:solid 1px rgba(255, 210, 10, 0.5);
+			border-radius:15px;
+		} 
+
+
+		.nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
+			color: #ffffff;
+			background-color: #4c4c4c;
+			border-color: #000;
+		}
+		.nav-tabs .nav-link {
+			/* border: 1px solid transparent; */
+			border-radius: 10px;
+		}
+		.nav-tabs {
+			border-bottom: none;
+		}
+
+		.dbutton{
+			border:solid 1px;
+			width:64px;
+			height:64px;
+			border-radius:5px;
+			cursor:pointer;
+			display:inline-block;
+		}
+
+	
+		.sliders label{
+			font-weight:900;
+			color:#fff;
+		}
+
+		</style>
+	`);
+
+
+
+	if($("#myTab .dev").length==0){
+		$("#myTab").append(`
+		<li class="nav-item dev">
+			<a class="nav-link" id="login_condutor-tab" data-toggle="tab" href="#login_desenvolvedor" role="tab" aria-controls="login_desenvolvedor" aria-selected="false" aria-expanded="true">Desenvolvedor</a>
+		</li><br><br>
+		`)
+		$("#myTabContent").append(`
+		<div class="tab-pane fade" id="login_desenvolvedor" role="tabpanel" aria-labelledby="login_desenvolvedor-tab" aria-expanded="false">
+			<div>
+			<img src="https://avatars.githubusercontent.com/u/19872706?v=4" class="rounded" style="
+						position: relative;
+						width: 48px;
+						height: 48px;
+						overflow-x: hidden;
+					">
+			</div>
+			<hr>
+
+			<!-- https://css.glass/ -->
+			<section class="sliders">
+				<label>Presets</label>
+				<div class="dbutton" 
+					style="border:solid 1px rgba(255, 210, 10, 0.5);background-color:black;" 
+					onclick="btnSetGlass(this)">
+				</div>
+
+				<div class="dbutton" 
+					style="background:rgba(0, 0, 200, 0.2);border:1px solid rgba(255, 210, 210, 0.7)" 
+					onclick="btnSetGlass(this)">
+				</div>
+
+				<div class="dbutton" 
+					style="background:rgba(254, 191, 16, 0.25);border:1px solid rgba(16, 27, 254, 0.42)" 
+					onclick="btnSetGlass(this)">
+				</div>
+
+				<div class="dbutton" 
+					style="background:rgba(255, 255, 255, 0.1);border:1px solid rgba(255, 255, 255, 0.69)" 
+					onclick="btnSetGlass(this)">
+				</div>
+			</section>
+
+			<hr>
+			
+
+
+			<section class="sliders">
+				
+				<label>Background</label>
+				<input type="color" class="form-control-color" id="bgColor" value="#000000" title="Choose your color">
+				<input type="range" class="custom-range mouseMoveGlass "min="0" max="1" step="0.1" id="transparencySliderBg" >
+				<input type="range" class="custom-range mouseMoveGlass" min="0" max="20" id="blurSlider">
+				
+				<label>Border</label>
+				<input type="color" class="form-control-color" id="borderColor" value="#aaaaaa" title="Choose your color">
+				<input type="range" class="custom-range mouseMoveGlass "min="0" max="1" step="0.1" id="transparencySliderBorder" >
+
+			</section>
+
+
+			
+
+		</div>
+		`)
+	}
+
+
+	$(".mouseMoveGlass").on("mousemove change mousedown touchstart blur focus",function(e){
+		if(e.originalEvent.buttons>0 || e.type=="change"){
+			glassModifier(e);
+		}
+	});
+	document.querySelector("#bgColor").addEventListener("input", glassModifier, false);
+	document.querySelector("#borderColor").addEventListener("input", glassModifier, false);
+	
+
+	document.querySelector(".imgAjuste").src = "./img/Logo_LW_Branco.png"
+	document.querySelector(".login100-more").remove()//parte da direita e video
+	document.querySelector(".login100-form-title").style="width:64px;height:64px;margin-bottom:35px;"; //imagem da logo
+	document.querySelector(".imgAjuste").style="width:64px;height:64px;margin-bottom:100px;"; //imagem da logo
+	document.querySelector(".login100-form").style="padding:20px;background-color:none;"
+	document.querySelector(".login100-form").style.background="transparent"
+	document.querySelector(".wrap-login100").style.background="transparent"
+	document.querySelector(".container-login100").style.background="transparent"
+
+	document.querySelector(".wrap-login100").style="";
+	// box-shadow:0 10px 16px 0 rgba(0,0,0,0.5),0 6px 20px 0 rgba(0,0,0,0.19) !important;
+	setGlass();
+	document.body.click();
+	// document.querySelector(".wrap-login100").style="width:500px;height:;200px;position:fixed;border:dolid 1px"
+	appendBg();
+	
+}
+function glassModifier(e){
+	// console.log(e)
+	let obj = {};
+	var hexBg = document.querySelector("#bgColor").value
+	var hexBorder = document.querySelector("#borderColor").value
+	var bgOpacity = document.querySelector("#transparencySliderBg").value
+	var borderOpacity = document.querySelector("#transparencySliderBorder").value
+	var blur = document.querySelector("#blurSlider").value
+	var rgbaBackground = 'rgba(' + parseInt(hexBg.slice(-6, -4), 16) + ',' + parseInt(hexBg.slice(-4, -2), 16) + ',' + parseInt(hexBg.slice(-2), 16) + ',' + bgOpacity + ')';
+	var rgbaBorder = 'rgba(' + parseInt(hexBorder.slice(-6, -4), 16) + ',' + parseInt(hexBorder.slice(-4, -2), 16) + ',' + parseInt(hexBorder.slice(-2), 16) + ',' + borderOpacity + ')';
+
+
+	obj.blur = blur
+	obj.background = rgbaBackground
+	obj.border = "solid 1px "+rgbaBorder
+
+	// console.log("change",obj)
+	setGlass(obj)
+
+}
+function btnSetGlass(el){
+	let obj = {};
+	obj.background = el.style.background;
+	obj.border = el.style.border;
+	
+	setGlass(obj)
+}
+function setGlass(obj = {}){
+	let glass= {};
+	glass.background = obj.background || "rgba(0, 0, 0, 0.69)"
+	glass.border = obj.border || "1px solid rgba(255, 210, 10, 0.7)"
+	glass.blur = obj.blur || 5;
+
+	document.querySelector(".limiter").style=`width: 500px;
+	height: 90%;overflow: hidden;position:fixed;left:30px;top:30px;z-index:11;
+
+	/* From https://css.glass */
+	background: ${glass.background};
+	border: ${glass.border};
+	border-radius: 16px;
+	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+	backdrop-filter: blur(${glass.blur}px);
+	-webkit-backdrop-filter: blur(${glass.blur}px);
+	
+	`
+}
+
+function appendBg(){
+	$(document.body).append(`
+	<div class="login100-more" style="background-image: url('login/images/bg-01.jpg');position: fixed;top: 0;right: 0;width: 100%;height: 100%;z-index: 9;">
+		<video id="videoIntro" class="video-intro" autoplay="" loop="" muted="">
+		<source src="https://mdbootstrap.com/img/video/animation-intro.mp4" type="video/mp4">
+		</video>
+		</div>
+	`);
+
+}
+
