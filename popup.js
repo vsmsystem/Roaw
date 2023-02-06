@@ -7,44 +7,63 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 //https://avatars.githubusercontent.com/vsmsystem
 //https://raw.githubusercontent.com/vsmsystem/Roaw/main/manifest.json
 
-const defaultRoawConfigs = `{
-    "github" : "vsmsystem",
-    "all" : {},
-    "default": {
-        "vsmbar" : true,
-        "inject" : ["default.js"]
-    },
-    "www.vsmsystem.com" : {
-        "vsmbar" : true,
-        "inject" : ["default.js"]
-    },
-    "localhost:8006" : "default",
-    "localhost:9001" : "default",
-    "www.etc.com.br" : "default"
-}`;
+function setDefaultConfig(){
+    const defaultRoawConfigs = `{
+        "github" : "vsmsystem",
+        "all" : {},
+        "default": {
+            "vsmbar" : true,
+            "inject" : ["default.js"]
+        },
+        "www.vsmsystem.com" : {
+            "vsmbar" : true,
+            "inject" : ["default.js"]
+        },
+        "localhost:8006" : "default",
+        "localhost:9001" : "default",
+        "www.etc.com.br" : "default"
+    }`;
+    chrome.storage.sync.set({"roawConfigs":defaultRoawConfigs});
+    console.log("default", defaultRoawConfigs)
+    return defaultRoawConfigs;
+}
+
 
 async function getRoawConfigs(){
-    return await chrome.storage.sync.get("roawConfigs");
+    try{
+        return await chrome.storage.sync.get("roawConfigs");
+    }catch(e){}
 }
 
 async function refreshRoawConfigs(){
-    let conf = await getRoawConfigs();
-    $("#roawConfigs").val(conf.roawConfigs);
+    try{
+        let conf = await getRoawConfigs();
+        $("#roawConfigs").val(conf.roawConfigs);
+    }catch(e){
+        chrome.storage.sync.get("roawConfigs", data =>{
+            console.log("data",data)
+            if(!data.roawConfigs){
+                data.roawConfigs= setDefaultConfig()
+            }
+            $("#roawConfigs").val(data.roawConfigs);
+        })
+    }
 }
 
+refreshRoawConfigs();
 
-$(async function(){
-    let conf = await getRoawConfigs();
-    if(!conf.roawConfigs || conf.roawConfigs == ""){
-        setDefaultConfig(defaultRoawConfigs);
-        conf = await getRoawConfigs();
-    }
-
-    // console.log("stored roawConfigs", conf);
-    // console.log("parsed roawConfigs", JSON.parse(conf.roawConfigs))
-    $("#roawConfigs").val(conf.roawConfigs);
-
-})
+// $(async function(){
+//     let conf = await getRoawConfigs();
+//     if(conf){
+//         if(!conf.roawConfigs || conf.roawConfigs == ""){
+//             setDefaultConfig(defaultRoawConfigs);
+//             conf = await getRoawConfigs();
+//         }
+//         $("#roawConfigs").val(conf.roawConfigs);
+//     }else{
+//         refreshRoawConfigs()
+//     }
+// })
 
 // document.getElementById("btn-adjust")
 $("#ajustartema").on("click", function () {
@@ -72,10 +91,7 @@ $(".sideMenu").on("click", function (e) {
 });
 
 
-function setDefaultConfig(){
-    chrome.storage.sync.set({"roawConfigs":defaultRoawConfigs});
-    console.log("default", defaultRoawConfigs)
-}
+
 
 
 async function msgTest(text) {

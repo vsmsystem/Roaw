@@ -225,27 +225,27 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
  */
 
 //Menu  ims 248/v5 ==================================================
-// chrome.contextMenus.create({
-// 	title: "Texto selecionado: '%s'",
-// 	contexts:["selection"],
-// 	id:'imsid'
-// });
+chrome.contextMenus.create({
+	title: "Texto selecionado: '%s'",
+	contexts:["selection"],
+	id:'imsid'
+});
 
-// chrome.contextMenus.onClicked.addListener(function(info, tab){
-// 	//console.log(info);
-// 	if(info.menuItemId = 'imsid') {
-// 		var selection = info.selectionText;
-// 		var uri = 'http://vsmsystem.com/vsm/ims/?imsid='+selection;
-// 		//console.log(encodeURI(uri));
+chrome.contextMenus.onClicked.addListener(function(info, tab){
+	//console.log(info);
+	if(info.menuItemId = 'imsid') {
+		var selection = info.selectionText;
+		var uri = `chrome-extension://${chrome.runtime.id}/Vweb/options.html?param=${selection}`
+		//console.log(encodeURI(uri));
 		
-// 		chrome.tabs.create({'url': encodeURI(uri)}, function(tab) {
-// 			//console.log(tab);
-// 			//chrome.tabs.executeScript(integer tabId, object details, function callback)
-// 			//window.location.href = encodeURI(uri);
-// 		});
-// 	}
+		chrome.tabs.create({'url': encodeURI(uri)}, function(tab) {
+			//console.log(tab);
+			//chrome.tabs.executeScript(integer tabId, object details, function callback)
+			//window.location.href = encodeURI(uri);
+		});
+	}
 	
-// });
+});
 //==================================================================
 
 if('menus'=='ativado'){

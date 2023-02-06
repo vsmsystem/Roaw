@@ -13,37 +13,46 @@ setVsmId(extVSMonitorId);
 	let response = await chrome.runtime.sendMessage({
 		getConfig: "all"
 	})
-	configs = {};
-	// console.log("getConfig",response)
-
-	novoModo = await chrome.storage.sync.get("roawConfigs");
-	// console.log("novoModo",novoModo.roawConfigs)
-
+	
 	try{
-		// configs = JSON.parse(response.config.msgReceived)
-		configs = JSON.parse(novoModo.roawConfigs)
-	}catch(errorMsg){
-		throw new Error("Erro: "+errorMsg)
+		stringfiedConfigs = await chrome.storage.sync.get("roawConfigs")
+		console.log("async", stringfiedConfigs.roawConfigs)
+		runRoawConfigs(stringfiedJson.roawConfigs)
+	}catch(ee){
+		chrome.storage.sync.get("roawConfigs",function(data){
+			console.log("callback", data)
+			runRoawConfigs(data.roawConfigs)
+		});
 	}
 	
-	if(configs[host]){
-		var hostAlias = (typeof configs[host] == "string") ? configs[host] : host;
-		if(configs[hostAlias]?.vsmbar){
-			injectScript("default.js");
-			injectScript("vsm-bar.js");
-			//exemplo de como mandar mensagem do arquivo injetado para o background.js da extensão
-			window.addEventListener("load", roaw_message_load, false);
-			document.addEventListener("keyup", roaw_message_event, false);
-			document.addEventListener("mouseup", roaw_message_event, false);
-		}
-	}
 
-	console.log("roawConfig",{
-		"raw":novoModo,
-		"parsed":configs,
-		"selected":hostAlias,
-		"params":configs[hostAlias]
-	})
+	function runRoawConfigs(stringfiedJson){
+		configs = {};
+		try{
+			configs = JSON.parse(stringfiedJson)
+		}catch(errorMsg){
+			throw new Error("Erro: "+errorMsg)
+		}
+		
+		if(configs[host]){
+			var hostAlias = (typeof configs[host] == "string") ? configs[host] : host;
+			if(configs[hostAlias]?.vsmbar){
+				injectScript("default.js");
+				injectScript("vsm-bar.js");
+				//exemplo de como mandar mensagem do arquivo injetado para o background.js da extensão
+				window.addEventListener("load", roaw_message_load, false);
+				document.addEventListener("keyup", roaw_message_event, false);
+				document.addEventListener("mouseup", roaw_message_event, false);
+			}
+		}
+	
+		console.log("roawConfig",{
+			"raw":stringfiedJson,
+			"parsed":configs,
+			"selected":hostAlias,
+			"params":configs[hostAlias]
+		})
+	}
 }())
 
 if (seletorCodigo.indexOf("atlassian.net") > -1 ) {
