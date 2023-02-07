@@ -4,6 +4,16 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     $("#url-aba").html(currentTab.url)// currentTab.url tem propriedades como currentTab.id, currentTab.url, etc
 });
 
+document.querySelector("#inputTesting").addEventListener("keydown",(e)=>{
+    console.log(e.key)
+    if(e.key=="Enter"){
+        msgTest({
+            "title":"Teste",
+            "message":document.querySelector("#inputTesting").value
+        })
+    }
+})
+
 //https://avatars.githubusercontent.com/vsmsystem
 //https://raw.githubusercontent.com/vsmsystem/Roaw/main/manifest.json
 
@@ -28,6 +38,18 @@ function setDefaultConfig(){
     return defaultRoawConfigs;
 }
 
+function notify(titulo, mensagem, imagem) {
+	Notification.requestPermission(function () {
+		var notification = new Notification(titulo, {
+			icon: 'chrome-extension://' + chrome.runtime.id + '/Vweb/images/notify/coin-kk.png',
+			body: mensagem,
+			requireInteraction: true
+		});
+		notification.onclick = function () {
+			//func
+		}
+	});
+}
 
 async function getRoawConfigs(){
     try{
@@ -94,10 +116,10 @@ $(".sideMenu").on("click", function (e) {
 
 
 
-async function msgTest(text) {
+async function msgTest(obj) {
 
 	const response = await chrome.runtime.sendMessage({
-		responseBodyTest: text
+		createNotification: obj
 	});
 	console.log("messageReturned",response);
 

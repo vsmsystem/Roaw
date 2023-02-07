@@ -163,7 +163,7 @@ var version = "1.0";
 //         }, version, onAttach.bind(null, currentTab.id));
 //     }
 // )
-function getTabs(string){
+function getTabs(string, debug = false){
 	var currentTab;
 	var version = "1.0";
 
@@ -179,6 +179,10 @@ function getTabs(string){
 					console.log(t.id, t)
 					window.currentTab={}
 					window.currentTab.id=t.id
+					if(debug){
+						console.log("Debug", t.id, t)
+						activateDebug(t.id)
+					}
 				}
 
 			}

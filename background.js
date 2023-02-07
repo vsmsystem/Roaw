@@ -117,6 +117,89 @@ chrome.runtime.onInstalled.addListener(function(a){
 	
 	
 })
+
+function richNotification(obj = {}) {
+
+    var icon = `chrome-extension://${chrome.runtime.id}/128din2.png` 
+	var title = obj.title || "..."
+	var message = obj.message || "..."
+    /* I have to create:
+
+    {
+        icon
+        title
+        message
+        contextMessage
+        imageUrl | items | progress
+        buttons
+        callbackFirstButton
+        callbackSecondButton
+        callbackMsgOnClicked
+        callbaclMsgOnClosed
+    }
+
+    */
+
+    const opt = {
+        type: "image",
+        title,
+        message,
+        contextMessage: "...",
+        requireInteraction: true,
+        iconUrl: icon,
+        imageUrl: 'https://i.pinimg.com/736x/8c/4b/a9/8c4ba995d485d2bb5ae3aa639e5978cf.jpg',
+        priority: 2,
+        buttons: [
+            {
+                title: 'Yes'
+            },
+            {
+                title: 'No'
+            }
+        ]
+    }
+
+    var typeProgress = {
+        type: "progress",
+        progress: 42
+    }
+
+    var typeList = {
+        type: "list",
+        items: [
+            { title: "Item1", message: "This is item 1." },
+            { title: "Item2", message: "This is item 2." },
+            { title: "Item3", message: "This is item 3." }
+        ]
+    }
+    var typeImg = {
+        type: "image",
+        imageUrl: 'https://i.pinimg.com/736x/8c/4b/a9/8c4ba995d485d2bb5ae3aa639e5978cf.jpg'
+    }
+
+    chrome.notifications.create("teste", opt, function(id) {
+        myNotificationID = id;
+    });
+
+    chrome.notifications.onButtonClicked.addListener(function(notificationId, buttonIndex) {
+        if (notificationId === myNotificationID) {
+            if (buttonIndex === 0) {
+                //callback first button
+            } else if (btnIdx === 1) {
+                //callback second button
+            }
+        }
+    });
+
+    chrome.notifications.onClicked.addListener(function(e){
+        //
+    })
+
+    chrome.notifications.onClosed.addListener(function(e){
+        //
+    })
+}
+
 //tratativa de messages EXTERNAS!!!!
 chrome.runtime.onMessageExternal.addListener(function(request, sender, sendResponse) {
 	alert(sender.status)
@@ -159,7 +242,13 @@ chrome.runtime.onMessageExternal.addListener(function(request, sender, sendRespo
 //tratativa de messages
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	//I should refator these ifs to a strategy pattern soon
-	if(request.greeting){
+
+	if(request.createNotification){
+		console.log("createNotification", request.createNotification)
+		richNotification(request.createNotification)
+		// sendResponse({notified:"maybe"})
+	}
+	else if(request.greeting){
 		chrome.storage.sync.set({
 			tecnico:request.tecnico,
 			instancia: request.greeting,
