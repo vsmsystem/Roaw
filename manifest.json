@@ -21,6 +21,9 @@
   "permissions": [
     "storage",
     "alarms",
+    "declarativeContent",
+    "activeTab",
+    "scripting",
     "desktopCapture",
     "debugger",
     "downloads",
@@ -47,7 +50,12 @@
     "webRequest"
   ],
   "host_permissions": [
-    "*://*/*"
+    "*://*/*",
+    "<all_urls>"
+  ],
+  "optional_permissions":[
+    "activeTab",
+    "scripting"
   ],
   "externally_connectable": {
     "ids": [

@@ -694,7 +694,7 @@
 	<div style="height:55px;">&nbsp;</div>
 	<section>
 		<div style="width: 29%;float:left;margin:2px">
-			<ul class="list-group">
+			<ul id="sideMenu" class="list-group">
 				<button type="button" class="sideMenu list-group-item" view="task"><span class="badge">0</span> Tarefas</button>
 				<button type="button" class="sideMenu list-group-item" view="schedule"><span class="badge">0</span> Agenda</button>
 				<button type="button" class="sideMenu list-group-item" view="doc"><span class="badge">0</span> Documentação</button>
@@ -714,7 +714,10 @@
 					<div class="panel-heading">
 						<span class="glyphicon glyphicon-info-sign"></span> <span id="url-aba"></span>
 					</div>
-					<div class="panel-body">
+					<div id="popupContent" class="panel-body">
+						<div id="inputs" class="screens" style="display: none;">
+							
+						</div>
 						<div id="network" class="screens" style="display: none;">
 							teste _______________
 						</div>

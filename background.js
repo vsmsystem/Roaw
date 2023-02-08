@@ -27,7 +27,10 @@ chrome.alarms.create("timer", {delayInMinutes: 5.0, periodInMinutes: 5.0});
 chrome.alarms.onAlarm.addListener(function(e){
 	if(e.name=="timer"){
 		console.log(e);
-		if(localStorage['installcheck']!=hoje()){getCurrentVersion();localStorage['installcheck']=hoje();}
+		// if(localStorage['installcheck']!=hoje()){
+		// 	getCurrentVersion();
+		// 	localStorage['installcheck']=hoje();
+		// }
 	}
 	
 });
@@ -107,7 +110,7 @@ chrome.runtime.onInstalled.addListener(function(a){
 			
 		}
 		console.log('Install Detected');
-		localStorage['installVers']=installLogs;
+		// localStorage['installVers']=installLogs;
 
 		
 	}else{
