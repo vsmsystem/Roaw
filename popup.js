@@ -246,39 +246,46 @@ $("#roawConfigs").on("change", function () {
 });
 
 
+async function loadMergeRequests(route = null){
+
+    let mergeRequests = await getMergeRequests(route);
+    mergeRequests = mergeRequests.map(function(mr){
+        return `
+        <li class="item" style="border:solid 1px;padding:5px;margin:5px;border-radius:5px;">
+            <div class="product-img pull-left">
+                <img width="32px" height="32px" src="${mr.author.avatar_url}" alt="Product Image" style="margin-right:5px;">
+            </div>
+            <div class="product-info">
+                <a href="${mr.web_url}" target="_blank" class="product-title"> ${mr.author.name} @${mr.author.username} <br>
+                    <span class="label label-info pull-right">MR</span>
+                </a>
+                <span class="product-description">
+                    <span class="label label-default">Branch: ${mr.source_branch}</span>
+                    <span class="label label-default">MR: ${mr.title}</span>
+                </span>
+            </div>
+        </li>
+        `
+    }).join("")
+    $('#mergeRequests').html(`
+    <ul>
+    ${mergeRequests}
+    </ul>
+    `)
+}
 
 let popupModules =[
     {
         id : "mergeRequests",
         name : "Merge Requests",
         loaded: async () =>{
-            let mergeRequests = await getMergeRequests();
-            mergeRequests = mergeRequests.map(function(mr){
-                return `
-                <li class="item" style="border:solid 1px;padding:5px;margin:5px;border-radius:5px;">
-                    <div class="product-img pull-left">
-                        <img width="32px" height="32px" src="${mr.author.avatar_url}" alt="Product Image" style="margin-right:5px;">
-                    </div>
-                    <div class="product-info">
-                        <a href="${mr.web_url}" target="_blank" class="product-title"> ${mr.author.name} @${mr.author.username} <br>
-                            <span class="label label-info pull-right">MR</span>
-                        </a>
-                        <span class="product-description">
-                            <span class="label label-default">Branch: ${mr.source_branch}</span>
-                            <span class="label label-default">MR: ${mr.title}</span>
-                        </span>
-                    </div>
-                </li>
-                `
-            }).join("")
-            $('#mergeRequests').html(`
-            <ul>
-            ${mergeRequests}
-            </ul>
-            `)
+            await loadMergeRequests()
         },
-        onclick: () =>{
-            // alert("click")
+        onclick: async () =>{
+            var route = document.getElementById("inputTesting").value
+            if(route){
+                await loadMergeRequests(route)
+            }
         }
 
     }
@@ -388,9 +395,40 @@ function requestPermission(permission = null, origin = ["*://*/*"]){
 }
 
     
-async function getMergeRequests(){
+async function getMergeRequests(route = null){
     const token = await chrome.storage.sync.get("PRIVATE-TOKEN")
-    let response = await fetch("http://git.lwtecnologia.com.br/api/v4/merge_requests?scope=assigned_to_me&state=opened", {
+    /*
+    
+    https://docs.gitlab.com/ee/api/merge_requests.html
+
+    GET /merge_requests
+    GET /merge_requests?state=opened
+    GET /merge_requests?state=all
+    GET /merge_requests?milestone=release
+    GET /merge_requests?labels=bug,reproduced
+    GET /merge_requests?author_id=5
+    GET /merge_requests?author_username=gitlab-bot
+    GET /merge_requests?my_reaction_emoji=star
+    GET /merge_requests?scope=assigned_to_me
+    GET /merge_requests?search=foo&in=title 
+
+    /groups/:id/merge_requests?state=opened
+    */
+
+    let routes = {
+        "grupoLW":"/groups/30/merge_requests?state=opened",
+        "assignedToMe" : "/merge_requests?scope=assigned_to_me&state=opened"
+    }
+
+    if(!route){
+        route = routes.assignedToMe;
+    }
+
+    if(routes[route]){
+        route = routes[route]
+    }
+
+    let response = await fetch(`http://git.lwtecnologia.com.br/api/v4/${route}`, {
         "headers": {
           "Accept": "application/json",
           "PRIVATE-TOKEN":token["PRIVATE-TOKEN"]

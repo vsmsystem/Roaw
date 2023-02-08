@@ -3,6 +3,36 @@
  * Como ele executa injetado no contexto da pagina, ele acessa o HTML dela
  */
 
+if(window.location.search=='?teste'){
+    function typingLoading(inputSelector, string = null, speed = null){
+        const input = document.querySelector(inputSelector);
+        var i = 0;
+        var txt = string || "Carregando.....";
+        var originalPlaceholder = input.placeholder;
+        var speed = speed || 100;
+        input.placeholder = "";
+        function typeWriter() {
+          if (i < txt.length) {
+            input.placeholder += txt.charAt(i);
+            i++;
+            setTimeout(typeWriter, speed);
+          }else{
+              setTimeout(function(){
+                  input.placeholder=originalPlaceholder
+              },5000)
+          }
+        }
+        typeWriter()
+      
+      }
+    var startingTest = 0;
+    document.querySelectorAll("input").forEach(input=>{
+        startingTest+=50;
+        setTimeout(()=>{
+            if(input.id) typingLoading(`#${input.id}`)
+        },startingTest);
+    })
+}
 
 function DOMtoString(document_root) {
      // Obter a arvore dom da pagina na aba ativa (a que o usuario está)
