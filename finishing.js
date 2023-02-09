@@ -138,7 +138,7 @@ function setVsmId(vsmid){
 	var $wrapperX3 = document.querySelector('body');
 	$wrapperX3.setAttribute("vsmid",vsmid);
 	HTMLNovoX3 = ''
-		+ '<input type="hidden" id="vsmid" value="' + vsmid + '" />'
+		+ '<roaw style="display:none" id="vsmid" >'+vsmid+'</roaw>'
 		+ '<div id="vsmonitorbar" style="display:none;position:fixed;left:50%;top:0px;margin-left:-150px;width:300px;height:25px;background-color:#999999;z-index:9999; background-image:url(\'https://www.packtpub.com/graphics/9781783283415/graphics/3415OS_01_11.jpg\');">&nbsp;</div>'
 		+ '';
 	$wrapperX3.insertAdjacentHTML('afterbegin', HTMLNovoX3);

@@ -599,7 +599,7 @@ const fullHTML = `
 					</path>
 				</svg>
 
-				<span class="sf-toolbar-value">Hidden</span>
+				<span class="sf-toolbar-value">Inputs</span>
 				<span class="sf-toolbar-label" id = "hiddenCounter">-</span>
 			</div>
 		       
@@ -1370,20 +1370,28 @@ async function logar(){
  function showHiddenInputs(showConsole){
     const inputs = [];
     document.querySelectorAll("input").forEach(i => {
-        if (i.type=="hidden") {
+        inputs.push(i)
+        if (i.type=="hidden" && i?.id != "vsmid" ) {
+            hiddenDetected = true;
             if (showConsole) {console.log(i)}
-            inputs.push(i)
         }
     });
+
+    
     const mappedInputs = inputs.map(function(mi){
         let id=null,name=null,value=null;
-        id = (mi?.id)? `ID <b style="color:green"> ${mi?.id} </b>` : ""
-        name = (mi?.name)? `NAME <b style="color:green"> ${mi?.name} </b>`:""
-        value = (mi?.value)? `VALUE <b style="color:orange"> ${mi?.value} </b>`:''
+        type = (mi?.type=='hidden')? `<b style="color:#f00" title="Type"> ${mi?.type} </b>`:`<b style="color:white" title="Type"> ${mi?.type} </b>`
+        id = (mi?.id)? `<b style="color:#0d0"  title="ID"> ${mi?.id} </b>` : ""
+        name = (mi?.name)? `<b style="color:#090" title="Name"> ${mi?.name} </b>`:""
+        value = (mi?.value)? `<b style="color:orange;background-color:#000;"  title="Value"> ${mi?.value} </b>`:''
         
-        return `<div>${id} ${name} [${value}]</div>`
+        return `<div>${type}, ${id},  ${name}, ${value}</div>`
     }).join("")
-
+    
+    if (hiddenDetected){
+        document.querySelector("#hiddenInputs").parentElement.classList.remove("sf-toolbar-status-normal")
+        document.querySelector("#hiddenInputs").parentElement.classList.add("sf-toolbar-status-yellow")
+    }
     document.querySelector("#hiddenCounter").innerHTML = `<b style="color:orange">${inputs.length}</b>`;
     document.querySelector("#hiddenInputs").innerHTML=mappedInputs;
 
