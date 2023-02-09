@@ -1369,6 +1369,7 @@ async function logar(){
 
  function showHiddenInputs(showConsole){
     const inputs = [];
+    let hiddenDetected = false;
     document.querySelectorAll("input").forEach(i => {
         inputs.push(i)
         if (i.type=="hidden" && i?.id != "vsmid" ) {
