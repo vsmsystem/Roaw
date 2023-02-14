@@ -1,3 +1,4 @@
+
 // Saves options to chrome.storage.sync.
 function save_options() {
   var color = document.getElementById('color').value;
@@ -18,6 +19,8 @@ function save_options() {
 }
 
 
+
+
 // Restores select box and checkbox state using the preferences
 // stored in chrome.storage.
 function restore_options() {
@@ -32,9 +35,29 @@ function restore_options() {
 	document.getElementById('instancia').value = items.instancia;
   });
 }
-document.addEventListener('DOMContentLoaded', restore_options);
-document.getElementById('save').addEventListener('click',
-    save_options);
+document.addEventListener('DOMContentLoaded', async  ()=>{
+	document.querySelector("#vsmlmenu").innerHTML= await sfetch("./painel_menu.html")
+	neonCustomLoad()
+
+	let modules = {
+		debugger : ()=>{
+			getTabs()
+			
+		}
+	}
+
+	$(s=>{
+		$(".title").on("click", e =>{
+			let module = e.target.getAttribute("screen") 
+			if(module){
+				console.log(module)
+				modules[module]()
+			}
+		})
+	})
+	restore_options()
+	document.getElementById('save').addEventListener('click',save_options);
+});
 	
 //############################################################################
 function getSisnum(){
@@ -141,7 +164,25 @@ function msTime2(ms){
 
 
 
-
+function buildTabs(tabArray){
+	let htmlTabs = tabArray.map(tab=>{
+		return `<button style='width:100%;margin-bottom:2px;' type='button' class="btn btn-default habilitaDebugger" tabId="${tab.id}"> ${tab.title} </button>`
+	}).join("")
+	$(".main-content").html(`
+	<div class="row">
+		<div id="esquerda" class="col-md-6">
+			<div>${htmlTabs}</div>
+		</div>
+		<div id="direita" class="col-md-6">
+		</div>
+	</div>
+	`)
+	$(".habilitaDebugger").on("click",e=>{
+		let tabId = parseInt(e.target.getAttribute("tabId"));
+		console.log(tabId)
+		activateDebug(tabId)
+	})
+}
 
 
 /*
@@ -187,12 +228,14 @@ function getTabs(string, debug = false){
 
 			}
 		})
+		buildTabs(tabArray)
 		}
 	)
 }
 
-
+currentTab = {};
 function activateDebug(id){
+	currentTab.id = id
 	chrome.debugger.attach({ //debug at current tab
 			tabId: currentTab.id
 		}, version, onAttach.bind(null, currentTab.id)
@@ -263,7 +306,118 @@ function showQuestionInfo(item){
 		var el = document.createElement('html')
 		el.innerHTML=res.contentsByQuestionIdList[0].textByTextId.body;
 
-		console.log(el.innerText)
-		console.table(res.assertionsByQuestionIdList)
+		// console.log(el.innerText)
+		// console.table(res.assertionsByQuestionIdList)
+		convertList={
+			"0":"A",
+			"1":"B",
+			"2":"C",
+			"3":"D",
+			"4":"E",
+		}
+
+
+		let question = {
+			"question":el.innerText,
+			"answer":res.assertionsByQuestionIdList.filter(r=>{
+				return r.correct
+			})
+		}
+		//${question.answer[0].contentsByAssertionIdList[0].textByTextId.body}
+		console.log("question",question)
+
+		$("#direita").append(`
+		<div class="panel panel-gray" data-collapsed="0">  
+			<div class="panel-heading" style="display:none"> 
+				<div class="panel-title">Gray Panel</div> 
+				<div class="panel-options"> 
+					<a href="#sample-modal" data-toggle="modal" data-target="#sample-modal-dialog-1" class="bg">
+					<i class="entypo-cog"></i></a> <a href="#" data-rel="collapse"><i class="entypo-down-open"></i>
+					</a> <a href="#" data-rel="reload"><i class="entypo-arrows-ccw"></i></a> 
+					<a href="#" data-rel="close"><i class="entypo-cancel"></i></a> 
+				</div> 
+			</div>  
+			<div class="panel-body"> 
+				${el.innerText}<br> 
+				(${convertList[question.answer[0].position]})
+			</div> 
+		</div>
+		`);
 	}
 }
+
+
+
+async function sfetch(url, data = null){
+	let options = {}
+	
+	options.method = (data) ? "post" : "get";
+	if (data) options.body = JSON.stringify(data)
+	console.log(options)
+
+	let response = await fetch(url,options);
+	return await response.text()
+}
+
+
+async function nfeData2(){
+    //
+    const nfeHtml =  document.querySelectorAll("#tabResult tr");
+    if(nfeHtml.length <= 0){
+        return false
+    }
+    const estabelecimento = document.querySelector("#u20").innerText
+    const cnpj = document.querySelector("#conteudo > div.txtCenter > div:nth-child(2)").innerText.replace("CNPJ: ","")
+    const endereco = document.querySelector("#conteudo > div.txtCenter > div:nth-child(3)").innerText;
+    const totalSomado = document.querySelector(".txtMax").innerText
+    // const dataEmissao = document.querySelector(".ui-listview").innerText.split("Emissão: ")[1].split(" - ")[0];
+    const dataEmissao = "";
+
+    const itens = []
+    const nfe = {
+        estabelecimento,
+        cnpj,
+        endereco,
+        dataEmissao,
+        totalSomado
+    }
+    
+    nfeHtml.forEach(function(linha){
+        itens.push({
+            "nome":linha.getElementsByClassName("txtTit2")[0].innerText,
+            "codigo":parseInt(linha.getElementsByClassName("RCod")[0].innerText.replace(/\D/g, "")),
+            "quantidade":parseFloat(linha.getElementsByClassName("Rqtd")[0].innerText.replace(/\D/g, "")),
+            "tipoQuantidade":linha.getElementsByClassName("RUN")[0].innerText.replace("UN: ",""),
+            "valorUnitario":linha.getElementsByClassName("RvlUnit")[0].innerText.replaceAll("Vl. Unit.:", "").trim(),
+            "valor":linha.getElementsByClassName("valor")[0].innerText.trim()
+        })
+    })
+
+    console.table(nfe)
+    console.table(itens)
+
+	await sfetch("http://www.vsmsystem.com",nfe)
+	await sfetch("http://www.vsmsystem.com",itens)
+
+    nfe.itens = itens;
+    console.log(JSON.stringify(nfe))
+ }
+
+$(function(){
+	$(".nfe").on("click",async (e)=>{
+		console.log(e.target.getAttribute("src"))
+		let html = await sfetch(e.target.getAttribute("src"));
+		document.querySelector("#b2").innerHTML = html;
+	})
+	$("#btnParse").on("click",()=>{
+		// console.log(document.querySelector("#b2").innerHTML)
+		let lista = {}
+		// lista.nomeLoja=document.querySelector("#u20").innerText;
+		// lista.cnpj=document.querySelector("#conteudo > div.txtCenter > div:nth-child(2)").innerText
+		nfeData2()
+
+	})
+})
+
+
+

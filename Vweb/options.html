@@ -39,73 +39,21 @@
 <div id="tela" style="border:solid 1px #ff0000;position:absolute;margin-top:100px;">teste</div>
 <div class="page-container sidebar-collapsed"><!-- add class "sidebar-collapsed" to close sidebar by default, "chat-visible" to make chat appear always -->
 	
-	<div class="sidebar-menu fixed">
-
-		<div class="sidebar-menu-inner ps-container ps-active-y">
-			
-			<header class="logo-env">
-
-				<!-- logo -->
-				<div class="logo">
-					<a href="index.html">
-						<img src="assets/images/logo@2x.png" width="120" alt="" />
-					</a>
-				</div>
-
-				<!-- logo collapse icon -->
-				<div class="sidebar-collapse">
-					<a href="#" class="sidebar-collapse-icon"><!-- add class "with-animation" if you want sidebar to have animation during expanding/collapsing transition -->
-						<i class="entypo-menu"></i>
-					</a>
-				</div>
-
-								
-				<!-- open/close menu icon (do not remove if you want to enable menu on mobile devices) -->
-				<div class="sidebar-mobile-menu visible-xs">
-					<a href="#" class="with-animation"><!-- add class "with-animation" to support animation -->
-						<i class="entypo-menu"></i>
-					</a>
-				</div>
-
-			</header>
-			
-									
-			<ul id="main-menu" class="main-menu">
-				<!-- add class "multiple-expanded" to allow multiple submenus to open -->
-				<!-- class "auto-inherit-active-class" will automatically add "active" class for parent elements who are marked already with class "active" -->
-				<li class="active root-level"> <a href="#" target="">
-					<i class="entypo-cog"></i>
-					<span class="title">Opções</span></a> 
-				</li>
-				
-				<li style="display:none;">
-					<a href="#">
-						<i class="entypo-layout"></i>
-						<span class="title">Histórico de Atualizações</span>
-					</a>
-					<ul>
-						<li>
-							<a href="#">
-								<span class="title">Novidades</span>
-								<span class="badge badge-success badge-roundless">Em breve</span>
-							</a>
-						</li>
-						
-					</ul>
-				</li>
-				
-			</ul>
-			
-		</div>
-
+	<div id="vsmlmenu" class="sidebar-menu fixed">
+		<!-- <script src="painel_menu.js"></script> -->
 	</div>
 
 	<div class="main-content">
+		<div id="a1" class="col-sm-12">
+
+		</div>
 		<div class="col-sm-12">
 		
 				<div class="row">
 		
-					<div class="col-sm-6">
+					<div id="b1" class="col-sm-6">
+
+
 		
 						<div class="panel panel-default">
 							<div class="panel-heading">
@@ -214,7 +162,7 @@
 					
 					
 		
-					<div class="col-sm-6">
+					<div id="b2" class="col-sm-6">
 		
 						<div class="panel panel-default">
 							<div class="panel-heading">
@@ -349,7 +297,7 @@
 						  <div id="status"></div>
 						  <button id="save">Save</button>
 
-						  <script src="options.js"></script>
+						  
 					</div>
 				</div>
 		
@@ -394,6 +342,9 @@
 
 	<!-- Demo Settings -->
 	<script src="assets/js/neon-demo.js"></script>
+
+
+	<script src="options.js"></script>
 
 </body>
 </html>
