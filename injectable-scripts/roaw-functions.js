@@ -384,5 +384,24 @@ window.speechSynthesis.onvoiceschanged = function() {
     speechSynthesis.speak(text);
   }
 
+  //get all eventlisteners, using map, promises and flat
+  async function getEvents(selector = null) {
+	let select = selector ? `${selector} *` : '*';
+	const elements = Array.from(document.querySelectorAll(select));
+	const promises = elements.map(async (element) => {
+		const listeners = await getEventListeners(element);
+		return Object.keys(listeners).map((type) => {
+			return listeners[type].map((listener) => {
+				return {
+					element,
+					type,
+					listener: listener.listener,
+				};
+			});
+		}).flat();
+	});
+	const results = await Promise.all(promises);
+	return await results.flat()
+}
 
  help = "io"
