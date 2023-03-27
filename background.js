@@ -23,10 +23,10 @@ function hoje(){
 
 //timer =========================================================
 
-chrome.alarms.create("timer", {delayInMinutes: 5.0, periodInMinutes: 5.0});
+chrome.alarms.create("roawTimer", {delayInMinutes: 1.0, periodInMinutes: 1.0});
 chrome.alarms.onAlarm.addListener(function(e){
+	console.log(e);
 	if(e.name=="timer"){
-		console.log(e);
 		// if(localStorage['installcheck']!=hoje()){
 		// 	getCurrentVersion();
 		// 	localStorage['installcheck']=hoje();

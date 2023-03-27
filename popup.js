@@ -10,6 +10,7 @@ window.tab= null;
 getCurrentTab((tab)=>{
     window.tab = tab
     $("#url-aba").html(tab.url)// currentTab.url tem propriedades como currentTab.id, currentTab.url, etc
+    $("#configHost").val(tab.url.split("//")[1].split("/")[0])
     
 })
 
@@ -250,6 +251,7 @@ async function loadMergeRequests(route = null){
 
     let mergeRequests = await getMergeRequests(route);
     mergeRequests = mergeRequests.map(function(mr){
+        console.log(mr)
         return `
         <li class="item" style="border:solid 1px;padding:5px;margin:5px;border-radius:5px;">
             <div class="product-img pull-left">
@@ -416,7 +418,7 @@ async function getMergeRequests(route = null){
     */
 
     let routes = {
-        "grupoLW":"/groups/30/merge_requests?state=opened",
+        "lw":"/groups/30/merge_requests?state=opened",
         "assignedToMe" : "/merge_requests?scope=assigned_to_me&state=opened"
     }
 
@@ -439,4 +441,10 @@ async function getMergeRequests(route = null){
 
     let mergeList = await response.json()
     return mergeList;
+}
+
+
+function setBadge(text = "", color = "#f00"){
+	chrome.action.setBadgeBackgroundColor({ color }, () => {});
+	chrome.action.setBadgeText({ text });
 }

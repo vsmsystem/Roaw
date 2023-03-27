@@ -310,17 +310,27 @@ function getElementsByText(tagname, text){
     return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
   }
 
-
- function menuFind(trechoNome = ""){
-    document.querySelectorAll("#side-menu a").forEach(function(e,i){
+ function menuFind(trechoNome = "", renderDestination = null){
+    let allItems = [];
+    let foundItems = [];
+    let html = null;
+    
+    allItems =  [...document.querySelectorAll("#side-menu a")];
+    
+    html = allItems.map(function(e){
         if(trechoNome.length>0){
             if(e.innerText.toLowerCase().indexOf(trechoNome.toLowerCase()) > -1){
                 console.log(e.innerText.trim(), e.href)
+                return `<div>${e.innerText.trim()} > <a class="boxmenulink" href="${e.href}" >${e.href}</a></div>`;
             }
         }else{
-            console.log(e.innerText.trim(), e.href)
+            console.log("N", e.innerText.trim(), e.href)
         }
-    })
+    }).filter(i =>  i !== undefined).join("")
+    if(renderDestination){
+        document.querySelector(renderDestination).innerHTML = html
+    }
+    return html;
  }
 
  function nfeData(){
@@ -385,7 +395,7 @@ window.speechSynthesis.onvoiceschanged = function() {
   }
 
   //get all eventlisteners, using map, promises and flat
-  async function getEvents(selector = null) {
+  async function getEvents(selector = null, callback = null) {
 	let select = selector ? `${selector} *` : '*';
 	const elements = Array.from(document.querySelectorAll(select));
 	const promises = elements.map(async (element) => {
@@ -401,7 +411,238 @@ window.speechSynthesis.onvoiceschanged = function() {
 		}).flat();
 	});
 	const results = await Promise.all(promises);
+
+    if(callback){
+        return await callback(await results.flat())
+    }
 	return await results.flat()
 }
+
+//read mimeType from blob (actually buffer) directly from html input
+// const file = new RoawFileMimeType();
+//file.check(theFile)
+class RoawFileMimeType {
+
+    constructor(options) {
+        this.allowedTypes = options?.allowList || {
+            "ffd8ffe0": "image/jpg",
+            "89504e47": "image/png",
+            "47494638": "image/gif",
+            "25504446": "application/pdf",
+        }
+        this.knownTypes = {
+            "ffd8ffe0": "image/jpg",
+            "89504e47": "image/png",
+            "47494638": "image/gif",
+            "49492a0": "image/tiff",
+            "52494646": "image/webp",
+            "504b34": "application/zip",
+            "534d502d": "text/plain",
+            "0010": "image/vnd.microsoft.icon",
+            "424d2a4f": "image/bmp",
+            "38425053": "image/vnd.adobe.photoshop",
+            "25504446": "application/pdf"
+        }
+    }
+
+    async check(paramFile = null) {
+        if (!paramFile.name) {
+            return false;
+        }
+        const self = this;
+        return await new Promise((resolve, reject) => {
+            var reader = new FileReader();
+            reader.onloadend = async function () {
+                var arr = (new Uint8Array(reader.result)).subarray(0, 4);
+                var header = "";
+                for (var i = 0; i < arr.length; i++) {
+                    header += arr[i].toString(16);
+                }
+                resolve({
+                    fileName: paramFile.name,
+                    type: paramFile.type,
+                    mimeType: self.knownTypes[header] || "desconhecido",
+                    header,
+                    ok: !!self.allowedTypes[header] || false
+                });
+            };
+            reader.onerror = (error) => {
+                reject(error)
+            }
+            reader.readAsArrayBuffer(paramFile || file);
+        });
+    }
+
+}
+
+function checkFiles(){
+    ft = new RoawFileMimeType();
+    document.querySelectorAll("input[type=file]").forEach(async (i)=>{
+        if(i?.files[0]?.name){
+            console.log(await ft.check(i.files[0]))
+        }else{
+            console.log("input vazio:",i)
+        }
+    })
+}
+
+document.querySelectorAll("input[type=file]").forEach(el=>{
+    el.addEventListener("change",ev=>{
+        checkFiles()
+    })
+})
+
+
+//from https://gist.github.com/jherax/968ad4ff8eaa9ceb9159
+//this will help a lot with legacy jquery app documentation
+/**
+ * Gets all event-handlers from a DOM element.
+ * Events with namespace are allowed.
+ *
+ * @param  {Element} node: DOM element
+ * @param  {String} eventns: (optional) name of the event/namespace
+ * @return {Object}
+ */
+function getEventHandlers(element, eventns) {
+    const $ = window.jQuery;
+    const i = (eventns || '').indexOf('.'),
+      event = i > -1 ? eventns.substr(0, i) : eventns,
+      namespace = i > -1 ? eventns.substr(i + 1) : void(0),
+      handlers = Object.create(null);
+    element = $(element);
+    if (!element.length) return handlers;
+    // gets the events associated to a DOM element
+    const listeners = $._data(element.get(0), "events") || handlers;
+    const events = event ? [event] : Object.keys(listeners);
+    if (!eventns) return listeners; // Object with all event types
+    events.forEach((type) => {
+      // gets event-handlers by event-type or namespace
+      (listeners[type] || []).forEach(getHandlers, type);
+    });
+    // eslint-disable-next-line
+    function getHandlers(e) {
+      const type = this.toString();
+      const eNamespace = e.namespace || (e.data && e.data.handler);
+      // gets event-handlers by event-type or namespace
+      if ((event === type && !namespace) ||
+          (eNamespace === namespace && !event) ||
+          (eNamespace === namespace && event === type)) {
+        handlers[type] = handlers[type] || [];
+        handlers[type].push(e);
+      }
+    }
+    return handlers;
+  }
+
+  function getAllEventListenersPage() {
+    const elements = document.querySelectorAll('*');
+    const listeners = [];
+    
+    for (let i = 0; i < elements.length; i++) {
+      const eventListeners = window.getEventListeners(elements[i]);
+      
+      for (let eventType in eventListeners) {
+        const eventHandlerObjects = eventListeners[eventType];
+        
+        for (let j = 0; j < eventHandlerObjects.length; j++) {
+          const eventHandler = eventHandlerObjects[j];
+          const listener = {
+            element: elements[i],
+            eventType: eventType,
+            eventHandler: eventHandler.listener
+          };
+          listeners.push(listener);
+        }
+      }
+    }
+    
+    return listeners;
+  }
+
+  function getEventListenersTeste(elemento) {
+    const eventos = {};
+    const listaEventos = getEventListenersList(elemento);
+  
+    for (const tipoEvento in listaEventos) {
+      eventos[tipoEvento] = [];
+  
+      listaEventos[tipoEvento].forEach((evento) => {
+        eventos[tipoEvento].push({
+          elemento: elemento.nodeName,
+          funcao: evento.listener.toString(),
+        });
+      });
+    }
+  
+    return eventos;
+  }
+
+  function getEventListenersProto(element) {
+    const events = {};
+    const listeners = element.__proto__.__proto__.constructor("return this").call(element);
+    
+    for (const eventName in listeners) {
+      events[eventName] = [];
+      listeners[eventName].forEach((listener) => {
+        events[eventName].push(listener);
+      });
+    }
+    
+    return events;
+  }
+
+
+
+
+
+  function watchEventsMutationObserverMode(){
+    const eventTypes = new Set(['click', 'mouseover']);
+    
+    // Adicione um Listener de eventos ao DOM da página
+    document.addEventListener('DOMContentLoaded', () => {
+      // Use o MutationObserver para detectar alterações no DOM e adicionar um Listener de eventos a novos elementos
+      const observer = new MutationObserver((mutationsList) => {
+        for (const mutation of mutationsList) {
+          for (const addedNode of mutation.addedNodes) {
+            // Verifique se o nó adicionado é um elemento e, se for, adicione um Listener de eventos a ele
+            if (addedNode.nodeType === Node.ELEMENT_NODE) {
+              for (const eventType of eventTypes) {
+                addedNode.addEventListener(eventType, (event) => {
+                  console.log(eventType, event.target);
+                });
+              }
+            }
+          }
+        }
+      });
+      
+      // Comece a observar o DOM da página para detectar alterações
+      observer.observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+      });
+    });
+}
+
+function watchEventsPrototypeMode() {
+    window.xallEvents = [];
+    const originalAddEventListener = EventTarget.prototype.addEventListener;
+    EventTarget.prototype.addEventListener = function (type, listener, options) {
+        xallEvents.push({ target: this, type, listener, options });
+        console.log("add", { target: this, type, listener, options })
+        originalAddEventListener.call(this, type, listener, options);
+    };
+    document.addEventListener("click", () => {
+        console.log(xallEvents);
+    });
+    console.log("allEvents: ", xallEvents);
+    chrome.runtime.getBackgroundPage((backgroundPage) => {
+        backgroundPage.events = xallEvents;
+    });
+
+}
+
+
+
 
  help = "io"

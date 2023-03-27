@@ -19,6 +19,7 @@
     "128": "128.png"
   },
   "permissions": [
+    "background",
     "storage",
     "alarms",
     "declarativeContent",

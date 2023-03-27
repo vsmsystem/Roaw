@@ -2,6 +2,12 @@
 var seletorCodigo = document.URL;
 var extVSMonitorId = chrome.runtime.id;
 
+//test importing with getURL, its working
+(async () => {
+    const src = chrome.runtime.getURL("injectable-scripts/events.js");
+    const contentMain = await import(src);
+    contentMain.main();
+})();
 localStorage.setItem("document_start","")
 localStorage.setItem("document_end","")
 localStorage.setItem("document_full_loaded","")
@@ -40,6 +46,7 @@ window.addEventListener("DOMContentLoaded",function(){
     // console.log("DOMContentLoaded")
 
     var s = document.createElement("script");
+    s.type="text/javascript";
 	s.src = "chrome-extension://" + extVSMonitorId + "/injectable-scripts/roaw-functions.js";
 	document.body.appendChild(s);	
 

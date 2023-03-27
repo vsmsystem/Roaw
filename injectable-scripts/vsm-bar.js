@@ -1,4 +1,183 @@
 const displayState = localStorage["sf2/profiler/toolbar/displayState"];
+const roawBox = `
+<style>
+
+.wrapperborders{
+    border:solid 2px #ff1;
+}
+
+.wrapperborders * {
+    border:dashed 1px #f00;
+}
+
+.wrapperborders > * {
+    border:dashed 1px #0f0;
+}
+.wrapperborders > * > * {
+    border:dashed 1px #0a0;
+}
+.wrapperborders > * > * > * {
+    border:dashed 1px #060;
+}
+.wrapperborders > * > * > * > * {
+    border:dashed 1px #00f;
+}
+.wrapperborders > * > * > * > * > * {
+    border:dashed 1px #00f;
+}
+.wrapperborders > * > * > * > * > * > * {
+    border:dashed 1px #00f !important;
+}
+
+.roawboxhidden{
+    bottom: -9000px !important;
+}
+#roawbox {
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    z-index: 99999;
+    width: calc(100% - 0px);
+    height: calc(100% - 20%);
+    margin: 0px;
+    border-top:solid 2px #555;
+    
+    
+    transition-property: all;
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
+}
+
+.roawblur{
+    /* From https://css.glass */
+    color: #fff;
+    background: rgba(0, 0, 0, 0.64);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    //border: 1px solid rgba(0, 0, 0, 0.7);
+    
+}
+
+
+#roawbox>.content{
+    overflow:scroll;
+    height:100%;
+    margin:5px;
+    padding-bottom:90px;
+}
+
+#roawbox>.header>.title {
+    display: inline;
+    margin-left: 10px;
+}
+
+#roawbox>.header>.icons {
+    float: right;
+    margin-right: 10px;
+}
+
+#roawbox>.header {
+    background: rgba(0, 0, 0, 0.44);
+    padding: 3px;
+}
+
+#roawbox>.header>.icons>.headericon {
+    background: #000;
+    border: solid 1px #000;
+    border-radius: 5px;
+    padding: 2px;
+    cursor: pointer;
+
+}
+
+#roawbox>.tabs {
+    background: rgba(0, 0, 0, 0.25);
+}
+
+#roawbox .tabgroup {
+    margin:4px;
+    display:inline-block;
+}
+
+#roawbox .right {
+    float:right;
+    margin:4px;
+}
+#roawbox .tabgroup > button {
+    background: rgba(0, 0, 0, 0.85);
+    border: solid 0px #000;
+    border-radius:5px;
+    padding:3px !important;
+}
+
+#roawbox .dark {
+    background: rgba(0, 0, 0, 0.85);
+    border: solid 0px #000;
+    padding:3px !important;
+}
+
+#roawbox .tabgroupleft > button {
+    background: rgba(0, 0, 0, 0.85);
+    border: solid 0px #000;
+    border-radius:5px;
+    padding:3px !important;
+}
+
+#roawbox .tabs > button {
+    background: rgba(0, 0, 0, 0.85);
+    border: solid 0px #000;
+    padding:3px !important;
+    border-radius:5px;
+}
+#roawbox .tabgroup > input {
+    background: rgba(0, 0, 0, 0.25);
+    border: solid 1px #000;
+    border-radius:5px;
+    color:#fff;
+    padding:3px !important;
+}
+#roawbox .tabgroup input:focus{
+    outline: none;
+}
+
+#roawbox .boxmenulink{
+    border: solid 1px #000;
+    background-color: #000;
+    border-radius:5px;
+}
+
+
+</style>
+<div id="roawbox" class="roawboxhidden roawblur">
+<div class="header">
+    <div class="title headericon">Roaw Toolbox</div>
+    <div class="icons">
+        <span class="headericon fa fa-database" onclick="dbView()"></span>
+        <span class="headericon fa fa-table"></span>
+        <span class="headericon fa fa-columns"></span>
+
+        <span class="headericon fa fa-cog"></span>
+        <span onclick="toggleRoawBox()"
+            class="headericon fa fa-close"></span>
+    </div>
+</div>
+<div class="tabs">
+    <div class="tabgroup right">
+        <button type="button" onclick="boxDocumentacoes()">Documentações</button>
+    </div>
+    <div class="tabgroup">
+        <input id="roawselector" type="text" placeholder="selector" />
+        <button type="button" onclick="boxMenuFind()">Menu</button>
+        <button type="button" onclick="boxDadosTeste()">DadosTeste</button>
+        <button type="button" onclick="boxEventListeners()" style="">EventListeners</button>
+    </div>
+</div>
+<div class="content">teste</div>
+</div>
+`;
+
+
 const fullHTML = `
 	<div id="sfwdt80d3dd" class="sf-toolbar" style="display: block;" data-sfurl="/app_dev.php/_wdt/80d3dd"><!-- START of Symfony Web Debug Toolbar -->
     <div id="sfMiniToolbar-80d3dd" class="sf-minitoolbar" data-no-turbolink="" style="display: none;">
@@ -609,7 +788,7 @@ const fullHTML = `
 	</div>
     <div class="sf-toolbar-block sf-toolbar-block-ajax sf-toolbar-status-normal " style="display: ;">
             <div class="sf-toolbar-icon">   
-            <span class="sf-toolbar-value">XHR</span>     
+            <span class="sf-toolbar-value">Requests</span>     
 
 
 
@@ -698,21 +877,42 @@ const fullHTML = `
 
 
 
+    <div class="sf-toolbar-block sf-toolbar-block-vardump sf-toolbar-status-normal">
+        <div class="sf-toolbar-icon">                    
+            <span style="display:none;" class="sf-toolbar-label">
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" width="24px" height="24px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve">
+                <path d="M166.156,512h-41.531c-7.375-0.031-20.563-8.563-20.938-8.906C37.438,437.969,0,348.906,0,255.938  C0,162.719,37.656,73.375,104.281,8.219C104.313,8.188,117.25,0,124.625,0h41.531c15.219,0,33.25,11.125,40.063,24.781l2.906,5.844  c6.781,13.594,6.188,35.563-1.344,48.75l-27.906,48.813c-7.563,13.219-26.188,24.25-41.406,24.25H110.75  c-36.813,64-36.813,143.094-0.031,207.125h27.75c15.219,0,33.844,11.031,41.406,24.25l27.875,48.813  c7.531,13.188,8.156,35.094,1.375,48.781l-2.906,5.844C199.375,500.844,181.375,512,166.156,512z M512,128v256  c0,35.344-28.656,64-64,64H244.688c-1.25-11.219-3.969-22.156-9.156-31.25l-27.875-48.813  c-13.406-23.406-42.469-40.375-69.188-40.375h-8.156c-20.188-45.438-20.188-97.719,0-143.125h8.156  c26.719,0,55.781-16.969,69.188-40.375l27.906-48.813c5.188-9.094,7.906-20.063,9.156-31.25H448C483.344,64,512,92.656,512,128z   M328,368c0-13.25-10.75-24-24-24s-24,10.75-24,24s10.75,24,24,24S328,381.25,328,368z M328,304c0-13.25-10.75-24-24-24  s-24,10.75-24,24s10.75,24,24,24S328,317.25,328,304z M328,240c0-13.25-10.75-24-24-24s-24,10.75-24,24s10.75,24,24,24  S328,253.25,328,240z M392,368c0-13.25-10.75-24-24-24s-24,10.75-24,24s10.75,24,24,24S392,381.25,392,368z M392,304  c0-13.25-10.75-24-24-24s-24,10.75-24,24s10.75,24,24,24S392,317.25,392,304z M392,240c0-13.25-10.75-24-24-24s-24,10.75-24,24  s10.75,24,24,24S392,253.25,392,240z M456,368c0-13.25-10.75-24-24-24s-24,10.75-24,24s10.75,24,24,24S456,381.25,456,368z M456,304  c0-13.25-10.75-24-24-24s-24,10.75-24,24s10.75,24,24,24S456,317.25,456,304z M456,240c0-13.25-10.75-24-24-24s-24,10.75-24,24  s10.75,24,24,24S456,253.25,456,240z M456,144c0-8.844-7.156-16-16-16H296c-8.844,0-16,7.156-16,16v32c0,8.844,7.156,16,16,16h144  c8.844,0,16-7.156,16-16V144z"/>
+                </svg>
+
+            </span>
+            <span class="sf-toolbar-value" onclick="toggleRoawBox()" >VarDump <b id="vardumpcount" style="color:orange"></b></span>
+        </div>
+    </div>
                 
         
-        
+    <div class="sf-toolbar-block sf-toolbar-block-roawbox sf-toolbar-status-normal sf-toolbar-block-right">
+        <div class="sf-toolbar-icon">                    
+            <span style="display:none;" class="sf-toolbar-label">
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" width="24px" height="24px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve">
+                <path d="M166.156,512h-41.531c-7.375-0.031-20.563-8.563-20.938-8.906C37.438,437.969,0,348.906,0,255.938  C0,162.719,37.656,73.375,104.281,8.219C104.313,8.188,117.25,0,124.625,0h41.531c15.219,0,33.25,11.125,40.063,24.781l2.906,5.844  c6.781,13.594,6.188,35.563-1.344,48.75l-27.906,48.813c-7.563,13.219-26.188,24.25-41.406,24.25H110.75  c-36.813,64-36.813,143.094-0.031,207.125h27.75c15.219,0,33.844,11.031,41.406,24.25l27.875,48.813  c7.531,13.188,8.156,35.094,1.375,48.781l-2.906,5.844C199.375,500.844,181.375,512,166.156,512z M512,128v256  c0,35.344-28.656,64-64,64H244.688c-1.25-11.219-3.969-22.156-9.156-31.25l-27.875-48.813  c-13.406-23.406-42.469-40.375-69.188-40.375h-8.156c-20.188-45.438-20.188-97.719,0-143.125h8.156  c26.719,0,55.781-16.969,69.188-40.375l27.906-48.813c5.188-9.094,7.906-20.063,9.156-31.25H448C483.344,64,512,92.656,512,128z   M328,368c0-13.25-10.75-24-24-24s-24,10.75-24,24s10.75,24,24,24S328,381.25,328,368z M328,304c0-13.25-10.75-24-24-24  s-24,10.75-24,24s10.75,24,24,24S328,317.25,328,304z M328,240c0-13.25-10.75-24-24-24s-24,10.75-24,24s10.75,24,24,24  S328,253.25,328,240z M392,368c0-13.25-10.75-24-24-24s-24,10.75-24,24s10.75,24,24,24S392,381.25,392,368z M392,304  c0-13.25-10.75-24-24-24s-24,10.75-24,24s10.75,24,24,24S392,317.25,392,304z M392,240c0-13.25-10.75-24-24-24s-24,10.75-24,24  s10.75,24,24,24S392,253.25,392,240z M456,368c0-13.25-10.75-24-24-24s-24,10.75-24,24s10.75,24,24,24S456,381.25,456,368z M456,304  c0-13.25-10.75-24-24-24s-24,10.75-24,24s10.75,24,24,24S456,317.25,456,304z M456,240c0-13.25-10.75-24-24-24s-24,10.75-24,24  s10.75,24,24,24S456,253.25,456,240z M456,144c0-8.844-7.156-16-16-16H296c-8.844,0-16,7.156-16,16v32c0,8.844,7.156,16,16,16h144  c8.844,0,16-7.156,16-16V144z"/>
+                </svg>
+
+            </span>
+            <span class="sf-toolbar-value" onclick="toggleRoawBox()" >RoawBox</span>
+        </div>
+    </div>
         
         
     <div class="sf-toolbar-block sf-toolbar-block-config sf-toolbar-status-normal sf-toolbar-block-right">
-         
+
 	<div class="sf-toolbar-icon">                    
-		<span class="sf-toolbar-label">
+		<span style="display:none;" class="sf-toolbar-label">
 			<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" width="24px" height="24px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve">
 			<path d="M166.156,512h-41.531c-7.375-0.031-20.563-8.563-20.938-8.906C37.438,437.969,0,348.906,0,255.938  C0,162.719,37.656,73.375,104.281,8.219C104.313,8.188,117.25,0,124.625,0h41.531c15.219,0,33.25,11.125,40.063,24.781l2.906,5.844  c6.781,13.594,6.188,35.563-1.344,48.75l-27.906,48.813c-7.563,13.219-26.188,24.25-41.406,24.25H110.75  c-36.813,64-36.813,143.094-0.031,207.125h27.75c15.219,0,33.844,11.031,41.406,24.25l27.875,48.813  c7.531,13.188,8.156,35.094,1.375,48.781l-2.906,5.844C199.375,500.844,181.375,512,166.156,512z M512,128v256  c0,35.344-28.656,64-64,64H244.688c-1.25-11.219-3.969-22.156-9.156-31.25l-27.875-48.813  c-13.406-23.406-42.469-40.375-69.188-40.375h-8.156c-20.188-45.438-20.188-97.719,0-143.125h8.156  c26.719,0,55.781-16.969,69.188-40.375l27.906-48.813c5.188-9.094,7.906-20.063,9.156-31.25H448C483.344,64,512,92.656,512,128z   M328,368c0-13.25-10.75-24-24-24s-24,10.75-24,24s10.75,24,24,24S328,381.25,328,368z M328,304c0-13.25-10.75-24-24-24  s-24,10.75-24,24s10.75,24,24,24S328,317.25,328,304z M328,240c0-13.25-10.75-24-24-24s-24,10.75-24,24s10.75,24,24,24  S328,253.25,328,240z M392,368c0-13.25-10.75-24-24-24s-24,10.75-24,24s10.75,24,24,24S392,381.25,392,368z M392,304  c0-13.25-10.75-24-24-24s-24,10.75-24,24s10.75,24,24,24S392,317.25,392,304z M392,240c0-13.25-10.75-24-24-24s-24,10.75-24,24  s10.75,24,24,24S392,253.25,392,240z M456,368c0-13.25-10.75-24-24-24s-24,10.75-24,24s10.75,24,24,24S456,381.25,456,368z M456,304  c0-13.25-10.75-24-24-24s-24,10.75-24,24s10.75,24,24,24S456,317.25,456,304z M456,240c0-13.25-10.75-24-24-24s-24,10.75-24,24  s10.75,24,24,24S456,253.25,456,240z M456,144c0-8.844-7.156-16-16-16H296c-8.844,0-16,7.156-16,16v32c0,8.844,7.156,16,16,16h144  c8.844,0,16-7.156,16-16V144z"/>
 			</svg>
 
 		</span>
-        <span class="sf-toolbar-value">Avaya</span>
+        <span class="sf-toolbar-value">Frontools</span>
     </div>
           
 	<div class="sf-toolbar-info" style="right: 0px;">        
@@ -727,10 +927,16 @@ const fullHTML = `
 
 		<div class="sf-toolbar-info-group">
 
+        
+            <div class="sf-toolbar-info-piece">
+                <b>RoawBox</b>
+                <span onclick="toggleRoawBox()" class="sf-toolbar-status">open</span>
+            </div>
+
 			<div class="sf-toolbar-info-piece">
-				<b>Controles</b>
-				<span class="sf-toolbar-status">Logar</span>
-				<span class="sf-toolbar-status">Deslogar</span>
+				<b>Borders</b>
+				<span onclick="toggleBodyBorders()" class="sf-toolbar-status">Body</span>
+                <span onclick="toggleWrapperBorders()" class="sf-toolbar-status">Wrapper</span>
 			</div>
 			
 			<div class="sf-toolbar-info-piece">
@@ -859,8 +1065,378 @@ const fullHTML = `
 </div>
 `;
 
+async function dbView() {
+    const req = await fetch("http://localhost:8006/vsmApi.php", {
+        "headers": {
+            "accept": "*/*",
+            "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "sec-ch-ua": "\"Google Chrome\";v=\"107\", \"Chromium\";v=\"107\", \"Not=A?Brand\";v=\"24\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Linux\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "x-requested-with": "XMLHttpRequest"
+        },
+        "referrer": "http://localhost:8006/vsmDoc.php",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "body": "param=dbInfo",
+        "method": "POST",
+        "mode": "cors",
+        "credentials": "include"
+    });
+    const res = await req.json()
+    console.table(res)
+    const html1 = res.map(rdb => {
+        return `<button id="${rdb.table}" type="button" class="btn btn-block dark" onclick="tableInfo(this.id)" style="text-align:left;">${rdb.table} <span style="float:right;">${rdb.size}</span></button>`
+    }).join("")
+    document.querySelector("#roawbox > .content").innerHTML = `
+    <div style="display:flex;">
+        <div style="width:30%;display:inline-block;">${html1}</div>
+        <div id="tableinfos" style="width:85%;display:inline-block;margin-left:5px;">
+            Database Docs
+        </div>
+    </div>
+    `
+}
 
-document.body.insertAdjacentHTML("beforeend",fullHTML);
+async function tableInfo(tableName) {
+    const req = await fetch("http://localhost:8006/vsmApi.php", {
+        "headers": {
+            "accept": "application/json, text/javascript, */*; q=0.01",
+            "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "sec-ch-ua": "\"Google Chrome\";v=\"107\", \"Chromium\";v=\"107\", \"Not=A?Brand\";v=\"24\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Linux\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "x-requested-with": "XMLHttpRequest"
+        },
+        "referrer": "http://localhost:8006/vsmDoc.php?dump",
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "body": "param=tableInfo&tableInfo=" + tableName,
+        "method": "POST",
+        "mode": "cors",
+        "credentials": "include"
+    });
+    const res = await req.json()
+    console.table(res)
+    const html1 = `<pre class="roawblur">${res.showCreateTable}</pre>`;
+
+    const html2 = res.fields.map(field => {
+        return `<div class="roawblur" style="padding:5px;"><h3>${field['Field']}</h3> <textarea style="width:100%;height:100px;" class="roawblur"></textarea> </div>`
+    }).join("")
+
+
+    document.querySelector("#tableinfos").innerHTML = html1 + html2
+}
+
+
+
+function boxVarDump() {
+    const varDumps = document.querySelectorAll(".var_dump");
+    if (varDumps?.length > 0) {
+
+        document.querySelector("#vardumpcount").innerHTML = varDumps.length
+        document.querySelector("#roawbox > .content").innerHTML = [...document.querySelectorAll(".var_dump")].map(d => { return `<pre>${d.innerHTML}</pre>` }).join("")
+        document.querySelector(".sf-toolbar-block-vardump").classList.toggle("sf-toolbar-status-yellow")
+        toggleRoawBox()
+    }
+
+
+}
+
+//it works, but RoawFileMimeType(); ate roaw-functions is better
+function fileBlob(selector, callback = null) {
+    let file = document.querySelector(selector).files[0];
+    var reader = new FileReader();
+
+    reader.addEventListener("load", f => {
+        console.log("load", f)
+        if (callback) {
+            const blob = new Blob([new Uint8Array(f.target.result)], { type: file.type }); //esse type falha, um arquivo tiff com extensão jpg, aparece como jpg
+            console.log(blob);
+            callback(blob)
+        }
+    })
+
+    reader.onloadend = function () {
+        // Recupera os primeiros bytes do arquivo (no máximo 4 bytes)
+        var arr = (new Uint8Array(reader.result)).subarray(0, 4);
+        var header = "";
+        for (var i = 0; i < arr.length; i++) {
+            header += arr[i].toString(16);
+        }
+
+        const types = {
+            "ffd8ffe0": "image/jpg",
+            "89504e47": "image/png",
+            "47494638": "image/gif",
+            "25504446": "application/pdf"
+        }
+        //"49492a0": "image/tiff",
+
+        let output = types[header] || false;
+        console.log("end", output, header);
+        return output;
+    };
+
+    // reader.readAsText(file)
+    reader.readAsArrayBuffer(file);
+}
+document.body.addEventListener("keydown", e => {
+    if (e.key == "F12" && e.ctrlKey == true && e.altKey == false && e.shiftKey == false) {
+        toggleRoawBox()
+    }
+    if (e.key == "F12" && e.ctrlKey == true && e.altKey == true && e.shiftKey == false) {
+        logKeys(e)
+    }
+    if (e.key == "F12" && e.ctrlKey == true && e.altKey == true && e.shiftKey == true) {
+        logKeys(e)
+    }
+    if (e.key == "F12" && e.ctrlKey == false && e.altKey == true && e.shiftKey == false) {
+        logKeys(e)
+    }
+    if (e.key == "F12" && e.ctrlKey == false && e.altKey == false && e.shiftKey == true) {
+        logKeys(e)
+    }
+
+})
+
+document.body.addEventListener("dblclick", e => {
+    const el = {
+        "id": e.target.id,
+        "name": e.target.name,
+        "tagName": e.target.tagName,
+        "type": e.target.type,
+        "classList": e.target.className,
+        "target": e.target
+    }
+    console.log(el)
+    /* 
+    na roawbox, ter um objetom com valores de teste
+    ao dar duplo click em inoput, confere nanme, id, e insere dado de teste coprrespondente
+    ctrl+dblclick preencher todos os inputs que casam (na verdade melhor que seja um botao dentro da roawbox)
+    */
+
+    //just mock data for some tests
+    const dataTest = {
+        "placa": "vsm0000",
+        "cpf": "51136415025",
+        "cnh": "04215445388",
+        "renavam": "24048747090",
+        "chassi": "6809GbABW82BR5905",
+        "boleto": "00190500954014481606906809350314337370000000100",
+        "nome": "Valdecir X Merli",
+        "rg": "99999992"
+    }
+
+    const newvalue = dataTest[el.id] || dataTest[el.name]
+    if (newvalue) {
+        e.target.value = newvalue
+    }
+
+})
+
+function logKeys(ev) {
+    console.log({
+        "key": ev.key,
+        "ctrl": ev.ctrlKey,
+        "alt": ev.altKey,
+        "shift": ev.shiftKey
+    })
+}
+function boxDadosTeste() {
+    document.querySelector("#roawbox > .content").innerHTML = `
+    <div>
+    <style>
+    .content > div > b {
+        background-color:#000;
+    }
+    </style>
+    <b>CNH:</b> 04215445388 (111)<br>
+    <b>cpf:</b> 51136415025 / 511.364.150-25<br>
+    <b>placa:</b> vsm0000 / vsm-0000<br>
+    <b>renavam:</b> 24048747090<br>
+    <b>chassi:</b> 6809GbABW82BR5905 / 680 9GbABW 82 BR5905 <br><br>
+
+    <b>CNH:</b> 70739848370<br>
+    <b>cpf:</b> 06274864016 / 062.748.640-16<br>
+    <b>placa:</b> vsm0001 / vsm-0001<br>
+    <b>renavam:</b> 72715202461<br>
+    <b>chassi:</b> 7rh 6kKcx9 37 h73328 / 7rh6kKcx937h73328<br><br>
+
+    <b>placa:</b> vsm0002 / vsm-0002<br>
+    <b>renavam:</b> 63915925620<br>
+    <b>chassi:</b> 7tp m54g34 VA 8Z1660 / 7tpm54g34VA8Z1660<br><br>
+
+    <b>boleto:</b> 00190500954014481606906809350314337370000000100<br>
+    </div>
+    `
+    //
+}
+function boxDocumentacoes() {
+    const tabHost = window.location.host
+    const tabPathName = window.location.pathname
+    const documentacao = {
+        "/MultaDetalhada.php": `tudo sobre a multa, indicação de condutor, etc etc etc`,
+        "/Dashboard.php": `A Dashboard etc etc`
+    }
+    let html = `
+    <div style="height:80px;">
+        <div style="display:inline-block; width:30%;">
+            <div class="dark"><small>[ Host ] </small> &nbsp;&nbsp;&nbsp; <strong>${tabHost}</strong> </div>
+            <div class="dark"><small>[ Path ] </small> &nbsp;&nbsp;&nbsp; <strong>${tabPathName}</strong> </div>
+        </div>
+        
+        <div style="display:inline-block;float:right;">
+        
+
+            <button type="button" class="btn btn-default btn-xl roawblur">
+                <i class="fa fa-3x fa-info"></i> <br> FrontEnd
+            </button>
+
+            <button type="button" class="btn btn-default btn-xl roawblur">
+                <i class="fa fa-3x fa-info"></i> <br> BackEnd
+            </button>
+
+            <button type="button" class="btn btn-default btn-xl roawblur" onlick="boxEventListeners()">
+                <i class="fa fa-3x fa-info"></i> <br> EventListeners
+            </button>
+
+
+            <button type="button" class="btn btn-default btn-xl roawblur" onclick="dbView()">
+                <i class="fa fa-3x fa-database"></i> <br> Database
+            </button>
+
+            <button type="button" class="btn btn-default btn-xl roawblur" onclick="telas()">
+                <i class="fa fa-3x fa-desktop"></i> <br> Funcionalidades
+            </button>
+
+            <button type="button" class="btn btn-default btn-xl roawblur" onclick="nadaAinda()">
+                <i class="fa fa-3x fa-file-code-o"></i> <br> Classes
+            </button>
+
+            <button type="button" class="btn btn-default btn-xl roawblur" onclick="nadaAinda()">
+                <i class="fa fa-3x fa-cubes"></i> <br> Microsserviços
+            </button>
+
+            <button type="button" class="btn btn-default btn-xl roawblur" onclick="nadaAinda()">
+                <i class="fa fa-3x fa-clock-o"></i> <br> Cron Jobs
+            </button>
+
+            <button type="button" class="btn btn-default btn-xl roawblur" onclick="nadaAinda()">
+                <i class="fa fa-3x fa-sitemap"></i> <br> Infra
+            </button>
+
+            <button type="button" class="btn btn-default btn-xl roawblur" onclick="nadaAinda()">
+                <i class="fa fa-3x fa-sitemap"></i> <br> APM Labels
+            </button>
+            
+        </div>
+    </div>
+    
+    <div>Dicas sobre essa tela:</div>
+    <div>${documentacao[tabPathName]}</div>
+    `
+
+    document.querySelector("#roawbox > .content").innerHTML = html
+}
+function boxMenuFind() {
+    menuFind(document.querySelector("#roawselector").value, "#roawbox > .content")
+}
+
+async function boxEventListeners(showlog = null) {
+    
+    const jqueryEvents = getEventHandlers(document);//jquery events
+
+    const allEvents = [...document.querySelectorAll("*")].filter(e => { return e.onclick || e.onchange || e.onsubmit || e.onkeyup || e.onkeydown }).map(e => {
+        let events = {};
+        if (e?.onclick) events.onclick = e?.onclick?.toString();
+        if (e?.onchange) events.onchange = e?.onchange?.toString();
+        if (e?.onsubmit) events.onsubmit = e?.onsubmit?.toString();
+        if (e?.onkeyup) events.onkeyup = e?.onkeyup?.toString();
+        if (e?.onkeydown) events.onkeydown = e?.onkeydown?.toString();
+
+        return {
+            element: e,
+            events
+        }
+    })
+    if (showlog) {
+        allEvents.forEach(e => {
+            // console.warn(e.element)
+            console.log({
+                "element": e.element,
+                "event": e.events
+            })
+        })
+    }
+
+    //console.warn(allEvents);
+    console.warn("este outro funciona melhor, mas roda apenas no console: ", "await fullEventListeners()")
+
+    console.log("jquery events", jqueryEvents)
+    console.log("inline events", allEvents)
+
+
+}
+
+
+async function fullEventListeners() {
+    const allevents = await getEvents("#page-wrapper", async function (eventArray) {
+        var html = eventArray.map(i => {
+            console.log(i)
+            return `<div>
+                <span style="background:#000;">${i.element.outerHTML}
+                <span style="background:#000;">${i.type}
+            </div>`
+        }).join("")
+        document.querySelector("#roawbox > .content").innerHTML = html
+    })
+    console.warn(allevents)
+
+}
+
+function showRoawBox() {
+    document.querySelector("#roawbox").style.left = "5%"
+    document.querySelector("#roawbox").style.width = "100%"
+    //document.querySelector("#dumperDeguggerBG").style.opacity="0.7"
+}
+function hideRoawBox() {
+    document.querySelector("#roawbox").style.left = "-200%"
+    document.querySelector("#roawbox").style.width = "0%"
+    //document.querySelector("#dumperDeguggerBG").style.opacity="0"
+}
+
+function toggleRoawBox() {
+    let roawBox = document.querySelector("#roawbox");
+    if (roawBox.classList.contains("roawboxhidden")) {
+        roawBox.classList.remove("roawboxhidden")
+    } else {
+        roawBox.classList.add("roawboxhidden")
+    }
+    const visibility = {
+        "none": "block",
+        "block": "none",
+    }
+    //document.querySelector("#roawbox").style.display=visibility[roawBox.style.display];
+}
+function toggleWrapperBorders() {
+    document.querySelector("#page-wrapper")?.classList.toggle("wrapperborders")
+}
+function toggleBodyBorders() {
+    document.querySelector("body")?.classList.toggle("wrapperborders")
+}
+
+document.body.insertAdjacentHTML("beforeend", roawBox);
+document.body.insertAdjacentHTML("beforeend", fullHTML);
+boxVarDump()
+
+
 if (displayState == 'none') {
     document.getElementById('sfToolbarMainContent-80d3dd').style.display = 'none';
     document.getElementById('sfToolbarClearer-80d3dd').style.display = 'none';
@@ -872,41 +1448,41 @@ if (displayState == 'none') {
 }
 
 /*<![CDATA[*/
-Sfjs = (function() {
+Sfjs = (function () {
 
     "use strict";
     var classListIsSupported = 'classList' in document.documentElement;
     if (classListIsSupported) {
-        var hasClass = function(el, cssClass) {
+        var hasClass = function (el, cssClass) {
             return el.classList.contains(cssClass);
         };
-        var removeClass = function(el, cssClass) {
+        var removeClass = function (el, cssClass) {
             el.classList.remove(cssClass);
         };
-        var addClass = function(el, cssClass) {
+        var addClass = function (el, cssClass) {
             el.classList.add(cssClass);
         };
-        var toggleClass = function(el, cssClass) {
+        var toggleClass = function (el, cssClass) {
             el.classList.toggle(cssClass);
         };
     } else {
-        var hasClass = function(el, cssClass) {
+        var hasClass = function (el, cssClass) {
             return el.className.match(new RegExp('\\b' + cssClass + '\\b'));
         };
-        var removeClass = function(el, cssClass) {
+        var removeClass = function (el, cssClass) {
             el.className = el.className.replace(new RegExp('\\b' + cssClass + '\\b'), ' ');
         };
-        var addClass = function(el, cssClass) {
+        var addClass = function (el, cssClass) {
             if (!hasClass(el, cssClass)) {
                 el.className += " " + cssClass;
             }
         };
-        var toggleClass = function(el, cssClass) {
+        var toggleClass = function (el, cssClass) {
             hasClass(el, cssClass) ? removeClass(el, cssClass) : addClass(el, cssClass);
         };
     }
-    var noop = function() {},
-        collectionToArray = function(collection) {
+    var noop = function () { },
+        collectionToArray = function (collection) {
             var length = collection.length || 0,
                 results = new Array(length);
             while (length--) {
@@ -915,18 +1491,18 @@ Sfjs = (function() {
             return results;
         },
         profilerStorageKey = 'sf2/profiler/',
-        request = function(url, onSuccess, onError, payload, options) {
+        request = function (url, onSuccess, onError, payload, options) {
             var xhr = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
             options = options || {};
             options.maxTries = options.maxTries || 0;
             xhr.open(options.method || 'GET', url, true);
             xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-            xhr.onreadystatechange = function(state) {
+            xhr.onreadystatechange = function (state) {
                 if (4 !== xhr.readyState) {
                     return null;
                 }
                 if (xhr.status == 404 && options.maxTries > 1) {
-                    setTimeout(function() {
+                    setTimeout(function () {
                         options.maxTries--;
                         request(url, onSuccess, onError, payload, options);
                     }, 500);
@@ -940,20 +1516,20 @@ Sfjs = (function() {
             };
             xhr.send(payload || '');
         },
-        getPreference = function(name) {
+        getPreference = function (name) {
             if (!window.localStorage) {
                 return null;
             }
             return localStorage.getItem(profilerStorageKey + name);
         },
-        setPreference = function(name, value) {
+        setPreference = function (name, value) {
             if (!window.localStorage) {
                 return null;
             }
             localStorage.setItem(profilerStorageKey + name, value);
         },
         requestStack = [],
-        extractHeaders = function(xhr, stackElement) { /* Here we avoid to call xhr.getResponseHeader in order to */ /* prevent polluting the console with CORS security errors */
+        extractHeaders = function (xhr, stackElement) { /* Here we avoid to call xhr.getResponseHeader in order to */ /* prevent polluting the console with CORS security errors */
             var allHeaders = xhr.getAllResponseHeaders();
             var ret;
             if (ret = allHeaders.match(/^x-debug-token:\s+(.*)$/im)) {
@@ -963,7 +1539,7 @@ Sfjs = (function() {
                 stackElement.profilerUrl = ret[1];
             }
         },
-        renderAjaxRequests = function() {
+        renderAjaxRequests = function () {
             var requestCounter = document.querySelectorAll('.sf-toolbar-ajax-requests');
             if (!requestCounter.length) {
                 return;
@@ -1071,17 +1647,17 @@ Sfjs = (function() {
     var addEventListener;
     var el = document.createElement('div');
     if (!('addEventListener' in el)) {
-        addEventListener = function(element, eventName, callback) {
+        addEventListener = function (element, eventName, callback) {
             element.attachEvent('on' + eventName, callback);
         };
     } else {
-        addEventListener = function(element, eventName, callback) {
+        addEventListener = function (element, eventName, callback) {
             element.addEventListener(eventName, callback, false);
         };
     }
     if (window.XMLHttpRequest && XMLHttpRequest.prototype.addEventListener) {
         var proxied = XMLHttpRequest.prototype.open;
-        XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
+        XMLHttpRequest.prototype.open = function (method, url, async, user, pass) {
             var self = this; /* prevent logging AJAX calls to static and inline files, like templates */
             var path = url;
             if (url.substr(0, 1) === '/') {
@@ -1100,7 +1676,7 @@ Sfjs = (function() {
                     start: new Date()
                 };
                 requestStack.push(stackElement);
-                this.addEventListener('readystatechange', function() {
+                this.addEventListener('readystatechange', function () {
                     if (self.readyState == 4) {
                         stackElement.duration = new Date() - stackElement.start;
                         stackElement.loading = false;
@@ -1125,21 +1701,21 @@ Sfjs = (function() {
         addEventListener: addEventListener,
         request: request,
         renderAjaxRequests: renderAjaxRequests,
-        load: function(selector, url, onSuccess, onError, options) {
+        load: function (selector, url, onSuccess, onError, options) {
             var el = document.getElementById(selector);
             if (el && el.getAttribute('data-sfurl') !== url) {
-                request(url, function(xhr) {
+                request(url, function (xhr) {
                     el.innerHTML = xhr.responseText;
                     el.setAttribute('data-sfurl', url);
                     removeClass(el, 'loading');
                     (onSuccess || noop)(xhr, el);
-                }, function(xhr) {
+                }, function (xhr) {
                     (onError || noop)(xhr, el);
                 }, '', options);
             }
             return this;
         },
-        toggle: function(selector, elOn, elOff) {
+        toggle: function (selector, elOn, elOff) {
             var tmp = elOn.style.display,
                 el = document.getElementById(selector);
             elOn.style.display = elOff.style.display;
@@ -1149,7 +1725,7 @@ Sfjs = (function() {
             }
             return this;
         },
-        createTabs: function() {
+        createTabs: function () {
             var tabGroups = document.querySelectorAll('.sf-tabs'); /* create the tab navigation for each group of tabs */
             for (var i = 0; i < tabGroups.length; i++) {
                 var tabs = tabGroups[i].querySelectorAll('.tab');
@@ -1183,7 +1759,7 @@ Sfjs = (function() {
                     } else {
                         document.getElementById(tabId).className = 'hidden';
                     }
-                    tabNavigation[j].addEventListener('click', function(e) {
+                    tabNavigation[j].addEventListener('click', function (e) {
                         var activeTab = e.target || e.srcElement; /* needed because when the tab contains HTML contents, user can click */ /* on any of those elements instead of their parent '<li>' element */
                         while (activeTab.tagName.toLowerCase() !== 'li') {
                             activeTab = activeTab.parentNode;
@@ -1201,7 +1777,7 @@ Sfjs = (function() {
                 }
             }
         },
-        createToggles: function() {
+        createToggles: function () {
             var toggles = document.querySelectorAll('.sf-toggle');
             for (var i = 0; i < toggles.length; i++) {
                 var elementSelector = toggles[i].getAttribute('data-toggle-selector');
@@ -1212,7 +1788,7 @@ Sfjs = (function() {
                 } else {
                     Sfjs.addClass(element, 'sf-toggle-hidden');
                 }
-                Sfjs.addEventListener(toggles[i], 'click', function(e) {
+                Sfjs.addEventListener(toggles[i], 'click', function (e) {
                     e.preventDefault();
                     var toggle = e.target || e.srcElement; /* needed because when the toggle contains HTML contents, user can click */ /* on any of those elements instead of their parent '.sf-toggle' element */
                     while (!Sfjs.hasClass(toggle, 'sf-toggle')) {
@@ -1236,7 +1812,7 @@ Sfjs = (function() {
         }
     };
 })();
-Sfjs.addEventListener(window, 'load', function() {
+Sfjs.addEventListener(window, 'load', function () {
     Sfjs.createTabs();
     Sfjs.createToggles();
 }); /*]]>*/
@@ -1248,8 +1824,8 @@ Sfjs.addEventListener(window, 'load', function() {
 
 
 /*<![CDATA[*/
-(function() {
-    Sfjs.load('sfwdt80d3dd', '/app_dev.php/_wdt/80d3dd', function(xhr, el) {
+(function () {
+    Sfjs.load('sfwdt80d3dd', '/app_dev.php/_wdt/80d3dd', function (xhr, el) {
         el.style.display = -1 !== xhr.responseText.indexOf('sf-toolbarreset') ? 'block' : 'none';
         if (el.style.display == 'none') {
             return;
@@ -1266,7 +1842,7 @@ Sfjs.addEventListener(window, 'load', function() {
         Sfjs.renderAjaxRequests(); /* Handle toolbar-info position */
         var toolbarBlocks = document.querySelectorAll('.sf-toolbar-block');
         for (var i = 0; i < toolbarBlocks.length; i += 1) {
-            toolbarBlocks[i].onmouseover = function() {
+            toolbarBlocks[i].onmouseover = function () {
                 var toolbarInfo = this.querySelectorAll('.sf-toolbar-info')[0];
                 var pageWidth = document.body.clientWidth;
                 var elementWidth = toolbarInfo.offsetWidth;
@@ -1285,7 +1861,7 @@ Sfjs.addEventListener(window, 'load', function() {
                 }
             };
         }
-    }, function(xhr) {
+    }, function (xhr) {
         if (xhr.status !== 0) {
             confirm('An error occurred while loading the web debug toolbar (' + xhr.status + ': ' + xhr.statusText + ').\n\nDo you want to open the profiler?') && (window.location = '/app_dev.php/_profiler/80d3dd');
         }
@@ -1296,18 +1872,18 @@ Sfjs.addEventListener(window, 'load', function() {
 
 
 
-async function logar(){
-   
-    const formdata  = new FormData();
-    formdata.append("xhr",true)
-    formdata.append("email","etc@lwtecnologia.com.br")
-    formdata.append("senha","etc*****")
-   
-    const response = await fetch("http://localhost:8006/segurancaValida.php",{
-        "method":"post",
-        "body":formdata
+async function logar() {
+
+    const formdata = new FormData();
+    formdata.append("xhr", true)
+    formdata.append("email", "etc@lwtecnologia.com.br")
+    formdata.append("senha", "etc*****")
+
+    const response = await fetch("http://localhost:8006/segurancaValida.php", {
+        "method": "post",
+        "body": formdata
     })
-  
+
     if (!response.ok) {
         throw new Error(`Erro ${response.status}`);
         return
@@ -1319,25 +1895,25 @@ async function logar(){
     // console.log("dataJson", dataJson);
 
     return dataText
-  
- }
 
- async function usuarioClienteDetalhes(){
+}
+
+async function usuarioClienteDetalhes() {
 
     const baseUrl = document.location.origin;
-   
-   
-    const response = await fetch(baseUrl+"/usuarioClienteDetalhes.php",{
-        "method":"get"
+
+
+    const response = await fetch(baseUrl + "/usuarioClienteDetalhes.php", {
+        "method": "get"
     })
-  
+
     if (!response.ok) {
         throw new Error(`Erro ${response.status}`);
     }
 
     const dataJson = await response.json()
 
-    if(!dataJson.cliente){
+    if (!dataJson.cliente) {
         dataJson.cliente = "Deslogado";
     }
 
@@ -1348,10 +1924,10 @@ async function logar(){
 
 
     var arrayObj = Object.entries(dataJson.usuario)
-    let aDescHTML = arrayObj.map(e =>{
+    let aDescHTML = arrayObj.map(e => {
         // console.log(e[0], e[1])
         const label = e[0]
-        const info = Array.isArray(e[1])?e[1].toString():e[1]
+        const info = Array.isArray(e[1]) ? e[1].toString() : e[1]
         return `
         <div class="sf-toolbar-info-piece">
         <b>${label}</b>
@@ -1361,49 +1937,49 @@ async function logar(){
     }).join("")
     const aDesc = document.querySelector(".sf-toolbar-info-group")
 
-    aDesc.innerHTML=aDescHTML
+    aDesc.innerHTML = aDescHTML
 
-  
- }
- usuarioClienteDetalhes()
 
- function showHiddenInputs(showConsole){
+}
+usuarioClienteDetalhes()
+
+function showHiddenInputs(showConsole) {
     const inputs = [];
     let hiddenDetected = false;
     document.querySelectorAll("input").forEach(i => {
         inputs.push(i)
-        if (i.type=="hidden" && i?.id != "vsmid" ) {
+        if (i.type == "hidden" && i?.id != "vsmid") {
             hiddenDetected = true;
-            if (showConsole) {console.log(i)}
+            if (showConsole) { console.log(i) }
         }
     });
 
-    
-    const mappedInputs = inputs.map(function(mi){
-        let id=null,name=null,value=null;
-        type = (mi?.type=='hidden')? `<b style="color:#f00" title="Type"> ${mi?.type} </b>`:`<b style="color:white" title="Type"> ${mi?.type} </b>`
-        id = (mi?.id)? `<b style="color:#0d0"  title="ID"> ${mi?.id} </b>` : ""
-        name = (mi?.name)? `<b style="color:#090" title="Name"> ${mi?.name} </b>`:""
-        value = (mi?.value)? `<b style="color:orange;background-color:#000;"  title="Value"> ${mi?.value} </b>`:''
-        
+
+    const mappedInputs = inputs.map(function (mi) {
+        let id = null, name = null, value = null;
+        type = (mi?.type == 'hidden') ? `<b style="color:#f00" title="Type"> ${mi?.type} </b>` : `<b style="color:white" title="Type"> ${mi?.type} </b>`
+        id = (mi?.id) ? `<b style="color:#0d0"  title="ID"> ${mi?.id} </b>` : ""
+        name = (mi?.name) ? `<b style="color:#090" title="Name"> ${mi?.name} </b>` : ""
+        value = (mi?.value) ? `<b style="color:orange;background-color:#000;"  title="Value"> ${mi?.value} </b>` : ''
+
         return `<div>${type}, ${id},  ${name}, ${value}</div>`
     }).join("")
-    
-    if (hiddenDetected){
+
+    if (hiddenDetected) {
         document.querySelector("#hiddenInputs").parentElement.classList.remove("sf-toolbar-status-normal")
         document.querySelector("#hiddenInputs").parentElement.classList.add("sf-toolbar-status-yellow")
     }
     document.querySelector("#hiddenCounter").innerHTML = `<b style="color:orange">${inputs.length}</b>`;
-    document.querySelector("#hiddenInputs").innerHTML=mappedInputs;
+    document.querySelector("#hiddenInputs").innerHTML = mappedInputs;
 
- }
- setInterval(function(){
+}
+setInterval(function () {
     showHiddenInputs()
- },1000)
+}, 1000)
 
-function benchmarkModule(){
-    
-var benchmarkModule = `
+function benchmarkModule() {
+
+    var benchmarkModule = `
 <div class="sf-toolbar-block sf-toolbar-block-twig sf-toolbar-status-normal ">
           
    <div class="sf-toolbar-icon">      
@@ -1440,7 +2016,7 @@ var benchmarkModule = `
    </div>
 </div>
 `
-document.querySelector("#sfToolbarMainContent-80d3dd").insertAdjacentHTML("beforeend",benchmarkModule)
+    document.querySelector("#sfToolbarMainContent-80d3dd").insertAdjacentHTML("beforeend", benchmarkModule)
 }
 
 
