@@ -645,4 +645,129 @@ function watchEventsPrototypeMode() {
 
 
 
+
+class Http {
+    constructor(nome, tokenConfig = null){
+        this.registrados = {
+            "config": "http://localhost:8006/vsmApi.php",
+            "gitlab": "http://git.lwtecnologia.com.br/api/v4",
+            "vsm": "https://api.vsmsystem.com",
+            "yplus": "https://yplus.vsmsystem.com/api",
+        }
+
+        //esse ms usa por padrão esse token caso ele exista no localStorage
+        this.bindToken = {
+            "gitlab":{"PRIVATE-TOKEN":"@gitlab-Token"},
+            "vsm":{"Authorization":"@vsm-Token"},
+            "yplus":{"Authorization":"@yplus-Token"}
+        }
+
+        //token padrão para quando nenhum é informado, prefiro não usar esse recurso
+        //this.defaultToken = {"Authorization":"@vsm-Token"};
+
+        this.nome=nome;
+        try{
+            this.url = this.getUrl(nome)
+        }catch($e){
+            //criar uma tratativa de erro melhor  pra quando o ms nao existe
+            return;
+        }
+
+        //token string, o proprio token, puro
+        if(typeof tokenConfig == "string"){
+            this.token = {"Authorization":tokenConfig};
+            return;
+        }
+
+        this.token = this.bindToken[nome] || tokenConfig || this.defaultToken
+
+    }
+    getUrl(){
+        if(this.url = localStorage.getItem(`url_api_${this.nome}`) || this.registrados[this.nome]){
+            return this.url;
+        }
+        throw new Error(`Microsservico [${this.nome}] não encontrado`);
+    }
+    setUrl(url){
+        if(!url){
+            localStorage.removeItem(`url_api_${this.nome}`);
+        }
+        localStorage.setItem(`url_api_${this.nome}`,url);
+        this.getUrl(this.nome)
+    }
+    localSync(ambiente = "producao"){
+        //faz um fetch pra uma api, busca a lista de microsserviços registrados e gera todas as urls em localStorage
+    }
+    ativos(){
+        return this.registrados;
+    }
+
+    getToken(){
+        var token = {};
+        try{
+            const tokenKey = Object.keys(this.token)[0]
+            const tokenVal = Object.values(this.token)[0]
+            token[tokenKey] = localStorage.getItem(tokenVal) || tokenVal;
+            return token;
+        }catch(err){
+            return this.token;
+        }
+    }
+
+    async get(path){
+        let headers = {};
+        Object.assign(headers, this.getToken())
+        const request = await fetch(`${this.url}/${path}`, {
+            headers,
+            "body": null,
+            "method": "GET",
+          });
+          return await request.json();
+    }
+
+    async post(path = "", data = null){
+        //body: formData, queryString, json, string
+        //url encoded
+        //accept json
+        //"mode": "cors",
+        //"credentials": "include"
+        // data instanceof FormData
+        let headers = {};
+        Object.assign(headers, this.getToken())
+        const request = await fetch(`${this.url}/${path}`, {
+            headers,
+            "body": JSON.stringify(data),
+            "method": "POST",
+        });
+        return await request.json();
+    }
+
+    async put(){
+        console.warn("Metodo PUT não implementado")
+    }
+
+    async delete(){
+        console.warn("Metodo DELETE não implementado")
+    }
+} 
+
+
+async function sfetch(url, data = null){
+	let options = {}
+	
+	options.method = (data) ? "post" : "get";
+	if (data) options.body = JSON.stringify(data)
+	console.log(options)
+
+	let response = await fetch(url,options);
+	return await response.text()
+}
+
+
+
  help = "io"
+
+
+
+
+
