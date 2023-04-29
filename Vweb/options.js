@@ -901,29 +901,7 @@ window.m1 = new ModalPortal({
 
 
 document.addEventListener("DOMContentLoaded",()=>{
-
+    listarLocalStorage()
 })
 
-  function listarLocalStorage() {
-    $("#localstoragelist").html("")
-    for (let i = 0; i < localStorage.length; i++) {
-      const chave = localStorage.key(i);
-      const valor = localStorage.getItem(chave);
-      if(chave.toLocaleLowerCase().indexOf("token") < 0) continue;
-      $("#localstoragelist").append(`
-      <tr>
-      <td>${chave}</td>
-      <td>
-      <div class="input-group"> 
-            <input id="" type="password" class="form-control" value="${valor}">
-            <div class="input-group-btn"> 
-                <button type="button" class="btn btn-default" aria-label="Help"><span class="glyphicon glyphicon-eye-open"></span></button>
-                <button type="button" class="btn btn-default" aria-label="Help"><span class="glyphicon glyphicon-trash"></span></button>
-            </div>
-        </div>
-      </tr>
-      `)
-    }
-  }
 
-  listarLocalStorage()

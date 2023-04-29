@@ -1,0 +1,160 @@
+<html>
+
+<head></head>
+
+<body>
+    <!--
+
+        criar um curso sobre extensões, sobre js, etc
+        vai ter npm install, rodar server local
+        vai ter um arquivo pra injetar em php (vsmApi.php, e outros)
+        automação em preencher alguns inputs
+        automação de alguns testes
+
+        criar função de dump no backend, funcionadiferente em front e back, html e json, etc
+        reconehcer dumps no meio do codigo
+        funçoes de editar coisa no front
+
+
+        em um dos modulos da vsm-bar, ter botoezinhos que ativam bordas, dragable, etc, editable, etc
+
+        css editor
+        htm editor
+        js editor (criar funções, etc)
+        colcoar efeito de glass no elemento escolhido
+        padroes de parse de pagina, tipo pegar os dados da nfe
+        getbytext
+        selectors
+        colocar e remover bordas pra ver a estruta da pagina
+        toaster
+        allEventListeners
+        na verdade funções da roawfunctions junto
+        websockets, workers
+        loadtime da pagina
+        carregar dados de github ou gitlab (foto, etc)
+
+        frontBuilder, um container escolhido na pagina atual 
+         * limpa uma tag escolhida na pagina atual, por exemplo #page-wrapper
+         * insere ou elementos, ou teplate strings, ex:
+           - row, col-md-*, selects, inputs, etx
+         * existirá uma listagem decoisas prontas que usam classes que existem no portal
+         * da pra fazer ate os listeners, que disparam ações pro backend
+         * da pra salvar esses textos e recarregar quando quiser
+         * os events podem ser feitos atraves de um painel proprio, coloca id/classe, evento, função (quee pode ser fetch[com include credentials, token, etc], etc)
+         * pode ter um painel lateral onde seleciono e arrasto elementos
+         * pode ter context menu que clico diretamente na pagina
+        php
+         * carregar informações no profiler
+           - versao php
+           - versao apache
+           - modulos
+           - memoria, ini set, etc
+           - default temp dir
+         * checker
+           - ms de enviroments, e usar o ms como service discovery/registry no  backend php replicando no front/localStorage
+           - chegar urls de microserviço do localStorage
+           - preparar o env do portal pra ter qa. homolog, dev, prod
+
+        vai ser um cosntrututor js, new RoawBox();
+         * da pra passar opções na inicialização
+         * da pra ler configs salvas tbm
+         * manter estados pra fazer rerender
+
+        page analyze
+         * ao clicar no botao (ou deixar em loop de 1000ms mas não pra sempre)
+         * ler todas as tags styles
+         * ler todos os events
+         * ler todas as tags script
+         * ler todos os inputs invisiveis
+
+        criador js
+         * criar eventos: onload, onclick, etc
+         * criar funcoes
+         * descobrir como o profiler do symphony intercepta xhr, criar um igual pra fetch
+
+        criar fetchs de forma visual igual insomnia, postman
+         * setar de tudo na entrada
+         * detectar type do retorno
+         * chamar função que quiser pra tartar retorno
+
+    -->
+
+    <style>
+        #roawbox {
+            position: fixed;
+            top: 0px;
+            left: 0px;
+            z-index: 99999;
+            width: calc(100% - 150px);
+            height: calc(100% - 200px);
+            color: #fff;
+            margin: 80px;
+
+            /* From https://css.glass */
+            background: rgba(0, 0, 0, 0.44);
+            border-radius: 8px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            border: 1px solid rgba(0, 0, 0, 0.7);
+        }
+
+        #roawbox>.header>.title {
+            display: inline;
+            margin-left: 10px;
+        }
+
+        #roawbox>.header>.icons {
+            float: right;
+            margin-right: 10px;
+        }
+
+        #roawbox>.header {
+            background: rgba(0, 0, 0, 0.44);
+            padding: 3px;
+        }
+
+        #roawbox>.header>.icons>.headericon {
+            background: #000;
+            border: solid 1px #000;
+            border-radius: 5px;
+            padding: 2px;
+            cursor: pointer;
+
+        }
+
+        #roawbox>.tabs {
+            text-align: right;
+            background: rgba(0, 0, 0, 0.25);
+        }
+
+        #roawbox>.tabs>button {
+            background: rgba(0, 0, 0, 0.25);
+            border: solid 0px #000;
+            border-radius: 3px;
+            margin: 4px;
+        }
+    </style>
+    <div id="roawbox">
+        <div class="header">
+            <div class="title">titulo</div>
+            <div class="icons">
+                <span class="headericon fa fa-database"></span>
+                <span class="headericon fa fa-table"></span>
+                <span class="headericon fa fa-columns"></span>
+
+                <span class="headericon fa fa-cog"></span>
+                <span onclick="this.parentElement.parentElement.parentElement.style.display='none'"
+                    class="headericon fa fa-close"></span>
+            </div>
+        </div>
+        <div class="tabs">
+            <button type="button">tab1</button>
+            <button type="button">tab2</button>
+            <button type="button">tab3</button>
+        </div>
+        <div class="content">teste</div>
+    </div>
+</body>
+
+</html>

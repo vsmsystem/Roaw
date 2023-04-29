@@ -643,13 +643,32 @@ function watchEventsPrototypeMode() {
 }
 
 
-
+function listarLocalStorage() {
+    $("#localstoragelist").html("")
+    for (let i = 0; i < localStorage.length; i++) {
+      const chave = localStorage.key(i);
+      const valor = localStorage.getItem(chave);
+      if(chave.toLocaleLowerCase().indexOf("token") < 0) continue;
+      $("#localstoragelist").append(`
+      <tr>
+      <td>${chave}</td>
+      <td>
+      <div class="input-group"> 
+            <input id="" type="password" class="form-control" value="${valor}">
+            <div class="input-group-btn"> 
+                <button type="button" class="btn btn-default" aria-label="Help"><span class="glyphicon glyphicon-eye-open"></span></button>
+                <button type="button" class="btn btn-default" aria-label="Help"><span class="glyphicon glyphicon-trash"></span></button>
+            </div>
+        </div>
+      </tr>
+      `)
+    }
+  }
 
 
 class Http {
     constructor(nome, tokenConfig = null){
         this.registrados = {
-            "config": "http://localhost:8006/vsmApi.php",
             "gitlab": "http://git.lwtecnologia.com.br/api/v4",
             "vsm": "https://api.vsmsystem.com",
             "yplus": "https://yplus.vsmsystem.com/api",
@@ -663,7 +682,7 @@ class Http {
         }
 
         //token padrão para quando nenhum é informado, prefiro não usar esse recurso
-        //this.defaultToken = {"Authorization":"@vsm-Token"};
+        this.defaultToken = {"Authorization":"@vsm-Token"};
 
         this.nome=nome;
         try{
@@ -766,8 +785,7 @@ async function sfetch(url, data = null){
 
 
  help = "io"
-
-
+window.vsm = new Http("vsm");
 
 
 

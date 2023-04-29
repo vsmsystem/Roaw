@@ -8,19 +8,71 @@ const {host, hostname, href, origin, pathname, port} = document.location; //matc
 getFromStorage();
 setVsmId(extVSMonitorId);
 
+if(!localStorage["roawConfigs"]){
+	localStorage["roawConfigs"]='{"roawStatus":"disabled"}'
+}
+
+roawResource={
+	roawStatus:()=>{
+		const hardcodedResources = {
+			"chat.openai.com":"chatgpt.js",
+			"atlassian.net":"jira.js"
+		}
+		for(key in hardcodedResources){
+			if (document.location.host.indexOf(key) > -1 ) {
+					var s = document.createElement("script");
+					s.src = `chrome-extension://${extVSMonitorId}/injectable-scripts/${hardcodedResources[key]}`;
+					document.body.appendChild(s);
+					console.log("injected", key, hardcodedResources[key])
+			}
+		}
+	},
+	vsmBar : ()=>{
+		injectScript("vsm-bar.js");
+	},
+	default : ()=>{
+		injectScript("default.js");
+	}
+};
+
+let roawParsedConfigs = JSON.parse(localStorage["roawConfigs"]);
+for(config in roawParsedConfigs){
+	if(roawParsedConfigs[config]==true){
+		roawResource[config]();
+	}
+}
+
+				
+
+
+chrome.runtime.onMessage.addListener(function(mensagem, sender, callback) {
+	console.log("tabMessage",mensagem); 
+
+	if (mensagem.pedido === 'localStorage') {
+		var localStorageDaAba = localStorage;
+		callback(localStorageDaAba);
+	}
+
+	if (mensagem.setLocalRoawConfig) {
+		let roawParsedConfigs = JSON.parse(localStorage["roawConfigs"]);
+		Object.assign(roawParsedConfigs,mensagem.setLocalRoawConfig)
+		console.log("novaConfig",roawParsedConfigs)
+		localStorage.setItem("roawConfigs",JSON.stringify(roawParsedConfigs));
+		if(mensagem.setLocalRoawConfig?.vsmBar==true){
+			roawResource.vsmBar()
+		}
+	}
+
+});
 
 (async function(){
-	let response = await chrome.runtime.sendMessage({
-		getConfig: "all"
-	})
-	
 	try{
 		stringfiedConfigs = await chrome.storage.sync.get("roawConfigs")
-		console.log("async", stringfiedConfigs.roawConfigs)
+		//console.log("async", stringfiedConfigs.roawConfigs)
 		runRoawConfigs(stringfiedJson.roawConfigs)
 	}catch(ee){
 		chrome.storage.sync.get("roawConfigs",function(data){
-			console.log("callback", data)
+			//console.log("callback", data)
 			runRoawConfigs(data.roawConfigs)
 		});
 	}
@@ -37,8 +89,8 @@ setVsmId(extVSMonitorId);
 		if(configs[host]){
 			var hostAlias = (typeof configs[host] == "string") ? configs[host] : host;
 			if(configs[hostAlias]?.vsmbar){
-				injectScript("default.js");
-				injectScript("vsm-bar.js");
+				//injectScript("default.js");
+				//injectScript("vsm-bar.js");
 				//exemplo de como mandar mensagem do arquivo injetado para o background.js da extensão
 				window.addEventListener("load", roaw_message_load, false);
 				document.addEventListener("keyup", roaw_message_event, false);
@@ -55,11 +107,7 @@ setVsmId(extVSMonitorId);
 	}
 }())
 
-if (seletorCodigo.indexOf("atlassian.net") > -1 ) {
-	var s = document.createElement("script");
-	s.src = "chrome-extension://" + extVSMonitorId + "/injectable-scripts/jira.js";
-	document.body.appendChild(s);
-}
+
 
 localStorage.setItem("document_end",Date.now())
 
@@ -75,25 +123,9 @@ function injectScript(scriptFile){
 
 //Message
 async function roaw_message_load() {
-
 	const response = await chrome.runtime.sendMessage({
 		etatime: "load"
 	});
-	// console.log("messageReturned",response);
-
-	  
-	// function (response) {
-	// 	// console.log(response.msg);
-	// 	const received = JSON.parse(response.msg.msgReceived)
-	// 	received.forEach((e,i)=>{
-	// 		//ja funciona, mas é ideia criar a opção de habilitar e desabilitar a função de preencher inputs
-	// 		// if(e.id) document.getElementById(e.id).value = e.value
-	// 	})
-
-	// }
-
-		
-
 }
 
 function roaw_message_event() {

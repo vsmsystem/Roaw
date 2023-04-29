@@ -1,5 +1,36 @@
+
+function css(element, property) {
+    return window.getComputedStyle(element, null).getPropertyValue(property);
+}
+
+function fontAwesomeCheck() {
+    var span = document.createElement('span');
+    var injectThis = "";
+
+    span.className = 'fa';
+    span.style.display = 'none';
+    document.body.insertBefore(span, document.body.firstChild);
+
+    if ((css(span, 'font-family')) !== 'FontAwesome') {
+        injectThis = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />`;
+    }
+    document.body.removeChild(span);
+    return injectThis;
+};
+
+const roawId = document.querySelector("roaw").innerText
+try {
+    const jqueryInstance = jQuery.fn.jquery;
+} catch (err) {
+    var jqueryTag = document.createElement('script');
+    jqueryTag.src = `chrome-extension://${roawId}/injectable-scripts/jquery-3.6.0.min.js`;
+    document.body.insertAdjacentElement("beforebegin", jqueryTag)
+}
+
+const faCdnInject = fontAwesomeCheck();
 const displayState = localStorage["sf2/profiler/toolbar/displayState"];
 const roawBox = `
+${faCdnInject}
 <style>
 
 .wrapperborders{
@@ -46,6 +77,10 @@ const roawBox = `
     transition-property: all;
     transition-duration: 0.3s;
     transition-timing-function: ease;
+}
+
+#roawbox > .tabs button {
+    color:#fff;
 }
 
 .roawblur{
@@ -931,6 +966,7 @@ const fullHTML = `
             <div class="sf-toolbar-info-piece">
                 <b>RoawBox</b>
                 <span onclick="toggleRoawBox()" class="sf-toolbar-status">open</span>
+                <span onclick="modalTeste()" class="sf-toolbar-status">modal</span>
             </div>
 
 			<div class="sf-toolbar-info-piece">
@@ -1141,7 +1177,9 @@ function boxVarDump() {
     if (varDumps?.length > 0) {
 
         document.querySelector("#vardumpcount").innerHTML = varDumps.length
-        document.querySelector("#roawbox > .content").innerHTML = [...document.querySelectorAll(".var_dump")].map(d => { return `<pre>${d.innerHTML}</pre>` }).join("")
+        document.querySelector("#roawbox > .content").innerHTML = [...document.querySelectorAll(".var_dump")].map(d => {
+            return `<pre style="background-color:#999;padding:5px;border-radius:3px;">${d.innerHTML}</pre>`
+        }).join("")
         document.querySelector(".sf-toolbar-block-vardump").classList.toggle("sf-toolbar-status-yellow")
         toggleRoawBox()
     }
@@ -1282,8 +1320,46 @@ function boxDocumentacoes() {
     const tabHost = window.location.host
     const tabPathName = window.location.pathname
     const documentacao = {
-        "/MultaDetalhada.php": `tudo sobre a multa, indicação de condutor, etc etc etc`,
-        "/Dashboard.php": `A Dashboard etc etc`
+        "/MultaDetalhada.php": `
+        <h2>Multa Detalhada</h2>
+        <div>
+        Esta é uma das principais telas do sistema. normalmente terá 3 abas internas e a indicação de condutor pode ser iniciada na aba "indicação condutor"
+        </div>
+        <div>
+        <b>Como indicar um condutor?</b>
+        <ul>
+            <li>pesquisa > consulta > placa (ou auto), detalhes</li>
+            <li>indicação condutor > imagem cnh e imagem termo</li>
+            <li>depois tem que ir em operação > validar notificação pra poder aprovar a indicação ou rejeitar a indicação</li>
+        </ul>
+        <div>
+        `,
+        "/Dashboard.php": `A Dashboard etc etc`,
+        "/Configuracoes_Cliente_Detalhes.php": `
+        <h2>Cliente Config</h2>
+        <div>
+        <p>2023-03-29: Atualmente esta tela é usada apenas por funcionários da LW, mas no futuro será acessível aos clientes</p>
+        <h4>Devs</h4>
+        <p>no html do front existe uma table <mark> id = table_body_detalhes</mark>,cada TR corresponde a uma coluna da tabela cliente_config. Em algum lugar de cada TR haverá um input ou select, e este possui um ID, que deverá ter o exato mesmo nome da coluna no banco de dados, o javascript da pagina se encarregará de carregar e configurar o valor no input, e tambem de salvar mudanças através do onchange. Para casos simples, de campos texto ou checkbox só isso basta em relação ao html/front, porém se houver modal com outras opções dentro, precisa ser desenvolver por completo as ações de dentro d modal, tanto no front quanto no back</p>
+        <p>Adicionamente, se precisar usar modal, existe uma classe que ajuda com isso:</p>
+        <pre>
+            <code>
+            const minhaModal = new ModalPortal({
+                id: "ocultarImagensModal", //id do elemento principal da modal
+                title: "Ocultar Imagens",
+                show: true, //inicia ja mostrando em tela
+                content: ""
+            })
+            </code>
+        </pre>
+        <p>Passos para criar um recurso simples (input, sem modal) nesta tela:</p>
+        <ul>
+            <li> <b style="color:#5697ff">Configuracoes_Cliente_Detalhes.php</b> > adicionar a TR com o input no frontend </li>
+            <li> <b style="color:#5697ff">Class/ClienteConfig.php</b> > adicionar o nome do novo campo no array </li>
+            <li> <b style="color:#5697ff">Class/Cliente/ClientesRepository.php</b> > adicionar novo campo na query </li>
+        </ul>
+        </div>
+        `
     }
     let html = `
     <div style="height:80px;">
@@ -1339,7 +1415,7 @@ function boxDocumentacoes() {
         </div>
     </div>
     
-    <div>Dicas sobre essa tela:</div>
+    <div>Dicas sobre essa tela:</div><hr>
     <div>${documentacao[tabPathName]}</div>
     `
 
@@ -1350,7 +1426,7 @@ function boxMenuFind() {
 }
 
 async function boxEventListeners(showlog = null) {
-    
+
     const jqueryEvents = getEventHandlers(document);//jquery events
 
     const allEvents = [...document.querySelectorAll("*")].filter(e => { return e.onclick || e.onchange || e.onsubmit || e.onkeyup || e.onkeydown }).map(e => {
@@ -2017,6 +2093,3442 @@ function benchmarkModule() {
 </div>
 `
     document.querySelector("#sfToolbarMainContent-80d3dd").insertAdjacentHTML("beforeend", benchmarkModule)
+}
+
+
+
+
+
+window.icones = `<div class="row">
+                                <div class="fa col-lg-3">
+                                    <p class="fa fa-glass"> fa-glass </p>
+                                    <br>
+                                    <p class="fa fa-music"> fa-music </p>
+                                    <br>
+                                    <p class="fa fa-search"> fa-search </p>
+                                    <br>
+                                    <p class="fa fa-envelope-o"> fa-envelope-o </p>
+                                    <br>
+                                    <p class="fa fa-heart"> fa-heart </p>
+                                    <br>
+                                    <p class="fa fa-star"> fa-star </p>
+                                    <br>
+                                    <p class="fa fa-star-o"> fa-star-o </p>
+                                    <br>
+                                    <p class="fa fa-user"> fa-user </p>
+                                    <br>
+                                    <p class="fa fa-film"> fa-film </p>
+                                    <br>
+                                    <p class="fa fa-th-large"> fa-th-large </p>
+                                    <br>
+                                    <p class="fa fa-th"> fa-th </p>
+                                    <br>
+                                    <p class="fa fa-th-list"> fa-th-list </p>
+                                    <br>
+                                    <p class="fa fa-check"> fa-check </p>
+                                    <br>
+                                    <p class="fa fa-times"> fa-times </p>
+                                    <br>
+                                    <p class="fa fa-search-plus"> fa-search-plus </p>
+                                    <br>
+                                    <p class="fa fa-search-minus"> fa-search-minus </p>
+                                    <br>
+                                    <p class="fa fa-power-off"> fa-power-off </p>
+                                    <br>
+                                    <p class="fa fa-signal"> fa-signal </p>
+                                    <br>
+                                    <p class="fa fa-gear"> fa-gear </p>
+                                    <br>
+                                    <p class="fa fa-cog"> fa-cog </p>
+                                    <br>
+                                    <p class="fa fa-trash-o"> fa-trash-o </p>
+                                    <br>
+                                    <p class="fa fa-home"> fa-home </p>
+                                    <br>
+                                    <p class="fa fa-file-o"> fa-file-o </p>
+                                    <br>
+                                    <p class="fa fa-clock-o"> fa-clock-o </p>
+                                    <br>
+                                    <p class="fa fa-road"> fa-road </p>
+                                    <br>
+                                    <p class="fa fa-download"> fa-download </p>
+                                    <br>
+                                    <p class="fa fa-arrow-circle-o-down"> fa-arrow-circle-o-down </p>
+                                    <br>
+                                    <p class="fa fa-arrow-circle-o-up"> fa-arrow-circle-o-up </p>
+                                    <br>
+                                    <p class="fa fa-inbox"> fa-inbox </p>
+                                    <br>
+                                    <p class="fa fa-play-circle-o"> fa-play-circle-o </p>
+                                    <br>
+                                    <p class="fa fa-rotate-right"> fa-rotate-right </p>
+                                    <br>
+                                    <p class="fa fa-repeat"> fa-repeat </p>
+                                    <br>
+                                    <p class="fa fa-refresh"> fa-refresh </p>
+                                    <br>
+                                    <p class="fa fa-list-alt"> fa-list-alt </p>
+                                    <br>
+                                    <p class="fa fa-lock"> fa-lock </p>
+                                    <br>
+                                    <p class="fa fa-flag"> fa-flag </p>
+                                    <br>
+                                    <p class="fa fa-headphones"> fa-headphones </p>
+                                    <br>
+                                    <p class="fa fa-volume-off"> fa-volume-off </p>
+                                    <br>
+                                    <p class="fa fa-volume-down"> fa-volume-down </p>
+                                    <br>
+                                    <p class="fa fa-volume-up"> fa-volume-up </p>
+                                    <br>
+                                    <p class="fa fa-qrcode"> fa-qrcode </p>
+                                    <br>
+                                    <p class="fa fa-barcode"> fa-barcode </p>
+                                    <br>
+                                    <p class="fa fa-tag"> fa-tag </p>
+                                    <br>
+                                    <p class="fa fa-tags"> fa-tags </p>
+                                    <br>
+                                    <p class="fa fa-book"> fa-book </p>
+                                    <br>
+                                    <p class="fa fa-bookmark"> fa-bookmark </p>
+                                    <br>
+                                    <p class="fa fa-print"> fa-print </p>
+                                    <br>
+                                    <p class="fa fa-camera"> fa-camera </p>
+                                    <br>
+                                    <p class="fa fa-font"> fa-font </p>
+                                    <br>
+                                    <p class="fa fa-bold"> fa-bold </p>
+                                    <br>
+                                    <p class="fa fa-italic"> fa-italic </p>
+                                    <br>
+                                    <p class="fa fa-text-height"> fa-text-height </p>
+                                    <br>
+                                    <p class="fa fa-text-width"> fa-text-width </p>
+                                    <br>
+                                    <p class="fa fa-align-left"> fa-align-left </p>
+                                    <br>
+                                    <p class="fa fa-align-center"> fa-align-center </p>
+                                    <br>
+                                    <p class="fa fa-align-right"> fa-align-right </p>
+                                    <br>
+                                    <p class="fa fa-align-justify"> fa-align-justify </p>
+                                    <br>
+                                    <p class="fa fa-list"> fa-list </p>
+                                    <br>
+                                    <p class="fa fa-dedent"> fa-dedent </p>
+                                    <br>
+                                    <p class="fa fa-outdent"> fa-outdent </p>
+                                    <br>
+                                    <p class="fa fa-indent"> fa-indent </p>
+                                    <br>
+                                    <p class="fa fa-video-camera"> fa-video-camera </p>
+                                    <br>
+                                    <p class="fa fa-photo"> fa-photo </p>
+                                    <br>
+                                    <p class="fa fa-image"> fa-image </p>
+                                    <br>
+                                    <p class="fa fa-picture-o"> fa-picture-o </p>
+                                    <br>
+                                    <p class="fa fa-pencil"> fa-pencil </p>
+                                    <br>
+                                    <p class="fa fa-map-marker"> fa-map-marker </p>
+                                    <br>
+                                    <p class="fa fa-adjust"> fa-adjust </p>
+                                    <br>
+                                    <p class="fa fa-tint"> fa-tint </p>
+                                    <br>
+                                    <p class="fa fa-edit"> fa-edit </p>
+                                    <br>
+                                    <p class="fa fa-pencil-square-o"> fa-pencil-square-o </p>
+                                    <br>
+                                    <p class="fa fa-share-square-o"> fa-share-square-o </p>
+                                    <br>
+                                    <p class="fa fa-check-square-o"> fa-check-square-o </p>
+                                    <br>
+                                    <p class="fa fa-arrows"> fa-arrows </p>
+                                    <br>
+                                    <p class="fa fa-step-backward"> fa-step-backward </p>
+                                    <br>
+                                    <p class="fa fa-fast-backward"> fa-fast-backward </p>
+                                    <br>
+                                    <p class="fa fa-backward"> fa-backward </p>
+                                    <br>
+                                    <p class="fa fa-play"> fa-play </p>
+                                    <br>
+                                    <p class="fa fa-pause"> fa-pause </p>
+                                    <br>
+                                    <p class="fa fa-stop"> fa-stop </p>
+                                    <br>
+                                    <p class="fa fa-forward"> fa-forward </p>
+                                    <br>
+                                    <p class="fa fa-fast-forward"> fa-fast-forward </p>
+                                    <br>
+                                    <p class="fa fa-step-forward"> fa-step-forward </p>
+                                    <br>
+                                    <p class="fa fa-eject"> fa-eject </p>
+                                    <br>
+                                    <p class="fa fa-chevron-left"> fa-chevron-left </p>
+                                    <br>
+                                    <p class="fa fa-chevron-right"> fa-chevron-right </p>
+                                    <br>
+                                    <p class="fa fa-plus-circle"> fa-plus-circle </p>
+                                    <br>
+                                    <p class="fa fa-minus-circle"> fa-minus-circle </p>
+                                    <br>
+                                    <p class="fa fa-times-circle"> fa-times-circle </p>
+                                    <br>
+                                    <p class="fa fa-check-circle"> fa-check-circle </p>
+                                    <br>
+                                    <p class="fa fa-question-circle"> fa-question-circle </p>
+                                    <br>
+                                    <p class="fa fa-info-circle"> fa-info-circle </p>
+                                    <br>
+                                    <p class="fa fa-crosshairs"> fa-crosshairs </p>
+                                    <br>
+                                    <p class="fa fa-times-circle-o"> fa-times-circle-o </p>
+                                    <br>
+                                    <p class="fa fa-check-circle-o"> fa-check-circle-o </p>
+                                    <br>
+                                    <p class="fa fa-ban"> fa-ban </p>
+                                    <br>
+                                    <p class="fa fa-arrow-left"> fa-arrow-left </p>
+                                    <br>
+                                    <p class="fa fa-arrow-right"> fa-arrow-right </p>
+                                    <br>
+                                    <p class="fa fa-arrow-up"> fa-arrow-up </p>
+                                    <br>
+                                    <p class="fa fa-arrow-down"> fa-arrow-down </p>
+                                    <br>
+                                    <p class="fa fa-mail-forward"> fa-mail-forward </p>
+                                    <br>
+                                    <p class="fa fa-share"> fa-share </p>
+                                    <br>
+                                    <p class="fa fa-expand"> fa-expand </p>
+                                    <br>
+                                    <p class="fa fa-compress"> fa-compress </p>
+                                    <br>
+                                    <p class="fa fa-plus"> fa-plus </p>
+                                    <br>
+                                    <p class="fa fa-minus"> fa-minus </p>
+                                    <br>
+                                    <p class="fa fa-asterisk"> fa-asterisk </p>
+                                    <br>
+                                    <p class="fa fa-exclamation-circle"> fa-exclamation-circle </p>
+                                    <br>
+                                    <p class="fa fa-gift"> fa-gift </p>
+                                    <br>
+                                    <p class="fa fa-leaf"> fa-leaf </p>
+                                    <br>
+                                    <p class="fa fa-fire"> fa-fire </p>
+                                    <br>
+                                    <p class="fa fa-eye"> fa-eye </p>
+                                    <br>
+                                    <p class="fa fa-eye-slash"> fa-eye-slash </p>
+                                    <br>
+                                    <p class="fa fa-warning"> fa-warning </p>
+                                    <br>
+                                    <p class="fa fa-exclamation-triangle"> fa-exclamation-triangle </p>
+                                    <br>
+                                    <p class="fa fa-plane"> fa-plane </p>
+                                    <br>
+                                    <p class="fa fa-calendar"> fa-calendar </p>
+                                    <br>
+                                    <p class="fa fa-random"> fa-random </p>
+                                    <br>
+                                    <p class="fa fa-comment"> fa-comment </p>
+                                    <br>
+                                    <p class="fa fa-magnet"> fa-magnet </p>
+                                    <br>
+                                    <p class="fa fa-chevron-up"> fa-chevron-up </p>
+                                    <br>
+                                    <p class="fa fa-chevron-down"> fa-chevron-down </p>
+                                    <br>
+                                    <p class="fa fa-retweet"> fa-retweet </p>
+                                    <br>
+                                    <p class="fa fa-shopping-cart"> fa-shopping-cart </p>
+                                    <br>
+                                    <p class="fa fa-folder"> fa-folder </p>
+                                    <br>
+                                    <p class="fa fa-folder-open"> fa-folder-open </p>
+                                    <br>
+                                </div>
+                                <!-- /.col-lg-6 (nested) -->
+                                <div class="fa col-lg-3">
+                                    <p class="fa fa-arrows-v"> fa-arrows-v </p>
+                                    <br>
+                                    <p class="fa fa-arrows-h"> fa-arrows-h </p>
+                                    <br>
+                                    <p class="fa fa-bar-chart-o"> fa-bar-chart-o </p>
+                                    <br>
+                                    <p class="fa fa-twitter-square"> fa-twitter-square </p>
+                                    <br>
+                                    <p class="fa fa-facebook-square"> fa-facebook-square </p>
+                                    <br>
+                                    <p class="fa fa-camera-retro"> fa-camera-retro </p>
+                                    <br>
+                                    <p class="fa fa-key"> fa-key </p>
+                                    <br>
+                                    <p class="fa fa-gears"> fa-gears </p>
+                                    <br>
+                                    <p class="fa fa-cogs"> fa-cogs </p>
+                                    <br>
+                                    <p class="fa fa-comments"> fa-comments </p>
+                                    <br>
+                                    <p class="fa fa-thumbs-o-up"> fa-thumbs-o-up </p>
+                                    <br>
+                                    <p class="fa fa-thumbs-o-down"> fa-thumbs-o-down </p>
+                                    <br>
+                                    <p class="fa fa-star-half"> fa-star-half </p>
+                                    <br>
+                                    <p class="fa fa-heart-o"> fa-heart-o </p>
+                                    <br>
+                                    <p class="fa fa-sign-out"> fa-sign-out </p>
+                                    <br>
+                                    <p class="fa fa-linkedin-square"> fa-linkedin-square </p>
+                                    <br>
+                                    <p class="fa fa-thumb-tack"> fa-thumb-tack </p>
+                                    <br>
+                                    <p class="fa fa-external-link"> fa-external-link </p>
+                                    <br>
+                                    <p class="fa fa-sign-in"> fa-sign-in </p>
+                                    <br>
+                                    <p class="fa fa-trophy"> fa-trophy </p>
+                                    <br>
+                                    <p class="fa fa-github-square"> fa-github-square </p>
+                                    <br>
+                                    <p class="fa fa-upload"> fa-upload </p>
+                                    <br>
+                                    <p class="fa fa-lemon-o"> fa-lemon-o </p>
+                                    <br>
+                                    <p class="fa fa-phone"> fa-phone </p>
+                                    <br>
+                                    <p class="fa fa-square-o"> fa-square-o </p>
+                                    <br>
+                                    <p class="fa fa-bookmark-o"> fa-bookmark-o </p>
+                                    <br>
+                                    <p class="fa fa-phone-square"> fa-phone-square </p>
+                                    <br>
+                                    <p class="fa fa-twitter"> fa-twitter </p>
+                                    <br>
+                                    <p class="fa fa-facebook"> fa-facebook </p>
+                                    <br>
+                                    <p class="fa fa-github"> fa-github </p>
+                                    <br>
+                                    <p class="fa fa-unlock"> fa-unlock </p>
+                                    <br>
+                                    <p class="fa fa-credit-card"> fa-credit-card </p>
+                                    <br>
+                                    <p class="fa fa-rss"> fa-rss </p>
+                                    <br>
+                                    <p class="fa fa-hdd-o"> fa-hdd-o </p>
+                                    <br>
+                                    <p class="fa fa-bullhorn"> fa-bullhorn </p>
+                                    <br>
+                                    <p class="fa fa-bell"> fa-bell </p>
+                                    <br>
+                                    <p class="fa fa-certificate"> fa-certificate </p>
+                                    <br>
+                                    <p class="fa fa-hand-o-right"> fa-hand-o-right </p>
+                                    <br>
+                                    <p class="fa fa-hand-o-left"> fa-hand-o-left </p>
+                                    <br>
+                                    <p class="fa fa-hand-o-up"> fa-hand-o-up </p>
+                                    <br>
+                                    <p class="fa fa-hand-o-down"> fa-hand-o-down </p>
+                                    <br>
+                                    <p class="fa fa-arrow-circle-left"> fa-arrow-circle-left </p>
+                                    <br>
+                                    <p class="fa fa-arrow-circle-right"> fa-arrow-circle-right </p>
+                                    <br>
+                                    <p class="fa fa-arrow-circle-up"> fa-arrow-circle-up </p>
+                                    <br>
+                                    <p class="fa fa-arrow-circle-down"> fa-arrow-circle-down </p>
+                                    <br>
+                                    <p class="fa fa-globe"> fa-globe </p>
+                                    <br>
+                                    <p class="fa fa-wrench"> fa-wrench </p>
+                                    <br>
+                                    <p class="fa fa-tasks"> fa-tasks </p>
+                                    <br>
+                                    <p class="fa fa-filter"> fa-filter </p>
+                                    <br>
+                                    <p class="fa fa-briefcase"> fa-briefcase </p>
+                                    <br>
+                                    <p class="fa fa-arrows-alt"> fa-arrows-alt </p>
+                                    <br>
+                                    <p class="fa fa-group"> fa-group </p>
+                                    <br>
+                                    <p class="fa fa-users"> fa-users </p>
+                                    <br>
+                                    <p class="fa fa-chain"> fa-chain </p>
+                                    <br>
+                                    <p class="fa fa-link"> fa-link </p>
+                                    <br>
+                                    <p class="fa fa-cloud"> fa-cloud </p>
+                                    <br>
+                                    <p class="fa fa-flask"> fa-flask </p>
+                                    <br>
+                                    <p class="fa fa-cut"> fa-cut </p>
+                                    <br>
+                                    <p class="fa fa-scissors"> fa-scissors </p>
+                                    <br>
+                                    <p class="fa fa-copy"> fa-copy </p>
+                                    <br>
+                                    <p class="fa fa-files-o"> fa-files-o </p>
+                                    <br>
+                                    <p class="fa fa-paperclip"> fa-paperclip </p>
+                                    <br>
+                                    <p class="fa fa-save"> fa-save </p>
+                                    <br>
+                                    <p class="fa fa-floppy-o"> fa-floppy-o </p>
+                                    <br>
+                                    <p class="fa fa-square"> fa-square </p>
+                                    <br>
+                                    <p class="fa fa-navicon"> fa-navicon </p>
+                                    <br>
+                                    <p class="fa fa-reorder"> fa-reorder </p>
+                                    <br>
+                                    <p class="fa fa-bars"> fa-bars </p>
+                                    <br>
+                                    <p class="fa fa-list-ul"> fa-list-ul </p>
+                                    <br>
+                                    <p class="fa fa-list-ol"> fa-list-ol </p>
+                                    <br>
+                                    <p class="fa fa-strikethrough"> fa-strikethrough </p>
+                                    <br>
+                                    <p class="fa fa-underline"> fa-underline </p>
+                                    <br>
+                                    <p class="fa fa-table"> fa-table </p>
+                                    <br>
+                                    <p class="fa fa-magic"> fa-magic </p>
+                                    <br>
+                                    <p class="fa fa-truck"> fa-truck </p>
+                                    <br>
+                                    <p class="fa fa-pinterest"> fa-pinterest </p>
+                                    <br>
+                                    <p class="fa fa-pinterest-square"> fa-pinterest-square </p>
+                                    <br>
+                                    <p class="fa fa-google-plus-square"> fa-google-plus-square </p>
+                                    <br>
+                                    <p class="fa fa-google-plus"> fa-google-plus </p>
+                                    <br>
+                                    <p class="fa fa-money"> fa-money </p>
+                                    <br>
+                                    <p class="fa fa-caret-down"> fa-caret-down </p>
+                                    <br>
+                                    <p class="fa fa-caret-up"> fa-caret-up </p>
+                                    <br>
+                                    <p class="fa fa-caret-left"> fa-caret-left </p>
+                                    <br>
+                                    <p class="fa fa-caret-right"> fa-caret-right </p>
+                                    <br>
+                                    <p class="fa fa-columns"> fa-columns </p>
+                                    <br>
+                                    <p class="fa fa-unsorted"> fa-unsorted </p>
+                                    <br>
+                                    <p class="fa fa-sort"> fa-sort </p>
+                                    <br>
+                                    <p class="fa fa-sort-down"> fa-sort-down </p>
+                                    <br>
+                                    <p class="fa fa-sort-desc"> fa-sort-desc </p>
+                                    <br>
+                                    <p class="fa fa-sort-up"> fa-sort-up </p>
+                                    <br>
+                                    <p class="fa fa-sort-asc"> fa-sort-asc </p>
+                                    <br>
+                                    <p class="fa fa-envelope"> fa-envelope </p>
+                                    <br>
+                                    <p class="fa fa-linkedin"> fa-linkedin </p>
+                                    <br>
+                                    <p class="fa fa-rotate-left"> fa-rotate-left </p>
+                                    <br>
+                                    <p class="fa fa-undo"> fa-undo </p>
+                                    <br>
+                                    <p class="fa fa-legal"> fa-legal </p>
+                                    <br>
+                                    <p class="fa fa-gavel"> fa-gavel </p>
+                                    <br>
+                                    <p class="fa fa-dashboard"> fa-dashboard </p>
+                                    <br>
+                                    <p class="fa fa-tachometer"> fa-tachometer </p>
+                                    <br>
+                                    <p class="fa fa-comment-o"> fa-comment-o </p>
+                                    <br>
+                                    <p class="fa fa-comments-o"> fa-comments-o </p>
+                                    <br>
+                                    <p class="fa fa-flash"> fa-flash </p>
+                                    <br>
+                                    <p class="fa fa-bolt"> fa-bolt </p>
+                                    <br>
+                                    <p class="fa fa-sitemap"> fa-sitemap </p>
+                                    <br>
+                                    <p class="fa fa-umbrella"> fa-umbrella </p>
+                                    <br>
+                                    <p class="fa fa-paste"> fa-paste </p>
+                                    <br>
+                                    <p class="fa fa-clipboard"> fa-clipboard </p>
+                                    <br>
+                                    <p class="fa fa-lightbulb-o"> fa-lightbulb-o </p>
+                                    <br>
+                                    <p class="fa fa-exchange"> fa-exchange </p>
+                                    <br>
+                                    <p class="fa fa-cloud-download"> fa-cloud-download </p>
+                                    <br>
+                                    <p class="fa fa-cloud-upload"> fa-cloud-upload </p>
+                                    <br>
+                                    <p class="fa fa-user-md"> fa-user-md </p>
+                                    <br>
+                                    <p class="fa fa-stethoscope"> fa-stethoscope </p>
+                                    <br>
+                                    <p class="fa fa-suitcase"> fa-suitcase </p>
+                                    <br>
+                                    <p class="fa fa-bell-o"> fa-bell-o </p>
+                                    <br>
+                                    <p class="fa fa-coffee"> fa-coffee </p>
+                                    <br>
+                                    <p class="fa fa-cutlery"> fa-cutlery </p>
+                                    <br>
+                                    <p class="fa fa-file-text-o"> fa-file-text-o </p>
+                                    <br>
+                                    <p class="fa fa-building-o"> fa-building-o </p>
+                                    <br>
+                                    <p class="fa fa-hospital-o"> fa-hospital-o </p>
+                                    <br>
+                                    <p class="fa fa-ambulance"> fa-ambulance </p>
+                                    <br>
+                                    <p class="fa fa-medkit"> fa-medkit </p>
+                                    <br>
+                                    <p class="fa fa-fighter-jet"> fa-fighter-jet </p>
+                                    <br>
+                                    <p class="fa fa-beer"> fa-beer </p>
+                                    <br>
+                                    <p class="fa fa-h-square"> fa-h-square </p>
+                                    <br>
+                                    <p class="fa fa-plus-square"> fa-plus-square </p>
+                                    <br>
+                                </div>
+                                <div class="fa col-lg-3">
+                                    <p class="fa fa-angle-double-left"> fa-angle-double-left </p>
+                                    <br>
+                                    <p class="fa fa-angle-double-right"> fa-angle-double-right </p>
+                                    <br>
+                                    <p class="fa fa-angle-double-up"> fa-angle-double-up </p>
+                                    <br>
+                                    <p class="fa fa-angle-double-down"> fa-angle-double-down </p>
+                                    <br>
+                                    <p class="fa fa-angle-left"> fa-angle-left </p>
+                                    <br>
+                                    <p class="fa fa-angle-right"> fa-angle-right </p>
+                                    <br>
+                                    <p class="fa fa-angle-up"> fa-angle-up </p>
+                                    <br>
+                                    <p class="fa fa-angle-down"> fa-angle-down </p>
+                                    <br>
+                                    <p class="fa fa-desktop"> fa-desktop </p>
+                                    <br>
+                                    <p class="fa fa-laptop"> fa-laptop </p>
+                                    <br>
+                                    <p class="fa fa-tablet"> fa-tablet </p>
+                                    <br>
+                                    <p class="fa fa-mobile-phone"> fa-mobile-phone </p>
+                                    <br>
+                                    <p class="fa fa-mobile"> fa-mobile </p>
+                                    <br>
+                                    <p class="fa fa-circle-o"> fa-circle-o </p>
+                                    <br>
+                                    <p class="fa fa-quote-left"> fa-quote-left </p>
+                                    <br>
+                                    <p class="fa fa-quote-right"> fa-quote-right </p>
+                                    <br>
+                                    <p class="fa fa-spinner"> fa-spinner </p>
+                                    <br>
+                                    <p class="fa fa-circle"> fa-circle </p>
+                                    <br>
+                                    <p class="fa fa-mail-reply"> fa-mail-reply </p>
+                                    <br>
+                                    <p class="fa fa-reply"> fa-reply </p>
+                                    <br>
+                                    <p class="fa fa-github-alt"> fa-github-alt </p>
+                                    <br>
+                                    <p class="fa fa-folder-o"> fa-folder-o </p>
+                                    <br>
+                                    <p class="fa fa-folder-open-o"> fa-folder-open-o </p>
+                                    <br>
+                                    <p class="fa fa-smile-o"> fa-smile-o </p>
+                                    <br>
+                                    <p class="fa fa-frown-o"> fa-frown-o </p>
+                                    <br>
+                                    <p class="fa fa-meh-o"> fa-meh-o </p>
+                                    <br>
+                                    <p class="fa fa-gamepad"> fa-gamepad </p>
+                                    <br>
+                                    <p class="fa fa-keyboard-o"> fa-keyboard-o </p>
+                                    <br>
+                                    <p class="fa fa-flag-o"> fa-flag-o </p>
+                                    <br>
+                                    <p class="fa fa-flag-checkered"> fa-flag-checkered </p>
+                                    <br>
+                                    <p class="fa fa-terminal"> fa-terminal </p>
+                                    <br>
+                                    <p class="fa fa-code"> fa-code </p>
+                                    <br>
+                                    <p class="fa fa-mail-reply-all"> fa-mail-reply-all </p>
+                                    <br>
+                                    <p class="fa fa-reply-all"> fa-reply-all </p>
+                                    <br>
+                                    <p class="fa fa-star-half-empty"> fa-star-half-empty </p>
+                                    <br>
+                                    <p class="fa fa-star-half-full"> fa-star-half-full </p>
+                                    <br>
+                                    <p class="fa fa-star-half-o"> fa-star-half-o </p>
+                                    <br>
+                                    <p class="fa fa-location-arrow"> fa-location-arrow </p>
+                                    <br>
+                                    <p class="fa fa-crop"> fa-crop </p>
+                                    <br>
+                                    <p class="fa fa-code-fork"> fa-code-fork </p>
+                                    <br>
+                                    <p class="fa fa-unlink"> fa-unlink </p>
+                                    <br>
+                                    <p class="fa fa-chain-broken"> fa-chain-broken </p>
+                                    <br>
+                                    <p class="fa fa-question"> fa-question </p>
+                                    <br>
+                                    <p class="fa fa-info"> fa-info </p>
+                                    <br>
+                                    <p class="fa fa-exclamation"> fa-exclamation </p>
+                                    <br>
+                                    <p class="fa fa-superscript"> fa-superscript </p>
+                                    <br>
+                                    <p class="fa fa-subscript"> fa-subscript </p>
+                                    <br>
+                                    <p class="fa fa-eraser"> fa-eraser </p>
+                                    <br>
+                                    <p class="fa fa-puzzle-piece"> fa-puzzle-piece </p>
+                                    <br>
+                                    <p class="fa fa-microphone"> fa-microphone </p>
+                                    <br>
+                                    <p class="fa fa-microphone-slash"> fa-microphone-slash </p>
+                                    <br>
+                                    <p class="fa fa-shield"> fa-shield </p>
+                                    <br>
+                                    <p class="fa fa-calendar-o"> fa-calendar-o </p>
+                                    <br>
+                                    <p class="fa fa-fire-extinguisher"> fa-fire-extinguisher </p>
+                                    <br>
+                                    <p class="fa fa-rocket"> fa-rocket </p>
+                                    <br>
+                                    <p class="fa fa-maxcdn"> fa-maxcdn </p>
+                                    <br>
+                                    <p class="fa fa-chevron-circle-left"> fa-chevron-circle-left </p>
+                                    <br>
+                                    <p class="fa fa-chevron-circle-right"> fa-chevron-circle-right </p>
+                                    <br>
+                                    <p class="fa fa-chevron-circle-up"> fa-chevron-circle-up </p>
+                                    <br>
+                                    <p class="fa fa-chevron-circle-down"> fa-chevron-circle-down </p>
+                                    <br>
+                                    <p class="fa fa-html5"> fa-html5 </p>
+                                    <br>
+                                    <p class="fa fa-css3"> fa-css3 </p>
+                                    <br>
+                                    <p class="fa fa-anchor"> fa-anchor </p>
+                                    <br>
+                                    <p class="fa fa-unlock-alt"> fa-unlock-alt </p>
+                                    <br>
+                                    <p class="fa fa-bullseye"> fa-bullseye </p>
+                                    <br>
+                                    <p class="fa fa-ellipsis-h"> fa-ellipsis-h </p>
+                                    <br>
+                                    <p class="fa fa-ellipsis-v"> fa-ellipsis-v </p>
+                                    <br>
+                                    <p class="fa fa-rss-square"> fa-rss-square </p>
+                                    <br>
+                                    <p class="fa fa-play-circle"> fa-play-circle </p>
+                                    <br>
+                                    <p class="fa fa-ticket"> fa-ticket </p>
+                                    <br>
+                                    <p class="fa fa-minus-square"> fa-minus-square </p>
+                                    <br>
+                                    <p class="fa fa-minus-square-o"> fa-minus-square-o </p>
+                                    <br>
+                                    <p class="fa fa-level-up"> fa-level-up </p>
+                                    <br>
+                                    <p class="fa fa-level-down"> fa-level-down </p>
+                                    <br>
+                                    <p class="fa fa-check-square"> fa-check-square </p>
+                                    <br>
+                                    <p class="fa fa-pencil-square"> fa-pencil-square </p>
+                                    <br>
+                                    <p class="fa fa-external-link-square"> fa-external-link-square </p>
+                                    <br>
+                                    <p class="fa fa-share-square"> fa-share-square </p>
+                                    <br>
+                                    <p class="fa fa-compass"> fa-compass </p>
+                                    <br>
+                                    <p class="fa fa-toggle-down"> fa-toggle-down </p>
+                                    <br>
+                                    <p class="fa fa-caret-square-o-down"> fa-caret-square-o-down </p>
+                                    <br>
+                                    <p class="fa fa-toggle-up"> fa-toggle-up </p>
+                                    <br>
+                                    <p class="fa fa-caret-square-o-up"> fa-caret-square-o-up </p>
+                                    <br>
+                                    <p class="fa fa-toggle-right"> fa-toggle-right </p>
+                                    <br>
+                                    <p class="fa fa-caret-square-o-right"> fa-caret-square-o-right </p>
+                                    <br>
+                                    <p class="fa fa-euro"> fa-euro </p>
+                                    <br>
+                                    <p class="fa fa-eur"> fa-eur </p>
+                                    <br>
+                                    <p class="fa fa-gbp"> fa-gbp </p>
+                                    <br>
+                                    <p class="fa fa-dollar"> fa-dollar </p>
+                                    <br>
+                                    <p class="fa fa-usd"> fa-usd </p>
+                                    <br>
+                                    <p class="fa fa-rupee"> fa-rupee </p>
+                                    <br>
+                                    <p class="fa fa-inr"> fa-inr </p>
+                                    <br>
+                                    <p class="fa fa-cny"> fa-cny </p>
+                                    <br>
+                                    <p class="fa fa-rmb"> fa-rmb </p>
+                                    <br>
+                                    <p class="fa fa-yen"> fa-yen </p>
+                                    <br>
+                                    <p class="fa fa-jpy"> fa-jpy </p>
+                                    <br>
+                                    <p class="fa fa-ruble"> fa-ruble </p>
+                                    <br>
+                                    <p class="fa fa-rouble"> fa-rouble </p>
+                                    <br>
+                                    <p class="fa fa-rub"> fa-rub </p>
+                                    <br>
+                                    <p class="fa fa-won"> fa-won </p>
+                                    <br>
+                                    <p class="fa fa-krw"> fa-krw </p>
+                                    <br>
+                                    <p class="fa fa-bitcoin"> fa-bitcoin </p>
+                                    <br>
+                                    <p class="fa fa-btc"> fa-btc </p>
+                                    <br>
+                                    <p class="fa fa-file"> fa-file </p>
+                                    <br>
+                                    <p class="fa fa-file-text"> fa-file-text </p>
+                                    <br>
+                                    <p class="fa fa-sort-alpha-asc"> fa-sort-alpha-asc </p>
+                                    <br>
+                                    <p class="fa fa-sort-alpha-desc"> fa-sort-alpha-desc </p>
+                                    <br>
+                                    <p class="fa fa-sort-amount-asc"> fa-sort-amount-asc </p>
+                                    <br>
+                                    <p class="fa fa-sort-amount-desc"> fa-sort-amount-desc </p>
+                                    <br>
+                                    <p class="fa fa-sort-numeric-asc"> fa-sort-numeric-asc </p>
+                                    <br>
+                                    <p class="fa fa-sort-numeric-desc"> fa-sort-numeric-desc </p>
+                                    <br>
+                                    <p class="fa fa-thumbs-up"> fa-thumbs-up </p>
+                                    <br>
+                                    <p class="fa fa-thumbs-down"> fa-thumbs-down </p>
+                                    <br>
+                                    <p class="fa fa-youtube-square"> fa-youtube-square </p>
+                                    <br>
+                                    <p class="fa fa-youtube"> fa-youtube </p>
+                                    <br>
+                                    <p class="fa fa-xing"> fa-xing </p>
+                                    <br>
+                                    <p class="fa fa-xing-square"> fa-xing-square </p>
+                                    <br>
+                                    <p class="fa fa-youtube-play"> fa-youtube-play </p>
+                                    <br>
+                                    <p class="fa fa-dropbox"> fa-dropbox </p>
+                                    <br>
+                                    <p class="fa fa-stack-overflow"> fa-stack-overflow </p>
+                                    <br>
+                                    <p class="fa fa-instagram"> fa-instagram </p>
+                                    <br>
+                                    <p class="fa fa-flickr"> fa-flickr </p>
+                                    <br>
+                                    <p class="fa fa-adn"> fa-adn </p>
+                                    <br>
+                                    <p class="fa fa-bitbucket"> fa-bitbucket </p>
+                                    <br>
+                                    <p class="fa fa-bitbucket-square"> fa-bitbucket-square </p>
+                                    <br>
+                                    <p class="fa fa-tumblr"> fa-tumblr </p>
+                                    <br>
+                                </div>
+                                <div class="fa col-lg-3">
+                                    <p class="fa fa-tumblr-square"> fa-tumblr-square </p>
+                                    <br>
+                                    <p class="fa fa-long-arrow-down"> fa-long-arrow-down </p>
+                                    <br>
+                                    <p class="fa fa-long-arrow-up"> fa-long-arrow-up </p>
+                                    <br>
+                                    <p class="fa fa-long-arrow-left"> fa-long-arrow-left </p>
+                                    <br>
+                                    <p class="fa fa-long-arrow-right"> fa-long-arrow-right </p>
+                                    <br>
+                                    <p class="fa fa-apple"> fa-apple </p>
+                                    <br>
+                                    <p class="fa fa-windows"> fa-windows </p>
+                                    <br>
+                                    <p class="fa fa-android"> fa-android </p>
+                                    <br>
+                                    <p class="fa fa-linux"> fa-linux </p>
+                                    <br>
+                                    <p class="fa fa-dribbble"> fa-dribbble </p>
+                                    <br>
+                                    <p class="fa fa-skype"> fa-skype </p>
+                                    <br>
+                                    <p class="fa fa-foursquare"> fa-foursquare </p>
+                                    <br>
+                                    <p class="fa fa-trello"> fa-trello </p>
+                                    <br>
+                                    <p class="fa fa-female"> fa-female </p>
+                                    <br>
+                                    <p class="fa fa-male"> fa-male </p>
+                                    <br>
+                                    <p class="fa fa-gittip"> fa-gittip </p>
+                                    <br>
+                                    <p class="fa fa-sun-o"> fa-sun-o </p>
+                                    <br>
+                                    <p class="fa fa-moon-o"> fa-moon-o </p>
+                                    <br>
+                                    <p class="fa fa-archive"> fa-archive </p>
+                                    <br>
+                                    <p class="fa fa-bug"> fa-bug </p>
+                                    <br>
+                                    <p class="fa fa-vk"> fa-vk </p>
+                                    <br>
+                                    <p class="fa fa-weibo"> fa-weibo </p>
+                                    <br>
+                                    <p class="fa fa-renren"> fa-renren </p>
+                                    <br>
+                                    <p class="fa fa-pagelines"> fa-pagelines </p>
+                                    <br>
+                                    <p class="fa fa-stack-exchange"> fa-stack-exchange </p>
+                                    <br>
+                                    <p class="fa fa-arrow-circle-o-right"> fa-arrow-circle-o-right </p>
+                                    <br>
+                                    <p class="fa fa-arrow-circle-o-left"> fa-arrow-circle-o-left </p>
+                                    <br>
+                                    <p class="fa fa-toggle-left"> fa-toggle-left </p>
+                                    <br>
+                                    <p class="fa fa-caret-square-o-left"> fa-caret-square-o-left </p>
+                                    <br>
+                                    <p class="fa fa-dot-circle-o"> fa-dot-circle-o </p>
+                                    <br>
+                                    <p class="fa fa-wheelchair"> fa-wheelchair </p>
+                                    <br>
+                                    <p class="fa fa-vimeo-square"> fa-vimeo-square </p>
+                                    <br>
+                                    <p class="fa fa-turkish-lira"> fa-turkish-lira </p>
+                                    <br>
+                                    <p class="fa fa-try"> fa-try </p>
+                                    <br>
+                                    <p class="fa fa-plus-square-o"> fa-plus-square-o </p>
+                                    <br>
+                                    <p class="fa fa-space-shuttle"> fa-space-shuttle </p>
+                                    <br>
+                                    <p class="fa fa-slack"> fa-slack </p>
+                                    <br>
+                                    <p class="fa fa-envelope-square"> fa-envelope-square </p>
+                                    <br>
+                                    <p class="fa fa-wordpress"> fa-wordpress </p>
+                                    <br>
+                                    <p class="fa fa-openid"> fa-openid </p>
+                                    <br>
+                                    <p class="fa fa-institution"> fa-institution </p>
+                                    <br>
+                                    <p class="fa fa-bank"> fa-bank </p>
+                                    <br>
+                                    <p class="fa fa-university"> fa-university </p>
+                                    <br>
+                                    <p class="fa fa-mortar-board"> fa-mortar-board </p>
+                                    <br>
+                                    <p class="fa fa-graduation-cap"> fa-graduation-cap </p>
+                                    <br>
+                                    <p class="fa fa-yahoo"> fa-yahoo </p>
+                                    <br>
+                                    <p class="fa fa-google"> fa-google </p>
+                                    <br>
+                                    <p class="fa fa-reddit"> fa-reddit </p>
+                                    <br>
+                                    <p class="fa fa-reddit-square"> fa-reddit-square </p>
+                                    <br>
+                                    <p class="fa fa-stumbleupon-circle"> fa-stumbleupon-circle </p>
+                                    <br>
+                                    <p class="fa fa-stumbleupon"> fa-stumbleupon </p>
+                                    <br>
+                                    <p class="fa fa-delicious"> fa-delicious </p>
+                                    <br>
+                                    <p class="fa fa-digg"> fa-digg </p>
+                                    <br>
+                                    <p class="fa fa-pied-piper-square"> fa-pied-piper-square </p>
+                                    <br>
+                                    <p class="fa fa-pied-piper"> fa-pied-piper </p>
+                                    <br>
+                                    <p class="fa fa-pied-piper-alt"> fa-pied-piper-alt </p>
+                                    <br>
+                                    <p class="fa fa-drupal"> fa-drupal </p>
+                                    <br>
+                                    <p class="fa fa-joomla"> fa-joomla </p>
+                                    <br>
+                                    <p class="fa fa-language"> fa-language </p>
+                                    <br>
+                                    <p class="fa fa-fax"> fa-fax </p>
+                                    <br>
+                                    <p class="fa fa-building"> fa-building </p>
+                                    <br>
+                                    <p class="fa fa-child"> fa-child </p>
+                                    <br>
+                                    <p class="fa fa-paw"> fa-paw </p>
+                                    <br>
+                                    <p class="fa fa-spoon"> fa-spoon </p>
+                                    <br>
+                                    <p class="fa fa-cube"> fa-cube </p>
+                                    <br>
+                                    <p class="fa fa-cubes"> fa-cubes </p>
+                                    <br>
+                                    <p class="fa fa-behance"> fa-behance </p>
+                                    <br>
+                                    <p class="fa fa-behance-square"> fa-behance-square </p>
+                                    <br>
+                                    <p class="fa fa-steam"> fa-steam </p>
+                                    <br>
+                                    <p class="fa fa-steam-square"> fa-steam-square </p>
+                                    <br>
+                                    <p class="fa fa-recycle"> fa-recycle </p>
+                                    <br>
+                                    <p class="fa fa-automobile"> fa-automobile </p>
+                                    <br>
+                                    <p class="fa fa-car"> fa-car </p>
+                                    <br>
+                                    <p class="fa fa-cab"> fa-cab </p>
+                                    <br>
+                                    <p class="fa fa-taxi"> fa-taxi </p>
+                                    <br>
+                                    <p class="fa fa-tree"> fa-tree </p>
+                                    <br>
+                                    <p class="fa fa-spotify"> fa-spotify </p>
+                                    <br>
+                                    <p class="fa fa-deviantart"> fa-deviantart </p>
+                                    <br>
+                                    <p class="fa fa-soundcloud"> fa-soundcloud </p>
+                                    <br>
+                                    <p class="fa fa-database"> fa-database </p>
+                                    <br>
+                                    <p class="fa fa-file-pdf-o"> fa-file-pdf-o </p>
+                                    <br>
+                                    <p class="fa fa-file-word-o"> fa-file-word-o </p>
+                                    <br>
+                                    <p class="fa fa-file-excel-o"> fa-file-excel-o </p>
+                                    <br>
+                                    <p class="fa fa-file-powerpoint-o"> fa-file-powerpoint-o </p>
+                                    <br>
+                                    <p class="fa fa-file-photo-o"> fa-file-photo-o </p>
+                                    <br>
+                                    <p class="fa fa-file-picture-o"> fa-file-picture-o </p>
+                                    <br>
+                                    <p class="fa fa-file-image-o"> fa-file-image-o </p>
+                                    <br>
+                                    <p class="fa fa-file-zip-o"> fa-file-zip-o </p>
+                                    <br>
+                                    <p class="fa fa-file-archive-o"> fa-file-archive-o </p>
+                                    <br>
+                                    <p class="fa fa-file-sound-o"> fa-file-sound-o </p>
+                                    <br>
+                                    <p class="fa fa-file-audio-o"> fa-file-audio-o </p>
+                                    <br>
+                                    <p class="fa fa-file-movie-o"> fa-file-movie-o </p>
+                                    <br>
+                                    <p class="fa fa-file-video-o"> fa-file-video-o </p>
+                                    <br>
+                                    <p class="fa fa-file-code-o"> fa-file-code-o </p>
+                                    <br>
+                                    <p class="fa fa-vine"> fa-vine </p>
+                                    <br>
+                                    <p class="fa fa-codepen"> fa-codepen </p>
+                                    <br>
+                                    <p class="fa fa-jsfiddle"> fa-jsfiddle </p>
+                                    <br>
+                                    <p class="fa fa-life-bouy"> fa-life-bouy </p>
+                                    <br>
+                                    <p class="fa fa-life-saver"> fa-life-saver </p>
+                                    <br>
+                                    <p class="fa fa-support"> fa-support </p>
+                                    <br>
+                                    <p class="fa fa-life-ring"> fa-life-ring </p>
+                                    <br>
+                                    <p class="fa fa-circle-o-notch"> fa-circle-o-notch </p>
+                                    <br>
+                                    <p class="fa fa-ra"> fa-ra </p>
+                                    <br>
+                                    <p class="fa fa-rebel"> fa-rebel </p>
+                                    <br>
+                                    <p class="fa fa-ge"> fa-ge </p>
+                                    <br>
+                                    <p class="fa fa-empire"> fa-empire </p>
+                                    <br>
+                                    <p class="fa fa-git-square"> fa-git-square </p>
+                                    <br>
+                                    <p class="fa fa-git"> fa-git </p>
+                                    <br>
+                                    <p class="fa fa-hacker-news"> fa-hacker-news </p>
+                                    <br>
+                                    <p class="fa fa-tencent-weibo"> fa-tencent-weibo </p>
+                                    <br>
+                                    <p class="fa fa-qq"> fa-qq </p>
+                                    <br>
+                                    <p class="fa fa-wechat"> fa-wechat </p>
+                                    <br>
+                                    <p class="fa fa-weixin"> fa-weixin </p>
+                                    <br>
+                                    <p class="fa fa-send"> fa-send </p>
+                                    <br>
+                                    <p class="fa fa-paper-plane"> fa-paper-plane </p>
+                                    <br>
+                                    <p class="fa fa-send-o"> fa-send-o </p>
+                                    <br>
+                                    <p class="fa fa-paper-plane-o"> fa-paper-plane-o </p>
+                                    <br>
+                                    <p class="fa fa-history"> fa-history </p>
+                                    <br>
+                                    <p class="fa fa-circle-thin"> fa-circle-thin </p>
+                                    <br>
+                                    <p class="fa fa-header"> fa-header </p>
+                                    <br>
+                                    <p class="fa fa-paragraph"> fa-paragraph </p>
+                                    <br>
+                                    <p class="fa fa-sliders"> fa-sliders </p>
+                                    <br>
+                                    <p class="fa fa-share-alt"> fa-share-alt </p>
+                                    <br>
+                                    <p class="fa fa-share-alt-square"> fa-share-alt-square </p>
+                                    <br>
+                                    <p class="fa fa-bomb"> fa-bomb </p>
+                                    <br>
+                                </div>
+                                <!-- /.col-lg-6 (nested) -->
+                            </div>`
+
+window.mockdoc = `
+  
+                            <div class="row">
+                              <div class="col-lg-8">
+                                              <div class="panel panel-default">
+                                                  <div class="panel-heading">
+                                                      <i class="fa fa-bar-chart-o fa-fw"></i> Area Chart Example
+                                                      <div class="pull-right">
+                                                          <div class="btn-group">
+                                                            
+                                                            
+                                                            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                                                                Actions
+                                                                <span class="caret"></span>
+                                                            </button>
+                                                            <button type="button" class="btn btn-default btn-xs">
+                                                                <span action="toggleMinMax" param="searchresult" class="fa fa-minus"></span>
+                                                            </button>
+                                                              <ul class="dropdown-menu pull-right" role="menu">
+                                                                  <li><a href="#">Action</a>
+                                                                  </li>
+                                                                  <li><a href="#">Another action</a>
+                                                                  </li>
+                                                                  <li><a href="#">Something else here</a>
+                                                                  </li>
+                                                                  <li class="divider"></li>
+                                                                  <li><a href="#">Separated link</a>
+                                                                  </li>
+                                                              </ul>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+
+                                                  <div class="panel-body searchresult">
+                            
+                            
+                            
+                            
+                            
+                                                  </div>
+
+                                                  </div>
+
+                                                  
+
+                                      
+                                              </div>
+                                              <!-- /.panel -->
+                                          </div>
+                              <div class="col-md-4"> 
+                            <div class="form-group"> 
+                                              <div class="input-group"> 
+                                                  <input id="searchbox" placeholder="Auto de Infração" type="text" class="form-control" >
+                                                  <div class="input-group-btn"> 
+                                                      <button id="fanta" type="button" class="btn btn-default"><i class="fa fa-code"></i></button> 
+                                                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> 
+                                                          <span class="caret"></span> 
+                                                          <span class="sr-only">Toggle Dropdown</span> 
+                                                      </button> 
+                                                      <ul class="dropdown-menu dropdown-menu-right"> 
+                            
+                                                          <li><a href="./pages/icons.html" target="_blank">Template e Icones</a></li> 
+                                                          <li role="separator" class="divider"></li> 
+                            
+                                                          <li><a href="#" class="alterarClienteClick">91</a></li>
+                                                          <li><a href="#" class="alterarClienteClick">4</a></li>
+                                                          <li><a href="#" class="alterarClienteClick">31</a></li>
+                            
+                                                          <li role="separator" class="divider"></li> 
+                                                          <li><a href="#" class="limparArquivosClick">Limpar Arquivos</a></li>
+                            
+                                                          <li role="separator" class="divider"></li> 
+                                                          <li><a href="#"><label><input checked="checked" type="radio"> Modal<label></label></label></a></li> 
+                                                          <li><a href="#"><label><input disabled="" type="radio"> Debug Page</label></a></li> 
+                            
+                                                      </ul> 
+                                                  </div> 
+                                              </div>
+                                          </div>
+                                       
+                                          
+                            
+                            
+                            <style>
+                            .styledlabel label{
+                                border:solid 1px #000;
+                                border-radius:5px;
+                                padding:0px 5px 0px 5px;
+                                margin-bottom:3px;
+                            }
+                            </style>
+                            
+                            <div class="panel panel-default">
+                                                  <div class="panel-body styledlabel">
+                                                        <label><input name="searchFunction" value="buscarMenu" type="radio" />Menu</label>
+                                                        <label><input name="searchFunction" value="multaId" type="radio" />Multa ID</label>
+                                                        <label><input name="searchFunction" value="buscarAutoInfracao" type="radio" checked />Auto</label>
+                                                        <label><input name="searchFunction" value="veiculoId" type="radio" />Veículo ID</label>
+                                                        <label><input name="searchFunction" value="VeiculoPlaca" type="radio" />Veículo Placa</label>
+                                                        <label><input name="searchFunction" value="veiculoRenavam" type="radio" />Veículo Renavam </label>
+                                                        <label><input name="searchFunction" value="clienteId" type="radio" />Cliente ID </label>
+                                                        <label><input name="searchFunction" value="clienteNome" type="radio" />Cliente Nome </label>
+                                                        <label><input name="searchFunction" value="icones" action="icones" type="radio" />Icones </label>
+                                                        <label><input name="searchFunction" value="alterarCliente" type="radio" />Alterar Cliente </label>
+                            
+                                                        
+                            
+                                                        
+                                          
+                                           
+                            
+                              
+                                          </div></div>
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                                          
+                                              <div class="panel panel-default">
+                                                  <div class="panel-heading">
+                                                      <i class="fa fa-car fa-fw"></i> Notifications Panel
+                                                  </div>
+                                                  <!-- /.panel-heading -->
+                                                  <div class="panel-body">
+                                                      
+                                                      <!-- /.list-group -->
+                                                      <a href="#" class="btn btn-default btn-block">View All Alerts</a>
+                                                  </div>
+                                                  <!-- /.panel-body -->
+                                              </div>
+                            
+                            
+                                              <div class="list-group">
+                                                          <a href="#" class="list-group-item">
+                                                              <i class="fa fa-file-text-o fa-fw"></i> Multa
+                                                              <span class="pull-right text-muted small"><em><span class="label label-warning">1</span></em>
+                                                              </span>
+                                                          </a>
+                                                          <a href="#" class="list-group-item">
+                                                              <i class="fa fa-image fa-fw"></i> Imagens
+                                                              <span class="pull-right text-muted small"><em>...</em>
+                                                              </span>
+                                                          </a>
+                                                          <a href="#" class="list-group-item">
+                                                              <i class="fa fa-hand-o-up fa-fw"></i> Indicação
+                                                              <span class="pull-right text-muted small"><em>..</em>
+                                                              </span>
+                                                          </a>
+                                                          <a href="#" class="list-group-item">
+                                                              <i class="fa fa-dollar fa-fw"></i> Pagamento
+                                                              <span class="pull-right text-muted small"><em>..</em>
+                                                              </span>
+                                                          </a>
+                                                          <a href="#" class="list-group-item">
+                                                              <i class="fa fa-car fa-fw"></i> Veículo
+                                                              <span class="pull-right text-muted small"><em>...</em>
+                                                              </span>
+                                                          </a>
+                                                          <a href="#" class="list-group-item">
+                                                              <i class="fa fa-info fa-fw"></i> Veículo Histórico
+                                                              <span class="pull-right text-muted small"><em>...</em>
+                                                              </span>
+                                                          </a>
+                                                          <a href="#" class="list-group-item">
+                                                              <i class="fa fa-info fa-fw"></i> Veículo Histórico Grupo
+                                                              <span class="pull-right text-muted small"><em>...</em>
+                                                              </span>
+                                                          </a>
+                                                          <a href="#" class="list-group-item">
+                                                              <i class="fa fa-envelope-o fa-fw"></i> Envio Email
+                                                              <span class="pull-right text-muted small"><em>..</em>
+                                                              </span>
+                                                          </a>
+                                                          <a href="#" class="list-group-item">
+                                                              <i class="fa fa-info fa-fw"></i> Info
+                                                              <span class="pull-right text-muted small"><em>43 minutes ago</em>
+                                                              </span>
+                                                          </a>
+                                                      </div>
+                            </div>
+                            </div>
+                                          
+                            `
+
+window.mockzao = `
+  
+<div class="row">
+  <div class="col-lg-8">
+                  <div class="panel panel-default">
+                      <div class="panel-heading">
+                          <i class="fa fa-bar-chart-o fa-fw"></i> Area Chart Example
+                          <div class="pull-right">
+                              <div class="btn-group">
+                                
+                                
+                                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                                    Actions
+                                    <span class="caret"></span>
+                                </button>
+                                <button type="button" class="btn btn-default btn-xs">
+                                    <span action="toggleMinMax" param="searchresult" class="fa fa-minus"></span>
+                                </button>
+                                  <ul class="dropdown-menu pull-right" role="menu">
+                                      <li><a href="#">Action</a>
+                                      </li>
+                                      <li><a href="#">Another action</a>
+                                      </li>
+                                      <li><a href="#">Something else here</a>
+                                      </li>
+                                      <li class="divider"></li>
+                                      <li><a href="#">Separated link</a>
+                                      </li>
+                                  </ul>
+                              </div>
+                          </div>
+                      </div>
+                      <!-- /.panel-heading -->
+                      <div class="panel-body searchresult">
+
+
+
+
+
+                      </div>
+                      <!-- /.panel-body -->
+                  </div>
+                  <!-- /.panel -->
+                  
+                  <!-- /.panel -->
+                  <div class="panel panel-default">
+                      <div class="panel-heading">
+                          <i class="fa fa-clock-o fa-fw"></i> Responsive Timeline
+
+                          <div class="pull-right">
+                              <div class="btn-group">
+                                <button type="button" class="btn btn-default btn-xs">
+                                    <span action="toggleMinMax" param="timeline" class="fa fa-minus"></span>
+                                </button>
+                              </div>
+                          </div>
+
+                      </div>
+                      <!-- /.panel-heading -->
+                      <div class="panel-body timeline">
+                          <ul class="timeline">
+                              <li>
+                                  <div class="timeline-badge"><i class="fa fa-check"></i>
+                                  </div>
+                                  <div class="timeline-panel">
+                                      <div class="timeline-heading">
+                                          <h4 class="timeline-title">Lorem ipsum dolor</h4>
+                                          <p><small class="text-muted"><i class="fa fa-clock-o"></i> 11 hours ago via Twitter</small>
+                                          </p>
+                                      </div>
+                                      <div class="timeline-body">
+                                          <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Libero laboriosam dolor perspiciatis omnis exercitationem. Beatae, officia pariatur? Est cum veniam excepturi. Maiores praesentium, porro voluptas suscipit facere rem dicta, debitis.</p>
+                                      </div>
+                                  </div>
+                              </li>
+                              <li class="timeline-inverted">
+                                  <div class="timeline-badge warning"><i class="fa fa-credit-card"></i>
+                                  </div>
+                                  <div class="timeline-panel">
+                                      <div class="timeline-heading">
+                                          <h4 class="timeline-title">Lorem ipsum dolor</h4>
+                                      </div>
+                                      <div class="timeline-body">
+                                          <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Autem dolorem quibusdam, tenetur commodi provident cumque magni voluptatem libero, quis rerum. Fugiat esse debitis optio, tempore. Animi officiis alias, officia repellendus.</p>
+                                          <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Laudantium maiores odit qui est tempora eos, nostrum provident explicabo dignissimos debitis vel! Adipisci eius voluptates, ad aut recusandae minus eaque facere.</p>
+                                      </div>
+                                  </div>
+                              </li>
+                              <li>
+                                  <div class="timeline-badge danger"><i class="fa fa-bomb"></i>
+                                  </div>
+                                  <div class="timeline-panel">
+                                      <div class="timeline-heading">
+                                          <h4 class="timeline-title">Lorem ipsum dolor</h4>
+                                      </div>
+                                      <div class="timeline-body">
+                                          <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repellendus numquam facilis enim eaque, tenetur nam id qui vel velit similique nihil iure molestias aliquam, voluptatem totam quaerat, magni commodi quisquam.</p>
+                                      </div>
+                                  </div>
+                              </li>
+                              <li class="timeline-inverted">
+                                  <div class="timeline-panel">
+                                      <div class="timeline-heading">
+                                          <h4 class="timeline-title">Lorem ipsum dolor</h4>
+                                      </div>
+                                      <div class="timeline-body">
+                                          <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptates est quaerat asperiores sapiente, eligendi, nihil. Itaque quos, alias sapiente rerum quas odit! Aperiam officiis quidem delectus libero, omnis ut debitis!</p>
+                                      </div>
+                                  </div>
+                              </li>
+                              <li>
+                                  <div class="timeline-badge info"><i class="fa fa-save"></i>
+                                  </div>
+                                  <div class="timeline-panel">
+                                      <div class="timeline-heading">
+                                          <h4 class="timeline-title">Lorem ipsum dolor</h4>
+                                      </div>
+                                      <div class="timeline-body">
+                                          <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nobis minus modi quam ipsum alias at est molestiae excepturi delectus nesciunt, quibusdam debitis amet, beatae consequuntur impedit nulla qui! Laborum, atque.</p>
+                                          <hr>
+                                          <div class="btn-group">
+                                              <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown">
+                                                  <i class="fa fa-gear"></i> <span class="caret"></span>
+                                              </button>
+                                              <ul class="dropdown-menu" role="menu">
+                                                  <li><a href="#">Action</a>
+                                                  </li>
+                                                  <li><a href="#">Another action</a>
+                                                  </li>
+                                                  <li><a href="#">Something else here</a>
+                                                  </li>
+                                                  <li class="divider"></li>
+                                                  <li><a href="#">Separated link</a>
+                                                  </li>
+                                              </ul>
+                                          </div>
+                                      </div>
+                                  </div>
+                              </li>
+                              <li>
+                                  <div class="timeline-panel">
+                                      <div class="timeline-heading">
+                                          <h4 class="timeline-title">Lorem ipsum dolor</h4>
+                                      </div>
+                                      <div class="timeline-body">
+                                          <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sequi fuga odio quibusdam. Iure expedita, incidunt unde quis nam! Quod, quisquam. Officia quam qui adipisci quas consequuntur nostrum sequi. Consequuntur, commodi.</p>
+                                      </div>
+                                  </div>
+                              </li>
+                              <li class="timeline-inverted">
+                                  <div class="timeline-badge success"><i class="fa fa-graduation-cap"></i>
+                                  </div>
+                                  <div class="timeline-panel">
+                                      <div class="timeline-heading">
+                                          <h4 class="timeline-title">Lorem ipsum dolor</h4>
+                                      </div>
+                                      <div class="timeline-body">
+                                          <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt obcaecati, quaerat tempore officia voluptas debitis consectetur culpa amet, accusamus dolorum fugiat, animi dicta aperiam, enim incidunt quisquam maxime neque eaque.</p>
+                                      </div>
+                                  </div>
+                              </li>
+                          </ul>
+                      </div>
+                      <!-- /.panel-body -->
+                  </div>
+                  <!-- /.panel -->
+              </div>
+  <div class="col-md-4"> 
+<div class="form-group"> 
+                  <div class="input-group"> 
+                      <input id="searchbox" placeholder="Auto de Infração" type="text" class="form-control" >
+                      <div class="input-group-btn"> 
+                          <button id="fanta" type="button" class="btn btn-default"><i class="fa fa-code"></i></button> 
+                          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> 
+                              <span class="caret"></span> 
+                              <span class="sr-only">Toggle Dropdown</span> 
+                          </button> 
+                          <ul class="dropdown-menu dropdown-menu-right"> 
+
+                              <li><a href="./pages/icons.html" target="_blank">Template e Icones</a></li> 
+                              <li role="separator" class="divider"></li> 
+
+                              <li><a href="#" class="alterarClienteClick">91</a></li>
+                              <li><a href="#" class="alterarClienteClick">4</a></li>
+                              <li><a href="#" class="alterarClienteClick">31</a></li>
+
+                              <li role="separator" class="divider"></li> 
+                              <li><a href="#" class="limparArquivosClick">Limpar Arquivos</a></li>
+
+                              <li role="separator" class="divider"></li> 
+                              <li><a href="#"><label><input checked="checked" type="radio"> Modal<label></label></label></a></li> 
+                              <li><a href="#"><label><input disabled="" type="radio"> Debug Page</label></a></li> 
+
+                          </ul> 
+                      </div> 
+                  </div>
+              </div>
+           
+              
+
+
+<style>
+.styledlabel label{
+    border:solid 1px #000;
+    border-radius:5px;
+    padding:0px 5px 0px 5px;
+    margin-bottom:3px;
+}
+</style>
+
+<div class="panel panel-default">
+                      <div class="panel-body styledlabel">
+                            <label><input name="searchFunction" value="buscarMenu" type="radio" />Menu</label>
+                            <label><input name="searchFunction" value="multaId" type="radio" />Multa ID</label>
+                            <label><input name="searchFunction" value="buscarAutoInfracao" type="radio" checked />Auto</label>
+                            <label><input name="searchFunction" value="veiculoId" type="radio" />Veículo ID</label>
+                            <label><input name="searchFunction" value="VeiculoPlaca" type="radio" />Veículo Placa</label>
+                            <label><input name="searchFunction" value="veiculoRenavam" type="radio" />Veículo Renavam </label>
+                            <label><input name="searchFunction" value="clienteId" type="radio" />Cliente ID </label>
+                            <label><input name="searchFunction" value="clienteNome" type="radio" />Cliente Nome </label>
+                            <label><input name="searchFunction" value="icones" action="icones" type="radio" />Icones </label>
+                            <label><input name="searchFunction" value="alterarCliente" type="radio" />Alterar Cliente </label>
+
+                            
+
+                            
+              
+               
+
+  
+              </div></div>
+
+
+
+
+
+
+
+              
+                  <div class="panel panel-default">
+                      <div class="panel-heading">
+                          <i class="fa fa-car fa-fw"></i> Notifications Panel
+                      </div>
+                      <!-- /.panel-heading -->
+                      <div class="panel-body">
+                          
+                          <!-- /.list-group -->
+                          <a href="#" class="btn btn-default btn-block">View All Alerts</a>
+                      </div>
+                      <!-- /.panel-body -->
+                  </div>
+
+
+                  <div class="list-group">
+                              <a href="#" class="list-group-item">
+                                  <i class="fa fa-file-text-o fa-fw"></i> Multa
+                                  <span class="pull-right text-muted small"><em><span class="label label-warning">1</span></em>
+                                  </span>
+                              </a>
+                              <a href="#" class="list-group-item">
+                                  <i class="fa fa-image fa-fw"></i> Imagens
+                                  <span class="pull-right text-muted small"><em>...</em>
+                                  </span>
+                              </a>
+                              <a href="#" class="list-group-item">
+                                  <i class="fa fa-hand-o-up fa-fw"></i> Indicação
+                                  <span class="pull-right text-muted small"><em>..</em>
+                                  </span>
+                              </a>
+                              <a href="#" class="list-group-item">
+                                  <i class="fa fa-dollar fa-fw"></i> Pagamento
+                                  <span class="pull-right text-muted small"><em>..</em>
+                                  </span>
+                              </a>
+                              <a href="#" class="list-group-item">
+                                  <i class="fa fa-car fa-fw"></i> Veículo
+                                  <span class="pull-right text-muted small"><em>...</em>
+                                  </span>
+                              </a>
+                              <a href="#" class="list-group-item">
+                                  <i class="fa fa-info fa-fw"></i> Veículo Histórico
+                                  <span class="pull-right text-muted small"><em>...</em>
+                                  </span>
+                              </a>
+                              <a href="#" class="list-group-item">
+                                  <i class="fa fa-info fa-fw"></i> Veículo Histórico Grupo
+                                  <span class="pull-right text-muted small"><em>...</em>
+                                  </span>
+                              </a>
+                              <a href="#" class="list-group-item">
+                                  <i class="fa fa-envelope-o fa-fw"></i> Envio Email
+                                  <span class="pull-right text-muted small"><em>..</em>
+                                  </span>
+                              </a>
+
+                              <a href="#" class="list-group-item">
+                                  <i class="fa fa-cog fa-fw"></i> Cliente Config (prazos)
+                                  <span class="pull-right text-muted small"><em>..</em>
+                                  </span>
+                              </a>
+
+                              <a href="#" class="list-group-item">
+                                  <i class="fa fa-cog fa-fw"></i> Regras Email
+                                  <span class="pull-right text-muted small"><em>..</em>
+                                  </span>
+                              </a>
+
+                              <a href="#" class="list-group-item">
+                                  <i class="fa fa-info fa-fw"></i> Info
+                                  <span class="pull-right text-muted small"><em>43 minutes ago</em>
+                                  </span>
+                              </a>
+                          </div>
+</div>
+</div>
+              
+`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if (typeof debounce != 'function') {
+    function debounce(funcao, delay) {
+        let temporizador = null;
+        return function () {
+            clearTimeout(temporizador);
+            temporizador = setTimeout(funcao.bind(null, ...arguments), delay);
+        }
+    }
+}
+
+
+
+
+setTimeout(t => {
+    if (typeof $.fn.modal != 'function') {
+
+        /* ========================================================================
+         * Bootstrap: modal.js v3.3.7
+         * http://getbootstrap.com/javascript/#modals
+         * ========================================================================
+         * Copyright 2011-2016 Twitter, Inc.
+         * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+         * ======================================================================== */
+
+
+        +function ($) {
+            'use strict';
+
+            // MODAL CLASS DEFINITION
+            // ======================
+
+            var Modal = function (element, options) {
+                this.options = options
+                this.$body = $(document.body)
+                this.$element = $(element)
+                this.$dialog = this.$element.find('.modal-dialog')
+                this.$backdrop = null
+                this.isShown = null
+                this.originalBodyPad = null
+                this.scrollbarWidth = 0
+                this.ignoreBackdropClick = false
+
+                if (this.options.remote) {
+                    this.$element
+                        .find('.modal-content')
+                        .load(this.options.remote, $.proxy(function () {
+                            this.$element.trigger('loaded.bs.modal')
+                        }, this))
+                }
+            }
+
+            Modal.VERSION = '3.3.7'
+
+            Modal.TRANSITION_DURATION = 300
+            Modal.BACKDROP_TRANSITION_DURATION = 150
+
+            Modal.DEFAULTS = {
+                backdrop: true,
+                keyboard: true,
+                show: true
+            }
+
+            Modal.prototype.toggle = function (_relatedTarget) {
+                return this.isShown ? this.hide() : this.show(_relatedTarget)
+            }
+
+            Modal.prototype.show = function (_relatedTarget) {
+                var that = this
+                var e = $.Event('show.bs.modal', { relatedTarget: _relatedTarget })
+
+                this.$element.trigger(e)
+
+                if (this.isShown || e.isDefaultPrevented()) return
+
+                this.isShown = true
+
+                this.checkScrollbar()
+                this.setScrollbar()
+                this.$body.addClass('modal-open')
+
+                this.escape()
+                this.resize()
+
+                this.$element.on('click.dismiss.bs.modal', '[data-dismiss="modal"]', $.proxy(this.hide, this))
+
+                this.$dialog.on('mousedown.dismiss.bs.modal', function () {
+                    that.$element.one('mouseup.dismiss.bs.modal', function (e) {
+                        if ($(e.target).is(that.$element)) that.ignoreBackdropClick = true
+                    })
+                })
+
+                this.backdrop(function () {
+                    var transition = $.support.transition && that.$element.hasClass('fade')
+
+                    if (!that.$element.parent().length) {
+                        that.$element.appendTo(that.$body) // don't move modals dom position
+                    }
+
+                    that.$element
+                        .show()
+                        .scrollTop(0)
+
+                    that.adjustDialog()
+
+                    if (transition) {
+                        that.$element[0].offsetWidth // force reflow
+                    }
+
+                    that.$element.addClass('in')
+
+                    that.enforceFocus()
+
+                    var e = $.Event('shown.bs.modal', { relatedTarget: _relatedTarget })
+
+                    transition ?
+                        that.$dialog // wait for modal to slide in
+                            .one('bsTransitionEnd', function () {
+                                that.$element.trigger('focus').trigger(e)
+                            })
+                            .emulateTransitionEnd(Modal.TRANSITION_DURATION) :
+                        that.$element.trigger('focus').trigger(e)
+                })
+            }
+
+            Modal.prototype.hide = function (e) {
+                if (e) e.preventDefault()
+
+                e = $.Event('hide.bs.modal')
+
+                this.$element.trigger(e)
+
+                if (!this.isShown || e.isDefaultPrevented()) return
+
+                this.isShown = false
+
+                this.escape()
+                this.resize()
+
+                $(document).off('focusin.bs.modal')
+
+                this.$element
+                    .removeClass('in')
+                    .off('click.dismiss.bs.modal')
+                    .off('mouseup.dismiss.bs.modal')
+
+                this.$dialog.off('mousedown.dismiss.bs.modal')
+
+                $.support.transition && this.$element.hasClass('fade') ?
+                    this.$element
+                        .one('bsTransitionEnd', $.proxy(this.hideModal, this))
+                        .emulateTransitionEnd(Modal.TRANSITION_DURATION) :
+                    this.hideModal()
+            }
+
+            Modal.prototype.enforceFocus = function () {
+                $(document)
+                    .off('focusin.bs.modal') // guard against infinite focus loop
+                    .on('focusin.bs.modal', $.proxy(function (e) {
+                        if (document !== e.target &&
+                            this.$element[0] !== e.target &&
+                            !this.$element.has(e.target).length) {
+                            this.$element.trigger('focus')
+                        }
+                    }, this))
+            }
+
+            Modal.prototype.escape = function () {
+                if (this.isShown && this.options.keyboard) {
+                    this.$element.on('keydown.dismiss.bs.modal', $.proxy(function (e) {
+                        e.which == 27 && this.hide()
+                    }, this))
+                } else if (!this.isShown) {
+                    this.$element.off('keydown.dismiss.bs.modal')
+                }
+            }
+
+            Modal.prototype.resize = function () {
+                if (this.isShown) {
+                    $(window).on('resize.bs.modal', $.proxy(this.handleUpdate, this))
+                } else {
+                    $(window).off('resize.bs.modal')
+                }
+            }
+
+            Modal.prototype.hideModal = function () {
+                var that = this
+                this.$element.hide()
+                this.backdrop(function () {
+                    that.$body.removeClass('modal-open')
+                    that.resetAdjustments()
+                    that.resetScrollbar()
+                    that.$element.trigger('hidden.bs.modal')
+                })
+            }
+
+            Modal.prototype.removeBackdrop = function () {
+                this.$backdrop && this.$backdrop.remove()
+                this.$backdrop = null
+            }
+
+            Modal.prototype.backdrop = function (callback) {
+                var that = this
+                var animate = this.$element.hasClass('fade') ? 'fade' : ''
+
+                if (this.isShown && this.options.backdrop) {
+                    var doAnimate = $.support.transition && animate
+
+                    this.$backdrop = $(document.createElement('div'))
+                        .addClass('modal-backdrop ' + animate)
+                        .appendTo(this.$body)
+
+                    this.$element.on('click.dismiss.bs.modal', $.proxy(function (e) {
+                        if (this.ignoreBackdropClick) {
+                            this.ignoreBackdropClick = false
+                            return
+                        }
+                        if (e.target !== e.currentTarget) return
+                        this.options.backdrop == 'static'
+                            ? this.$element[0].focus()
+                            : this.hide()
+                    }, this))
+
+                    if (doAnimate) this.$backdrop[0].offsetWidth // force reflow
+
+                    this.$backdrop.addClass('in')
+
+                    if (!callback) return
+
+                    doAnimate ?
+                        this.$backdrop
+                            .one('bsTransitionEnd', callback)
+                            .emulateTransitionEnd(Modal.BACKDROP_TRANSITION_DURATION) :
+                        callback()
+
+                } else if (!this.isShown && this.$backdrop) {
+                    this.$backdrop.removeClass('in')
+
+                    var callbackRemove = function () {
+                        that.removeBackdrop()
+                        callback && callback()
+                    }
+                    $.support.transition && this.$element.hasClass('fade') ?
+                        this.$backdrop
+                            .one('bsTransitionEnd', callbackRemove)
+                            .emulateTransitionEnd(Modal.BACKDROP_TRANSITION_DURATION) :
+                        callbackRemove()
+
+                } else if (callback) {
+                    callback()
+                }
+            }
+
+            // these following methods are used to handle overflowing modals
+
+            Modal.prototype.handleUpdate = function () {
+                this.adjustDialog()
+            }
+
+            Modal.prototype.adjustDialog = function () {
+                var modalIsOverflowing = this.$element[0].scrollHeight > document.documentElement.clientHeight
+
+                this.$element.css({
+                    paddingLeft: !this.bodyIsOverflowing && modalIsOverflowing ? this.scrollbarWidth : '',
+                    paddingRight: this.bodyIsOverflowing && !modalIsOverflowing ? this.scrollbarWidth : ''
+                })
+            }
+
+            Modal.prototype.resetAdjustments = function () {
+                this.$element.css({
+                    paddingLeft: '',
+                    paddingRight: ''
+                })
+            }
+
+            Modal.prototype.checkScrollbar = function () {
+                var fullWindowWidth = window.innerWidth
+                if (!fullWindowWidth) { // workaround for missing window.innerWidth in IE8
+                    var documentElementRect = document.documentElement.getBoundingClientRect()
+                    fullWindowWidth = documentElementRect.right - Math.abs(documentElementRect.left)
+                }
+                this.bodyIsOverflowing = document.body.clientWidth < fullWindowWidth
+                this.scrollbarWidth = this.measureScrollbar()
+            }
+
+            Modal.prototype.setScrollbar = function () {
+                var bodyPad = parseInt((this.$body.css('padding-right') || 0), 10)
+                this.originalBodyPad = document.body.style.paddingRight || ''
+                if (this.bodyIsOverflowing) this.$body.css('padding-right', bodyPad + this.scrollbarWidth)
+            }
+
+            Modal.prototype.resetScrollbar = function () {
+                this.$body.css('padding-right', this.originalBodyPad)
+            }
+
+            Modal.prototype.measureScrollbar = function () { // thx walsh
+                var scrollDiv = document.createElement('div')
+                scrollDiv.className = 'modal-scrollbar-measure'
+                this.$body.append(scrollDiv)
+                var scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth
+                this.$body[0].removeChild(scrollDiv)
+                return scrollbarWidth
+            }
+
+
+            // MODAL PLUGIN DEFINITION
+            // =======================
+
+            function Plugin(option, _relatedTarget) {
+                return this.each(function () {
+                    var $this = $(this)
+                    var data = $this.data('bs.modal')
+                    var options = $.extend({}, Modal.DEFAULTS, $this.data(), typeof option == 'object' && option)
+
+                    if (!data) $this.data('bs.modal', (data = new Modal(this, options)))
+                    if (typeof option == 'string') data[option](_relatedTarget)
+                    else if (options.show) data.show(_relatedTarget)
+                })
+            }
+
+            var old = $.fn.modal
+
+            $.fn.modal = Plugin
+            $.fn.modal.Constructor = Modal
+
+
+            // MODAL NO CONFLICT
+            // =================
+
+            $.fn.modal.noConflict = function () {
+                $.fn.modal = old
+                return this
+            }
+
+
+            // MODAL DATA-API
+            // ==============
+
+            $(document).on('click.bs.modal.data-api', '[data-toggle="modal"]', function (e) {
+                var $this = $(this)
+                var href = $this.attr('href')
+                var $target = $($this.attr('data-target') || (href && href.replace(/.*(?=#[^\s]+$)/, ''))) // strip for ie7
+                var option = $target.data('bs.modal') ? 'toggle' : $.extend({ remote: !/#/.test(href) && href }, $target.data(), $this.data())
+
+                if ($this.is('a')) e.preventDefault()
+
+                $target.one('show.bs.modal', function (showEvent) {
+                    if (showEvent.isDefaultPrevented()) return // only register focus restorer if modal will actually get shown
+                    $target.one('hidden.bs.modal', function () {
+                        $this.is(':visible') && $this.trigger('focus')
+                    })
+                })
+                Plugin.call($target, option, this)
+            })
+
+        }(jQuery);
+
+    }
+
+    document.body.insertAdjacentHTML("afterbegin", `
+    <style id="bootstrapmodalfallback">
+   .modal-open {
+   overflow: hidden;
+   }
+   
+   .modal {
+       font-family: sans-serif;
+   position: fixed;
+   top: 50px;
+   right: 0;
+   bottom: 0;
+   left: 0;
+   z-index: 1050;
+   display: none;
+   overflow: hidden;
+   outline: 0;
+   }
+   
+   .modal.fade .modal-dialog {
+   transition: -webkit-transform 0.3s ease-out;
+   transition: transform 0.3s ease-out;
+   transition: transform 0.3s ease-out, -webkit-transform 0.3s ease-out;
+   -webkit-transform: translate(0, -25%);
+        transform: translate(0, -25%);
+   }
+   
+   .modal.show .modal-dialog {
+   -webkit-transform: translate(0, 0);
+        transform: translate(0, 0);
+   }
+   
+   .modal-open .modal {
+   overflow-x: hidden;
+   overflow-y: auto;
+   }
+   
+   .modal-dialog {
+   position: relative;
+   width: auto;
+   margin: 10px;
+   }
+   
+   .modal-content {
+   position: relative;
+   display: -ms-flexbox;
+   display: flex;
+   -ms-flex-direction: column;
+    flex-direction: column;
+   background-color: #fff;
+   background-clip: padding-box;
+   border: 1px solid rgba(0, 0, 0, 0.2);
+   border-radius: 0.3rem;
+   outline: 0;
+   }
+   
+   .modal-backdrop {
+   position: fixed;
+   top: 0;
+   right: 0;
+   bottom: 0;
+   left: 0;
+   z-index: 1040;
+   background-color: #000;
+   }
+   
+   .modal-backdrop.fade {
+   opacity: 0;
+   }
+   
+   .modal-backdrop.show {
+   opacity: 0.5;
+   }
+   
+   .modal-header {
+   display: -ms-flexbox;
+   display: flex;
+   -ms-flex-align: center;
+    align-items: center;
+   -ms-flex-pack: justify;
+    justify-content: space-between;
+   padding: 15px;
+   border-bottom: 1px solid #e9ecef;
+   }
+   
+   .modal-title {
+   margin-bottom: 0;
+   line-height: 1.5;
+   }
+   
+   .modal-body {
+   position: relative;
+   -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+   padding: 15px;
+   }
+   
+   .modal-footer {
+   display: -ms-flexbox;
+   display: flex;
+   -ms-flex-align: center;
+    align-items: center;
+   -ms-flex-pack: end;
+    justify-content: flex-end;
+   padding: 15px;
+   border-top: 1px solid #e9ecef;
+   }
+   
+   .modal-footer > :not(:first-child) {
+   margin-left: .25rem;
+   }
+   
+   .modal-footer > :not(:last-child) {
+   margin-right: .25rem;
+   }
+   
+   .modal-scrollbar-measure {
+   position: absolute;
+   top: -9999px;
+   width: 50px;
+   height: 50px;
+   overflow: scroll;
+   }
+   
+   @media (min-width: 576px) {
+   .modal-dialog {
+   /* max-width: 500px; */
+   margin: 30px auto;
+   }
+   .modal-sm {
+   max-width: 300px;
+   }
+   }
+   
+   @media (min-width: 992px) {
+   .modal-lg {
+   max-width: 800px;
+   }
+   }
+   
+   
+   
+   
+   button.close {
+   -webkit-appearance: none;
+   padding: 0;
+   cursor: pointer;
+   background: transparent;
+   border: 0;
+   }
+   .modal-open {
+   overflow: hidden;
+   }
+   .modal {
+   position: fixed;
+   top: 0;
+   right: 0;
+   bottom: 0;
+   left: 0;
+   z-index: 1050;
+   display: none;
+   overflow: hidden;
+   -webkit-overflow-scrolling: touch;
+   outline: 0;
+   }
+   .modal.fade .modal-dialog {
+   -webkit-transition: -webkit-transform .3s ease-out;
+     -o-transition:      -o-transform .3s ease-out;
+        transition:         transform .3s ease-out;
+   -webkit-transform: translate(0, -25%);
+    -ms-transform: translate(0, -25%);
+     -o-transform: translate(0, -25%);
+        transform: translate(0, -25%);
+   }
+   .modal.in .modal-dialog {
+   -webkit-transform: translate(0, 0);
+    -ms-transform: translate(0, 0);
+     -o-transform: translate(0, 0);
+        transform: translate(0, 0);
+   }
+   .modal-open .modal {
+   overflow-x: hidden;
+   overflow-y: auto;
+   }
+   .modal-dialog {
+   position: relative;
+   width: auto;
+   margin: 10px;
+   }
+   .modal-content {
+   position: relative;
+   background-color: #fff;
+   -webkit-background-clip: padding-box;
+        background-clip: padding-box;
+   border: 1px solid #999;
+   border: 1px solid rgba(0, 0, 0, .2);
+   border-radius: 6px;
+   outline: 0;
+   -webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, .5);
+        box-shadow: 0 3px 9px rgba(0, 0, 0, .5);
+   }
+   .modal-backdrop {
+   position: fixed;
+   top: 0;
+   right: 0;
+   bottom: 0;
+   left: 0;
+   z-index: 1040;
+   background-color: #000;
+   }
+   .modal-backdrop.fade {
+   filter: alpha(opacity=0);
+   opacity: 0;
+   }
+   .modal-backdrop.in {
+   filter: alpha(opacity=50);
+   opacity: .5;
+   }
+   .modal-header {
+   padding: 15px;
+   border-bottom: 1px solid #e5e5e5;
+   display:block;
+   }
+   .modal-header .close {
+   margin-top: -2px;
+   }
+   .modal-title {
+   margin: 0;
+   line-height: 1.42857143;
+   }
+   .modal-body {
+   position: relative;
+   padding: 15px;
+   }
+   .modal-footer {
+   padding: 15px;
+   text-align: right;
+   border-top: 1px solid #e5e5e5;
+   }
+   .modal-footer .btn + .btn {
+   margin-bottom: 0;
+   margin-left: 5px;
+   }
+   .modal-footer .btn-group .btn + .btn {
+   margin-left: -1px;
+   }
+   .modal-footer .btn-block + .btn-block {
+   margin-left: 0;
+   }
+   .modal-scrollbar-measure {
+   position: absolute;
+   top: -9999px;
+   width: 50px;
+   height: 50px;
+   overflow: scroll;
+   }
+   @media (min-width: 768px) {
+   .modal-dialog {
+   width: 600px;
+   margin: 30px auto;
+   }
+   .modal-content {
+   -webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
+          box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
+   }
+   .modal-sm {
+   width: 300px;
+   }
+   }
+   @media (min-width: 992px) {
+   .modal-lg {
+   width: 900px;
+   }
+   }
+   
+   
+   .clearfix:before,
+   .clearfix:after,
+   .dl-horizontal dd:before,
+   .dl-horizontal dd:after,
+   .container:before,
+   .container:after,
+   .container-fluid:before,
+   .container-fluid:after,
+   .row:before,
+   .row:after,
+   .form-horizontal .form-group:before,
+   .form-horizontal .form-group:after,
+   .btn-toolbar:before,
+   .btn-toolbar:after,
+   .btn-group-vertical > .btn-group:before,
+   .btn-group-vertical > .btn-group:after,
+   .nav:before,
+   .nav:after,
+   .navbar:before,
+   .navbar:after,
+   .navbar-header:before,
+   .navbar-header:after,
+   .navbar-collapse:before,
+   .navbar-collapse:after,
+   .pager:before,
+   .pager:after,
+   .panel-body:before,
+   .panel-body:after,
+   .modal-header:before,
+   .modal-header:after,
+   .modal-footer:before,
+   .modal-footer:after {
+   display: table;
+   content: " ";
+   }
+   .clearfix:after,
+   .dl-horizontal dd:after,
+   .container:after,
+   .container-fluid:after,
+   .row:after,
+   .form-horizontal .form-group:after,
+   .btn-toolbar:after,
+   .btn-group-vertical > .btn-group:after,
+   .nav:after,
+   .navbar:after,
+   .navbar-header:after,
+   .navbar-collapse:after,
+   .pager:after,
+   .panel-body:after,
+   .modal-header:after,
+   .modal-footer:after {
+   clear: both;
+   }
+   .center-block {
+   display: block;
+   margin-right: auto;
+   margin-left: auto;
+   }
+   .pull-right {
+   float: right !important;
+   }
+   .pull-left {
+   float: left !important;
+   }`);
+
+
+
+    document.body.insertAdjacentHTML("afterbegin", `
+ <style id="roawmodalstyle">
+.modal-open {
+overflow: hidden;
+}
+
+.modal {
+    font-family: sans-serif;
+position: fixed;
+top: 50px;
+right: 0;
+bottom: 0;
+left: 0;
+z-index: 1050;
+display: none;
+overflow: hidden;
+outline: 0;
+}
+
+.modal.fade .modal-dialog {
+transition: -webkit-transform 0.3s ease-out;
+transition: transform 0.3s ease-out;
+transition: transform 0.3s ease-out, -webkit-transform 0.3s ease-out;
+-webkit-transform: translate(0, -25%);
+     transform: translate(0, -25%);
+}
+
+.modal.show .modal-dialog {
+-webkit-transform: translate(0, 0);
+     transform: translate(0, 0);
+}
+
+.modal-open .modal {
+overflow-x: hidden;
+overflow-y: auto;
+}
+
+.modal-dialog {
+position: relative;
+width: auto;
+margin: 10px;
+}
+
+.modal-content {
+position: relative;
+display: -ms-flexbox;
+display: flex;
+-ms-flex-direction: column;
+ flex-direction: column;
+background-color: #fff;
+background-clip: padding-box;
+border: 1px solid rgba(0, 0, 0, 0.2);
+border-radius: 0.3rem;
+outline: 0;
+}
+
+.modal-backdrop {
+position: fixed;
+top: 0;
+right: 0;
+bottom: 0;
+left: 0;
+z-index: 1040;
+background-color: #000;
+}
+
+.modal-backdrop.fade {
+opacity: 0;
+}
+
+.modal-backdrop.show {
+opacity: 0.5;
+}
+
+.modal-header {
+display: -ms-flexbox;
+display: flex;
+-ms-flex-align: center;
+ align-items: center;
+-ms-flex-pack: justify;
+ justify-content: space-between;
+padding: 15px;
+border-bottom: 1px solid #e9ecef;
+}
+
+.modal-title {
+margin-bottom: 0;
+line-height: 1.5;
+}
+
+.modal-body {
+position: relative;
+-ms-flex: 1 1 auto;
+ flex: 1 1 auto;
+padding: 15px;
+}
+
+.modal-footer {
+display: -ms-flexbox;
+display: flex;
+-ms-flex-align: center;
+ align-items: center;
+-ms-flex-pack: end;
+ justify-content: flex-end;
+padding: 15px;
+border-top: 1px solid #e9ecef;
+}
+
+.modal-footer > :not(:first-child) {
+margin-left: .25rem;
+}
+
+.modal-footer > :not(:last-child) {
+margin-right: .25rem;
+}
+
+.modal-scrollbar-measure {
+position: absolute;
+top: -9999px;
+width: 50px;
+height: 50px;
+overflow: scroll;
+}
+
+@media (min-width: 576px) {
+.modal-dialog {
+/* max-width: 500px; */
+margin: 30px auto;
+}
+.modal-sm {
+max-width: 300px;
+}
+}
+
+@media (min-width: 992px) {
+.modal-lg {
+max-width: 800px;
+}
+}
+
+
+
+
+button.close {
+-webkit-appearance: none;
+padding: 0;
+cursor: pointer;
+background: transparent;
+border: 0;
+}
+.modal-open {
+overflow: hidden;
+}
+.modal {
+position: fixed;
+top: 0;
+right: 0;
+bottom: 0;
+left: 0;
+z-index: 1050;
+display: none;
+overflow: hidden;
+-webkit-overflow-scrolling: touch;
+outline: 0;
+}
+.modal.fade .modal-dialog {
+-webkit-transition: -webkit-transform .3s ease-out;
+  -o-transition:      -o-transform .3s ease-out;
+     transition:         transform .3s ease-out;
+-webkit-transform: translate(0, -25%);
+ -ms-transform: translate(0, -25%);
+  -o-transform: translate(0, -25%);
+     transform: translate(0, -25%);
+}
+.modal.in .modal-dialog {
+-webkit-transform: translate(0, 0);
+ -ms-transform: translate(0, 0);
+  -o-transform: translate(0, 0);
+     transform: translate(0, 0);
+}
+.modal-open .modal {
+overflow-x: hidden;
+overflow-y: auto;
+}
+.modal-dialog {
+position: relative;
+width: auto;
+margin: 10px;
+}
+.modal-content {
+position: relative;
+background-color: #fff;
+-webkit-background-clip: padding-box;
+     background-clip: padding-box;
+border: 1px solid #999;
+border: 1px solid rgba(0, 0, 0, .2);
+border-radius: 6px;
+outline: 0;
+-webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, .5);
+     box-shadow: 0 3px 9px rgba(0, 0, 0, .5);
+}
+.modal-backdrop {
+position: fixed;
+top: 0;
+right: 0;
+bottom: 0;
+left: 0;
+z-index: 1040;
+background-color: #000;
+}
+.modal-backdrop.fade {
+filter: alpha(opacity=0);
+opacity: 0;
+}
+.modal-backdrop.in {
+filter: alpha(opacity=50);
+opacity: .5;
+}
+.modal-header {
+padding: 15px;
+border-bottom: 1px solid #e5e5e5;
+display:block;
+}
+.modal-header .close {
+margin-top: -2px;
+}
+.modal-title {
+margin: 0;
+line-height: 1.42857143;
+}
+.modal-body {
+position: relative;
+padding: 15px;
+}
+.modal-footer {
+padding: 15px;
+text-align: right;
+border-top: 1px solid #e5e5e5;
+}
+.modal-footer .btn + .btn {
+margin-bottom: 0;
+margin-left: 5px;
+}
+.modal-footer .btn-group .btn + .btn {
+margin-left: -1px;
+}
+.modal-footer .btn-block + .btn-block {
+margin-left: 0;
+}
+.modal-scrollbar-measure {
+position: absolute;
+top: -9999px;
+width: 50px;
+height: 50px;
+overflow: scroll;
+}
+@media (min-width: 768px) {
+.modal-dialog {
+width: 600px;
+margin: 30px auto;
+}
+.modal-content {
+-webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
+       box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
+}
+.modal-sm {
+width: 300px;
+}
+}
+@media (min-width: 992px) {
+.modal-lg {
+width: 900px;
+}
+}
+
+
+.clearfix:before,
+.clearfix:after,
+.dl-horizontal dd:before,
+.dl-horizontal dd:after,
+.container:before,
+.container:after,
+.container-fluid:before,
+.container-fluid:after,
+.row:before,
+.row:after,
+.form-horizontal .form-group:before,
+.form-horizontal .form-group:after,
+.btn-toolbar:before,
+.btn-toolbar:after,
+.btn-group-vertical > .btn-group:before,
+.btn-group-vertical > .btn-group:after,
+.nav:before,
+.nav:after,
+.navbar:before,
+.navbar:after,
+.navbar-header:before,
+.navbar-header:after,
+.navbar-collapse:before,
+.navbar-collapse:after,
+.pager:before,
+.pager:after,
+.panel-body:before,
+.panel-body:after,
+.modal-header:before,
+.modal-header:after,
+.modal-footer:before,
+.modal-footer:after {
+display: table;
+content: " ";
+}
+.clearfix:after,
+.dl-horizontal dd:after,
+.container:after,
+.container-fluid:after,
+.row:after,
+.form-horizontal .form-group:after,
+.btn-toolbar:after,
+.btn-group-vertical > .btn-group:after,
+.nav:after,
+.navbar:after,
+.navbar-header:after,
+.navbar-collapse:after,
+.pager:after,
+.panel-body:after,
+.modal-header:after,
+.modal-footer:after {
+clear: both;
+}
+.center-block {
+display: block;
+margin-right: auto;
+margin-left: auto;
+}
+.pull-right {
+float: right !important;
+}
+.pull-left {
+float: left !important;
+}
+
+ 
+
+ .hiddenOpacity {
+     opacity: 0;
+   }
+   .modal-portal * {
+     transition:0.3s all !important;
+   }
+ 
+   .modal-portal > .modal-dialog > .modal-content >  .modal-body {
+     overflow:auto;
+     max-height:70vh;
+   }
+   
+   .modal-portal button.right-button {
+     -webkit-appearance: none;
+     padding: 0;
+     cursor: pointer;
+     background: 0 0;
+     border: 0;
+     margin-right: 8px;
+ }
+ .modal-portal .right-button {
+     float: right;
+     font-size: 20px;
+     font-weight: 700;
+     line-height: 1;
+     color: #000;
+     filter: alpha(opacity=20);
+     border: 0px;
+ }
+   .modal-portal .custom-close {
+     opacity: 1;
+     font-size:3rem
+   }
+ 
+   .border-none > .modal-dialog > .modal-content >  .modal-header {
+     border: 0px;
+
+   }
+ 
+   .border-internals > .modal-dialog > .modal-content >  .modal-header {
+     padding-bottom: 0px;
+   }
+ 
+   .border-internals > .modal-dialog > .modal-content >  .modal-body {
+     padding-top: 12px;
+   }
+ 
+   .border-internals > .modal-dialog > .modal-content >  .modal-header > .modal-title {
+     border-bottom: solid 1px #ccc;
+     padding-bottom: 10px;
+   }
+ 
+   .border-internals > .modal-dialog > .modal-content >  .modal-footer > .border-footer {
+     border-top: solid 1px #ccc;
+     padding-top: 10px;
+     width:100%;
+   }
+ 
+   .border-internals > .modal-dialog > .modal-content >  .modal-footer {
+     border: 0px;
+   }
+ 
+   .border-none > .modal-dialog > .modal-content >  .modal-footer {
+     border: 0px;
+   }
+ 
+   .modal-portal .border-none .modal-footer {
+     border-top  : 0px;
+   }
+ 
+   .modal-100{
+     width: 100%;
+   }
+   .modal-90{
+     width: 90%;
+   }
+   .modal-80{
+     width: 80% !important;
+   }
+   .modal-70{
+     width: 70%;
+   }
+   .modal-60{
+     width: 60%;
+   }
+   .modal-40{
+     width: 40%;
+   }
+   .modal-30{
+     width: 30%;
+   }
+   .modal-20{
+     width: 20%;
+   }
+   .modal-10{
+     width: 10%;
+   }
+ 
+   .modal-dialog > .modal-content{
+     margin-left:5px;
+   }
+ 
+   .modal-dialog > .modal-full{
+     border:solid 1px #f00;
+     margin-left:10px;
+   }
+ 
+   .loading-overlay{
+     position: absolute;
+     width: 100%;
+     height: 100%;
+     z-index: 1; /* Índice z maior que o conteúdo interno */
+   }
+ 
+ 
+ 
+   .gradient-text{
+     background: -webkit-linear-gradient(45deg, #09009f, #4533eb 80%);
+     -webkit-background-clip: text;
+     -webkit-text-fill-color: transparent;
+   }
+ 
+ .hidden-footer .modal-footer {
+     display: none;
+ }
+ 
+ </style>
+
+`);
+
+
+
+    if (typeof ModalPortal != 'undefined') {
+        console.log("modal ja existe")
+    } else {
+        console.log("criando Modal")
+        function modalTesting() {
+            console.log("etc")
+        }
+        modalTesting()
+
+        class ModalPortal {
+            constructor(configs) {
+                this.configs = configs;
+                const selector = this.configs?.selector
+                const someCallback = this.configs?.someCallback || null;
+                if (configs?.debug === true) {
+                    this.configs.debug = this.internalDebugger
+                }
+                if (this.configs?.alert) {
+                    this.configs.show = true;
+                    this.configs.destroyOnClose = true;
+                    this.configs.content = this.alertContent()
+                }
+                this.configs.id = configs?.id || `modal_${Date.now()}`
+                this.configs.size = configs?.size || `md`
+                this.configs.title = configs?.title || `<img style="width:24px;background-color:#333;padding:2px;border-radius:5px;" src="img/Logo_LW_Branco.png">`;
+                this.configs.loadingTemplate = configs?.loadingTemplate || `<div style='text-align:center;'><span class='gradient-text fa fa-circle-o-notch fa-3x fa-spin'></span></div>`;
+
+                this.createModal();
+
+                if (this.configs?.show == true) {
+                    this.show()
+                }
+                if (configs?.preventCloseDropdown === true) {
+                    $(document).on('click', selector, (e) => {
+                        e.stopPropagation();
+                    });
+                }
+
+                //dentro do on do jquery o this é o elemento do dom, usar o self se necessário
+                var self = this;
+                this.$element.on('show.bs.modal', function (e) {
+                    if (self.configs?.debug) { self.configs.debug(self, e, "beforeShow") }
+                    if (self.configs?.beforeShow) {
+                        self.configs.beforeShow(self, e)
+                    }
+                })
+                this.$element.on('shown.bs.modal', function (e) {
+                    if (self.configs?.debug) { self.configs.debug(self, e, "afterShow") }
+                    if (self.configs?.afterShow) {
+                        self.configs?.afterShow(self, e)
+                    }
+                })
+                this.$element.on('hide.bs.modal', function (e) {
+                    if (self.configs?.debug) { self.configs.debug(self, e, "beforeHide") }
+                    if (self.configs?.preventClose) {
+                        if (typeof self.configs?.preventClose == "function") {
+                            self.configs?.preventClose(self, e);
+                        }
+                        e.preventDefault();
+                        return;
+                    }
+                    if (self.configs?.beforeHide) {
+                        self.configs?.beforeHide(self, e)
+                    }
+                    if (self.configs?.destroyOnClose) {
+                        self.destroy()
+                    }
+                })
+
+                this.$element.on('hidden.bs.modal', function (e) {
+                    if (self.configs?.debug) { self.configs.debug(self, e, "afterHide") }
+                    if (self.configs?.afterHide) {
+                        self.configs?.afterHide(self, e)
+                    }
+                })
+                this.$element.on('loaded.bs.modal', function (e) {
+                    if (self.configs?.debug) { self.configs.debug(self, e, "loaded") }
+                    if (self.configs?.loaded) {
+                        self.configs?.loaded(self, e)
+                    }
+                })
+
+                return this
+            }
+
+            createFooter(footerCallback = null, footerParams = null) {
+                if (footerCallback === false) {
+                    return "";
+                }
+                if (typeof footerCallback == 'function') {
+                    return footerCallback(this, footerParams);
+                }
+
+                if (footerCallback === null) {
+                    return `
+            <div class="modal-footer">
+                <div class="border-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+            `;
+                }
+
+                return footerCallback;
+
+            }
+
+            createHeader(headerCallback = null, headerParams = null) {
+                if (headerCallback === false) {
+                    return "";
+                }
+                if (typeof headerCallback == 'function') {
+                    return headerCallback(this, headerParams);
+                }
+
+                if (headerCallback === null) {
+
+                    return `
+
+            <div class="modal-header">
+                <div class="header-buttons pull-right">
+                    <button type="button" class="right-button" data-dismiss="modal" aria-label="Close">
+                    <span class="fa fa-times"></span>
+                        <!-- <span aria-hidden="true">&times;</span> -->
+                    </button>
+                </div>
+
+                <h4 class="modal-title">${this.configs.title}</h4>
+                
+            </div>
+            `;
+                }
+
+                return headerCallback;
+
+            }
+
+            createModal() {
+                let footer = this.createFooter(this.configs?.footer);
+                let header = this.createHeader(this.configs?.header);
+                document.body.insertAdjacentHTML("beforeend", `
+            <div class="modal fade modal-portal border-none border-internals" tabindex="-1" role="dialog" id="${this.configs.id}">
+                <div class="modal-dialog modal-${this.configs.size}" role="document">
+                    <div class="modal-content">
+                        
+                        ${header}
+                        <div class="modal-body">
+                            ${this.configs?.content}
+                        </div>
+
+                        ${footer}
+
+                    </div>
+                </div>
+            </div>
+        `);
+                this.$element = $(`#${this.configs.id}`)
+                this.element = document.querySelector(`#${this.configs.id}`);
+                this.header = document.querySelector(`#${this.configs.id} .modal-header`);
+                this.body = document.querySelector(`#${this.configs.id} .modal-body`);
+                this.footer = document.querySelector(`#${this.configs.id} .modal-footer`);
+                this.title = document.querySelector(`#${this.configs.id} .modal-title`);
+
+                //acionamento de metodos via atributos html
+                this.element.addEventListener("click", (e) => {
+                    let target = e.target
+                    let action = target.getAttribute("action");
+                    let param = target.getAttribute("param") || target.value || target.innerText;
+                    if (this[action]) {
+                        if (this.configs?.debug) { this.configs.debug(this, e, { action, param }) }
+                        this[action](param);
+                    }
+                })
+
+                if (this.configs?.headerButtons == "default") {
+                    this.configs.headerButtons = [
+
+                        {
+                            className: "right-button",
+                            text: `<span class="fa fa-ellipsis-h"></span>`,
+                            onclick: (modal, event) => {
+                                console.log("er", modal)
+                                modal.toggleButtonVisibility()
+                            }
+                        }, {
+                            className: "hiddenOpacity hidden modalHeaderButtons right-button",
+                            text: `<span class="fa fa-car"></span>`,
+                            onclick: () => { }
+                        }, {
+                            className: "hiddenOpacity hidden modalHeaderButtons right-button",
+                            text: `<span class="fa fa-database"></span>`,
+                            onclick: () => { }
+                        }
+                        , {
+                            className: "hiddenOpacity hidden modalHeaderButtons right-button",
+                            text: `<span class="fa fa-table"></span>`,
+                            onclick: () => { }
+                        }
+                        , {
+                            className: "hiddenOpacity hidden modalHeaderButtons right-button",
+                            text: `<span class="fa fa-columns"></span>`,
+                            onclick: (modal, event) => {
+                                modal.loading();
+                                setTimeout(() => {
+                                    modal.setContent(mockzao);
+                                    modal.setSize("70");
+                                    modal.loading(false);
+                                }, 2000)
+
+                            }
+                        }
+                        , {
+                            className: "hiddenOpacity hidden modalHeaderButtons right-button",
+                            text: `<span class="fa fa-eye"></span>`,
+                            onclick: (modal, event) => {
+                                modal.element.classList.toggle('border-internals');
+                                event.target.classList.toggle('fa-eye-slash');
+                                event.target.classList.toggle('fa-eye');
+                            }
+                        }
+                    ]
+                }
+
+                if (Array.isArray(this.configs?.footerButtons)) {
+                    this.addButton(".border-footer", this.configs?.footerButtons);
+                }
+
+                if (Array.isArray(this.configs?.headerButtons)) {
+                    this.addButton(".header-buttons", this.configs?.headerButtons);
+                }
+
+                if (typeof this.configs?.help == "function") {
+                    this.addButton(".header-buttons", [{
+                        className: "right-button",
+                        text: `<span class="fa fa-question-circle"></span>`,
+                        onclick: this.configs.help
+                    }]);
+                }
+
+                if (typeof this.configs?.debug == "function") {
+                    this.addButton(".header-buttons", [{
+                        className: "right-button",
+                        text: `<span class="fa fa-bug"></span>`,
+                        onclick: this.configs.debug
+                    }]);
+                }
+            }
+
+            addButton(target, buttons) {
+                let newButtons = buttons.map((buttonObj => {
+                    if (this.configs?.debug) { this.configs.debug(this, buttonObj, "addButton") }
+                    let buttonElement = document.createElement(buttonObj.tagName || "button");
+                    if (buttonObj?.onclick) {
+                        buttonElement.addEventListener("click", (e) => {
+                            buttonObj.onclick(this, e);
+                        })
+                    }
+                    if (buttonObj?.id) {
+                        buttonElement.id = buttonObj.id;
+                    }
+                    if (buttonObj?.className) {
+                        buttonElement.className = buttonObj.className;
+                    }
+                    buttonElement.innerHTML = buttonObj.text || buttonObj.innerHTML;
+                    return buttonElement;
+                }))
+                newButtons.forEach((i) => {
+                    let elementPosition = i?.position || "beforeend";
+                    this.element.querySelector(target).insertAdjacentElement(elementPosition, i);
+                })
+            }
+
+            show() {
+                this.$element.modal("show")
+            }
+
+            hide() {
+                this.$element.modal("hide")
+            }
+
+            setTitle(html) {
+                this.title.innerHTML = html
+            }
+
+            setHeader(html) {
+                this.header.innerHTML = html
+            }
+
+            setFooter(html) {
+                this.footer.innerHTML = html
+            }
+
+            setContent(html) {
+                this.body.innerHTML = html;
+            }
+
+            setBody(html) {
+                this.body.innerHTML = html;
+            }
+
+            alertContent() {
+                let alertType = {
+                    success: `<span class="fa fa-check fa-3x" style="color:#4caf50"></span>`,
+                    warning: `<span class="fa fa-exclamation fa-3x" style="color:#ffc107"></span>`,
+                    error: `<span class="fa fa-times fa-3x" style="color:#f44336"></span>`,
+                    info: `<span class="fa fa-info fa-3x" style="color:#31708f"></span>`,
+                    none: ``
+                }
+
+                let icon = this.configs?.icon || alertType[this.configs.alert];
+
+                let message = `
+            <div style="text-align:center">
+                <div> ${icon}</div>
+                <br><br>
+                <div style="font-size:3rem;"> ${this.configs.message}</div>
+            </div>
+            `;
+                return message;
+            }
+
+            loading(state = true) {
+                if (state == "false") {
+                    state = false;
+                }
+
+                let timeout = parseInt(state);
+
+                if (state) {
+                    this.element.querySelector(".modal-body").style.opacity = "0.2";
+                    this.element.querySelector(".modal-body").style.overflow = "hidden";
+                    if (!this.element.querySelector(".loading-overlay")) {
+                        this.element.querySelector(".modal-body").insertAdjacentHTML("afterbegin", `
+                <div class="loading-overlay"></div>
+                `);
+                    }
+                    this.element.querySelector(".loading-overlay").innerHTML = `${this.configs.loadingTemplate}`;
+                    this.element.querySelector(".loading-overlay").style.opacity = "1";
+
+                    if (!isNaN(timeout)) {
+                        setTimeout(() => {
+                            this.loading(false)
+                        }, timeout);
+                    }
+                } else {
+                    this.element.querySelector(".modal-body").style.opacity = "1";
+                    this.element.querySelector(".loading-overlay").style.opacity = "0";
+                    setTimeout(() => {
+                        this.element.querySelector(".loading-overlay").remove();
+                        this.element.querySelector(".modal-body").style.overflow = "auto";
+                    }, 300)
+                }
+
+            }
+
+            setBorder(param) {
+                if (param == "internal") {
+                    this.element.classList.add("border-none")
+                    this.element.classList.add("border-internals")
+                }
+                if (param == "classic") {
+                    this.element.classList.remove("border-none")
+                    this.element.classList.remove("border-internals")
+                }
+                console.log(param)
+            }
+
+            setSize(newSize) {
+                if (newSize == "full") {
+                    this.element.querySelector(".modal-dialog").className = `modal-dialog modal-${newSize}`;
+                    this.element.querySelector(".modal-content").className = `modal-content`;
+                } else {
+                    this.element.querySelector(".modal-dialog").className = `modal-dialog modal-${newSize}`;
+                    this.element.querySelector(".modal-content").className = `modal-content`;
+                }
+            }
+
+            destroy() {
+                DestroyDom.all(`#${this.configs.id}`);
+                if (this.configs?.debug) { this.configs.debug(this, "Destroy") }
+            }
+
+            toggleButtonVisibility(modal) {
+                var start = 0;
+                this.header.querySelectorAll("button.modalHeaderButtons").forEach((btn) => {
+                    start += 10;
+                    if (btn.classList.contains("hidden")) {
+                        setTimeout(() => { btn.classList.toggle("hidden") }, start)
+                        setTimeout(() => { btn.classList.toggle("hiddenOpacity") }, start + 100)
+                    } else {
+                        setTimeout(() => { btn.classList.toggle("hiddenOpacity") }, start)
+                        setTimeout(() => { btn.classList.toggle("hidden") }, start + 100)
+                    }
+                })
+            }
+
+            internalDebugger(...args) {
+                let debug = console;
+                debug.warn("Debug", args)
+
+            }
+
+        }
+
+        class DestroyDom {
+
+            //precisava criar alguns loops de removeListeners de click,change,load,keys,etc, pois o dom é removido mas events ficam na memoria
+            //existe uma certa complexidade em remover eventListeners nativamente, alguns loops aninhados, o jquery ajuda um pouco
+            //na verdade é impossivel deletar objetos no js, apenas a referencia é deletada, 
+            //se nao houver mais referencia o garbage collector termina o serviço
+            //porem tem casos em que outras referencias nao obvias mantem o objeto vivo, outras referencias ao objeto que o dev não sabe que existe
+            //a principio é inefetvivo deletar, uma tentativa seria guardar a referencia do new MinhaClasse em uma variavel e depois setar ela como null, mas precisaria criar um "gerenciador externo de instancias"
+            //isso aqui é uma tentativa de limpar memoria, ela limpa pelo menos algumas coisas, por mais que fiquem rastros ocupando memoria de forma invisivel
+
+            static all(selector) {
+                $(selector).off()
+                let childrens = document.querySelector(selector)
+                while (childrens.lastElementChild) {
+                    childrens.removeChild(childrens.lastElementChild);
+                }
+                $(selector).remove()
+            }
+        }
+
+
+       
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}, 300)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if (typeof ModalPortal != 'undefined') {
+
+    window.portalDocs = new ModalPortal({
+        id: "portaldocs", //id do elemento principal da modal
+        title: "Documentation Box",
+        size: "80",
+        show: !!localStorage["portaldocs"], //inicia ja mostrando em tela
+        headerButtons: "default",
+        footerButtons: [
+            {
+                text: "Acessar",
+                className: "btn btn-primary",
+                onclick: () => { }
+            }
+        ],
+        content: mockzao,
+        onCreate: (modal) => {
+            modal.loading(100)
+            $.toaster("", "criou modal", "success")
+            modal.element.addEventListener("keyup", async (e) => {
+                if (e.target.id == "searchbox") {
+                    const metodo = document.querySelector("input[name=searchFunction]:checked").value
+                    const parametro = document.querySelector("#searchbox").value
+                    await modal.configs[metodo](modal, parametro)
+                }
+            })
+            document.body.insertAdjacentHTML("beforeend", `
+          <button type="button" data-toggle="modal" data-target="#${modal.configs.id}" style="position:fixed;right:5px;bottom:100px;width:40px;height:40px;border-radius:50px;border:solid 3px #90adff; color:#90adff; background-color:#fff;">
+            <span class="fa fa-book"></span>
+          </button>
+          `)
+        },
+        beforeShow: (modal) => {
+            modal.loading(1000)
+            $.toaster("", "mostrar", "info")
+        },
+        afterShow: (modal) => {
+            $.toaster("", "apareceu", "success")
+        },
+        beforeHide: (modal) => {
+            $.toaster("", "fechar", "info")
+        },
+        afterHide: (modal) => {
+            $.toaster("", "fechou", "success")
+        },
+        buscarMenu: (modal, event) => {
+            menuFind(document.querySelector("#searchbox").value, ".searchresult")
+        },
+        toggleMinMax: (modal, event, parametro) => {
+            event.target.classList.toggle("fa-minus")
+            event.target.classList.toggle("fa-plus")
+            let viewArea = document.querySelector(`.${parametro}`)
+            viewArea.classList.toggle("hidden")
+
+        },
+        icones: (modal, event, parametro) => {
+            let video = `<div class="embed-responsive embed-responsive-16by9"><iframe width="100%" height="806" src="https://www.youtube.com/embed/lYvYWJxvxHg" title="LW Tecnologia" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`
+            document.querySelector(".searchresult").innerHTML = icones
+
+
+        },
+        alterarCliente: debounce(async (modal, parametro) => {
+
+            var host = window.location.host;
+            var id_cliente = $("#searchbox").val()
+            $.ajax("Alterar_Cliente.php")
+            $.ajax({
+                url: "json/alterar_cliente.php",
+                type: "post",
+                data: {
+                    param: "AlterarCliente",
+                    id_cliente
+                },
+                success: function () {
+                    // alert("deu boa, vou dar reload pra você")
+                    window.location.reload()
+                },
+                error: function () {
+                    alert("deu algum erro")
+                }
+            });
+        }, 600),
+        buscarAutoInfracao: debounce(async (modal, parametro) => {
+            console.log("debounced", parametro)
+            const data = new FormData();
+            data.append("post", "buscarMultaPorAuto");
+            data.append("auto", parametro);
+            modal.loading()
+            const request = await fetch("json/manutencao_alterar_auto_infracao.php", {
+                "body": data,
+                "method": "POST",
+                "mode": "cors",
+                "credentials": "include"
+            });
+            modal.loading(false)
+            if (!request.ok) {
+                modal.element.querySelector(".searchresult").innerHTML = `<div class="alert alert-warning">Erro</div>`;
+
+                new ModalPortal({
+                    alert: "warning",
+                    title: "ops",
+                    message: "houve um erro"
+                });
+
+                return;
+            }
+            const response = await request.json();
+            console.warn("debounced response")
+            if (response?.erro == "1") {
+                modal.element.querySelector(".searchresult").innerHTML = `<div class="alert alert-warning">${response?.descricao}</div>`;
+                return;
+            }
+            console.table(response.dados)
+            const autoEncontrado = response.dados[0]
+            let result = []
+            for (key in autoEncontrado) {
+                if (key == "link") {
+                    autoEncontrado[key] = `<a href="./MultaDetalhada.php?p=${autoEncontrado[key]}" target="_blank">link para multa detalhada</a>`
+                }
+                result.push(`<tr><td>${key}</td> <td>${autoEncontrado[key]}</td></tr>`)
+            }
+            modal.element.querySelector(".searchresult").innerHTML = `<table>${result.join("")}</table>`;
+        }, 600)
+    })
+
+
+
+
+
+    window.ferramentas = new ModalPortal({
+        id: "portaltools", //id do elemento principal da modal
+        title: "ToolBox",
+        size: "80",
+        show: !!localStorage["portaldocs"], //inicia ja mostrando em tela
+        headerButtons: "default",
+        footerButtons: [
+            {
+                text: "Acessar",
+                className: "btn btn-primary",
+                onclick: () => { }
+            }
+        ],
+        content: mockzao,
+        onCreate: (modal) => {
+            modal.loading(100)
+            $.toaster("", "criou modal", "success")
+            modal.element.addEventListener("keyup", async (e) => {
+                if (e.target.id == "searchbox") {
+                    const metodo = document.querySelector("input[name=searchFunction]:checked").value
+                    const parametro = document.querySelector("#searchbox").value
+                    await modal.configs[metodo](modal, parametro)
+                }
+            })
+            document.body.insertAdjacentHTML("beforeend", `
+      <button type="button" data-toggle="modal" data-target="#${modal.configs.id}" style="position:fixed;right:5px;bottom:50px;width:40px;height:40px;border-radius:50px;border:solid 3px #f0ad4e; color:#f0ad4e; background-color:#fff;">
+        <span class="fa fa-car"></span>
+      </button>
+      `)
+        },
+        beforeShow: (modal) => {
+            modal.loading(1000)
+        },
+        afterShow: (modal) => {
+        },
+        beforeHide: (modal) => {
+        },
+        afterHide: (modal) => {
+        },
+        buscarMenu: (modal, event) => {
+            menuFind(document.querySelector("#searchbox").value, ".searchresult")
+        },
+        toggleMinMax: (modal, event, parametro) => {
+            event.target.classList.toggle("fa-minus")
+            event.target.classList.toggle("fa-plus")
+            let viewArea = document.querySelector(`.${parametro}`)
+            viewArea.classList.toggle("hidden")
+
+        },
+        icones: (modal, event, parametro) => {
+            let video = `<div class="embed-responsive embed-responsive-16by9"><iframe width="100%" height="806" src="https://www.youtube.com/embed/lYvYWJxvxHg" title="LW Tecnologia" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`
+            document.querySelector(".searchresult").innerHTML = icones
+
+
+        },
+        alterarCliente: debounce(async (modal, parametro) => {
+
+            var host = window.location.host;
+            var id_cliente = $("#searchbox").val()
+            $.ajax("Alterar_Cliente.php")
+            $.ajax({
+                url: "json/alterar_cliente.php",
+                type: "post",
+                data: {
+                    param: "AlterarCliente",
+                    id_cliente
+                },
+                success: function () {
+                    // alert("deu boa, vou dar reload pra você")
+                    window.location.reload()
+                },
+                error: function () {
+                    alert("deu algum erro")
+                }
+            });
+        }, 600),
+        buscarAutoInfracao: debounce(async (modal, parametro) => {
+            console.log("debounced", parametro)
+            const data = new FormData();
+            data.append("post", "buscarMultaPorAuto");
+            data.append("auto", parametro);
+            modal.loading()
+            const request = await fetch("json/manutencao_alterar_auto_infracao.php", {
+                "body": data,
+                "method": "POST",
+                "mode": "cors",
+                "credentials": "include"
+            });
+            modal.loading(false)
+            if (!request.ok) {
+                modal.element.querySelector(".searchresult").innerHTML = `<div class="alert alert-warning">Erro</div>`;
+
+                new ModalPortal({
+                    alert: "warning",
+                    title: "ops",
+                    message: "houve um erro"
+                });
+
+                return;
+            }
+            const response = await request.json();
+            console.warn("debounced response")
+            if (response?.erro == "1") {
+                modal.element.querySelector(".searchresult").innerHTML = `<div class="alert alert-warning">${response?.descricao}</div>`;
+                return;
+            }
+            console.table(response.dados)
+            const autoEncontrado = response.dados[0]
+            let result = []
+            for (key in autoEncontrado) {
+                if (key == "link") {
+                    autoEncontrado[key] = `<a href="./MultaDetalhada.php?p=${autoEncontrado[key]}" target="_blank">link para multa detalhada</a>`
+                }
+                result.push(`<tr><td>${key}</td> <td>${autoEncontrado[key]}</td></tr>`)
+            }
+            modal.element.querySelector(".searchresult").innerHTML = `<table>${result.join("")}</table>`;
+        }, 600)
+    })
+
 }
 
 

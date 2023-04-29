@@ -1,7 +1,7 @@
 // Pegar a URL da aba ativa ao abrir o popup
 function getCurrentTab(callback = null){
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        var currentTab = tabs[0]; // retorna um array com 1 indice, a aba ativa
+        window.currentTab = tabs[0]; // retorna um array com 1 indice, a aba ativa
         callback(currentTab);
         return currentTab;
     });
@@ -16,6 +16,7 @@ getCurrentTab((tab)=>{
 
 window.addEventListener("DOMContentLoaded",function(loaded){
     getTabSource(tab.id)
+    getTabStorage();
 })
 
 chrome.runtime.onMessage.addListener(function(request, sender) {
@@ -353,6 +354,50 @@ chromeStorage = {
 // let obj = await chrome.storage.sync.get("requestHistory")
 //===================================================
 
+function getTabStorage(){
+    chrome.tabs.sendMessage(currentTab.id, { pedido: 'localStorage' }, function(resposta) {
+        // faça algo com a resposta do localStorage da aba ativa
+        console.log("TabStorage",resposta);
+        listarTabStorage(resposta);
+    });
+}
+
+function listarTabStorage(storage) {
+    $("#localstoragelist").html("")
+
+    for(key in storage){
+        if(key == "roawConfigs"){
+            try{
+                let roawConfigs = JSON.parse(storage[key])
+                for(cfg in roawConfigs){
+                    if(roawConfigs[cfg]===true){
+                        document.querySelector(`#${cfg}`).checked=true
+
+                        console.log("rcc",cfg,roawConfigs) 
+                    }
+                }
+            }catch(ee){
+                //
+            }
+        }
+        if(key.toLocaleLowerCase().indexOf("token") > -1){
+            $("#localstoragelist").append(`
+            <div class="col-md-4"> &nbsp; <span class="label label-warning"> ${key}</label></div>
+            <div class="col-md-8"><input type="password" class="form-control" value="${storage[key]}" /></div><br>
+            `)
+        }else{
+            $("#localstoragelist").append(`
+            <div class="col-md-4"> &nbsp; <span class="label label-default"> ${key}</label></div>
+            <div class="col-md-8"><textarea rows="1" type="text" class="form-control">${storage[key]}</textarea></div><br>
+            `)
+        }
+    }
+}
+
+function setLocalStorage(param){
+    chrome.tabs.sendMessage(currentTab.id, { setLocalRoawConfig: param });
+}
+
 function getTabSource(id){
     console.log("getTabSource", id)
     //new MV3 mode
@@ -373,6 +418,7 @@ function getTabSource(id){
         }
       });
 }
+
 
 
 
@@ -448,3 +494,11 @@ function setBadge(text = "", color = "#f00"){
 	chrome.action.setBadgeBackgroundColor({ color }, () => {});
 	chrome.action.setBadgeText({ text });
 }
+
+
+$(".setLocalRoawConfig").on("change",e=>{
+    configParam = {};
+    configParam[e.target.id] = e.target.checked
+    console.log(configParam)
+    setLocalStorage(configParam)
+})

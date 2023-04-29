@@ -1,7 +1,7 @@
 //executa ao terminar o carregamento da pagina, no escopo da pagina
-if(window.location.host == 'git.lwtecnologia.com.br'){
+if (window.location.host == 'git.lwtecnologia.com.br') {
 	function assignSpringfield(myself) {
-		if(!localStorage.getItem("springFieldMembers")){
+		if (!localStorage.getItem("springFieldMembers")) {
 			alert("You have to create localStorage['springfieldMembers'] = '@fulano;@ciclano;@etc'")
 			return false;
 		}
@@ -16,16 +16,17 @@ if(window.location.host == 'git.lwtecnologia.com.br'){
 		})
 	}
 
-	if(gitLabAssignBox = document.querySelector(".js-assignee-search")){
+	if (gitLabAssignBox = document.querySelector(".js-assignee-search")) {
 		gitLabAssignBox.click()
 		document.querySelector(".issuable-form-select-holder").insertAdjacentHTML("afterend", ` &nbsp; <button id="autoAssign" type="button" onclick="assignSpringfield(this)" class="gl-button btn btn-confirm gl-mr-2"> Assign to Springfield</button> `)
-		console.log("localizei uma assignbox e cliquei nela",gitLabAssignBox)
+		console.log("localizei uma assignbox e cliquei nela", gitLabAssignBox)
 		setTimeout(() => {
 			document.querySelector("#autoAssign").click()
-		},2000)
+		}, 2000)
 
 	}
 }
+
 
 
 function etaGetSID() {
@@ -48,6 +49,8 @@ function etaGetSID() {
 	} else {
 		$("body").removeClass("night")
 	}
+
+
 
 
 	$(".navbar-right").append(`
@@ -654,6 +657,9 @@ function etaGetSID() {
 								<li><a href="#" class="alterarClienteClick">31</a></li>
 
 								<li role="separator" class="divider"></li> 
+								<li><a href="#" class="limparArquivosClick">Limpar Arquivos</a></li>
+
+								<li role="separator" class="divider"></li> 
 								<li><a href="#"><label><input checked="checked" type="radio" /> Modal<label></a></li> 
 								<li><a href="#"><label><input disabled type="radio" /> Debug Page</a></label></li> 
 
@@ -682,6 +688,11 @@ function etaGetSID() {
 	$(".alterarClienteClick").on("click", function (e) {
 		e.preventDefault();
 		alterarCliente(e.target.innerText);
+	})
+
+	$(".limparArquivosClick").on("click", function (e) {
+		e.preventDefault();
+		limparArquivos();
 	})
 
 	if ($("input[name=id_multa]").val() && $("#tab1")) {
@@ -780,6 +791,21 @@ function etaGetSID() {
 				msgErroPadrao(error.status);
 			}, complete: function () { }
 		});
+	}
+
+	async function limparArquivos() {
+		$.ajax({
+			type: "POST",
+			url: "http://localhost:8006/vsmApi.php",
+			data: {
+				param: 'limparArquivos'
+			},
+			dataType: "json",
+			success: function (r) {
+				$.toaster(" ", r, "info")
+				console.log(r)
+			}
+		})
 	}
 
 
@@ -889,8 +915,9 @@ function loginBackgroundRotator() {
 }
 
 
+etaGetSID();
 
-window.addEventListener("load", etaGetSID);
+//window.addEventListener("load", etaGetSID);
 
 function nightToggle() {
 	if (localStorage["nightTheme"] == "false") {
@@ -1851,3 +1878,159 @@ function appendBg() {
 
 }
 
+
+
+// document.querySelector("h1").addEventListener("dblclick",function(){
+// 	$("#nome").val("Valdecir 8 Merli")
+// 	$("#rg").val("123")
+// 	// $("#cpf").val("95412785077") 08693248022
+// 	$("#cpf").val("08693248022")
+// 	$("#dataNascimento").val("11/11/1988")
+// 	$("#email_condutor").val("1@3.com")
+// 	$("#numeroRegistro").val("456")
+// 	$("#dataPrimeiraHabilitacao").val("11/11/2000")
+// 	$("#dataValidade").val("11/11/2030")
+// 	$("#cep").val("82620280")
+// 	BuscarCep();
+// 	$("#end_numero").val("369")
+// 	document.querySelector("#imagem_cnh").click()
+// })
+
+
+//tmpoorariamente aqui, sobre api de login, a ideia é levar pro portal
+function env(selected = null) {
+	let allEnvs = JSON.parse(localStorage.getItem("@lw-all-enviroments"));
+	if (selected) {
+		if (!allEnvs[selected]) {
+			console.table(allEnvs)
+			console.error("Este ambiente não existe, veja a lista acima:")
+			return;
+		}
+		const apis = allEnvs[selected];
+		for (apiName in apis) {
+			localStorage.setItem(apiName, apis[apiName]);
+			console.log("[localStorage.setItem] ", apiName, apis[apiName])
+		}
+		console.warn(`${selected} [Selecionado]`)
+		return
+
+	}
+	console.table(allEnvs)
+}
+
+function selectedEnv() {
+	let selectedEnvString = localStorage.getItem("@lw-selected-enviroment");
+	let selectedEnvJson = JSON.parse(selectedEnvString);
+	console.log("@lw-selected-enviroment", selectedEnvString);
+	console.table(selectedEnvJson)
+}
+
+function devMode(mode = "Production") {
+	localStorage.setItem("devMode", mode)
+	const envSelector = document.querySelector("#env")
+	if (!envSelector) {
+		createEnvSelector(mode);
+	}
+}
+function createEnvSelector() {
+	if (selectedDevMode = localStorage.getItem("devMode")) {
+		console.log("DevMode: ", selectedDevMode);
+		const botaoEntrarLogin = document.querySelector(".container-login100-form-btn > #entrar");
+		if (botaoEntrarLogin) {
+			botaoEntrarLogin.insertAdjacentHTML("beforebegin", `
+            <select name="env" id="env" class="form-control" style="width:100%;height:50px;padding:5px;border:solid 0px #fff; background-color:#333;color:#ddd;border-radius:8px;">
+                <option value="http://localhost:8006/vsmApiLogin.php">Production</option>
+                <option value="http://localhost:8006/vsmApiLogin.php">Homolog</option>
+                <option value="https://api.lwtecnologia.com.br/api/login">QA</option>
+                <option value="http://localhost:8006/vsmApiLogin.php">Custom</option>
+            </select>
+            `);
+			document.querySelectorAll("#env option").forEach(op => {
+				if (op.innerText == selectedDevMode) {
+					op.selected = true
+				}
+			})
+		}
+	}
+}
+// document.addEventListener("DOMContentLoaded",e => {
+//     createEnvSelector();
+// })
+
+createEnvSelector();//gambi pra extensão, no portal eh dentro do DOMContentLoaded
+
+function buscarTokenApi() {
+
+	const email = $('input[name=email]').val()
+	const senha = $('input[name=senha]').val()
+	const envLink = document.querySelector("#env")?.value;
+	const loginUrl = envLink || 'https://api.lwtecnologia.com.br/api/login';
+	const data = {
+		login: email,
+		senha
+	}
+
+	if (loginUrl != 'https://api.lwtecnologia.com.br/api/login') {
+		data.env = document.querySelector("#env").options[document.querySelector("#env").options.selectedIndex].innerText;
+	}
+	const requestOptions = {
+		method: 'POST',
+		body: JSON.stringify(data),
+		headers: new Headers({
+			'Content-Type': 'application/json',
+			'Accept': 'application/json'
+		}),
+	};
+
+	fetch(loginUrl, requestOptions)
+		.then(response => response.json())
+		.then(function (response) {
+
+			setarToken(response)
+
+			/**
+			 * quando for prod, tem que: 
+			 * 
+			 * ou devolver os links de prod, 
+			 * ou limpar as possiveis variaveis de url do local storage que pode ter link remanescente de outros momentos
+			 * 
+			 * eu preferiria devolver os links de prod, pq até mesmo configurações furuas se mudasse link de prod seriam dinamicas
+			 */
+
+			const devModeEnabled = document.querySelector("#env")
+			const apis = response?.enviroment?.apis;
+			const allEnviromens = response?.enviroments
+			if (apis) {
+				for (apiName in apis) {
+					localStorage.setItem(apiName, apis[apiName]);
+					if (devModeEnabled) {
+						console.log("[localStorage.setItem] ", apiName, apis[apiName])
+						// inves de guardar cada link como uma entrada no localstorage... 
+						// eu preferia usar 1 chave apenas, e guardar um objeto serializado com todas as urls
+						// ex: JSON.stringify(response.enviroment.apis)
+					}
+				}
+				localStorage.setItem("@lw-selected-enviroment", JSON.stringify(apis));
+				localStorage.setItem("@lw-all-enviroments", JSON.stringify(allEnviromens));
+			} else {
+				//se não é um login de dev, deveria limpar as urls do localStorage
+			}
+
+		}).then(() => {
+			$("#formLogin").submit();
+			localStorage.setItem('buscarNotificacoes', 'true');
+		}).catch(error => {
+			console.error('ERRO LOGIN:', error)
+			$("#formLogin").submit()
+		});
+
+}
+
+function checkEnv(){
+	try{
+		return document.querySelector("#env").options[document.querySelector("#env").options.selectedIndex].innerText;
+	}catch($e){
+		console.warn("Nenhum env encontrado");
+		return null;
+	}
+}
