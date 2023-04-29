@@ -99,6 +99,24 @@ chrome.runtime.onInstalled.addListener(function(a){
 	
 	var installLogs =  a.reason+" | "+a.previousVersion+' > '+chrome.runtime.getManifest().version+' | '+new Date();
 	//showNotifier(a.reason,a.previousVersion+' > '+chrome.runtime.getManifest().version)
+
+	const defaultRoawConfigs = `{
+        "github" : "vsmsystem",
+        "all" : {},
+        "default": {
+            "vsmbar" : true,
+            "inject" : ["default.js"]
+        },
+        "www.vsmsystem.com" : {
+            "vsmbar" : true,
+            "inject" : ["default.js"]
+        },
+        "localhost:8006" : "default",
+        "localhost:9001" : "default",
+        "www.etc.com.br" : "default"
+    }`;
+    chrome.storage.sync.set({"roawConfigs":defaultRoawConfigs});
+	
 	if(a.previousVersion!=chrome.runtime.getManifest().version){
 		if(a.reason=='install'){
 			logInstall('install');

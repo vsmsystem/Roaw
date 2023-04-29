@@ -21,16 +21,41 @@ Tem muita coisa a respeito disso a ser dita, e está tudo em um período bem ini
 
 ```json
 {
-    "all" : { },
+    "github" : "vsmsystem",
+    "all" : {},
+    "default": {
+        "vsmbar" : true,
+        "inject" : ["default.js"]
+    },
     "www.vsmsystem.com" : {
         "vsmbar" : true,
         "inject" : ["default.js"]
     },
-    "localhost:8006"  : "www.vsmsystem.com",
-    "localhost:9001" : "www.vsmsystem.com",
-    "www.etc.com.br" : "www.vsmsystem.com"
+    "localhost:8006" : "default",
+    "localhost:9001" : "default",
+    "www.etc.com.br" : "default"
 }
 ```
-
+Rascunho para mais tarde:
+eventListeners
+speech
+mutationObserver
+selectOptions
+getElementsByText
+forIn
+fetch
+HTML DOM Parser
+CSS Real Time edit
+Network Debugger
+var_dump
+console.toast
+injections
+tokens/serviços
+http
+vsmBar
+roawBox
+documentação frontend
+documentação backend
+documentação banco de dados
 
 [VSM](https://www.vsmsystem.com/)
