@@ -1,0 +1,15 @@
+version: '3.7'
+
+services:
+  php81:
+    build:
+      context: .
+      target: php-base
+    volumes:
+      - ./:/var/www/
+    ports:
+      - "9988:80"
+    restart: "always"
+    env_file:
+      - .env
+
