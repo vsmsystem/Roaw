@@ -532,4 +532,23 @@ $(".updateLocalStorageHttp").on("change",e=>{
 })
 
 
-//.substr(0,2)=="ey"
+//customNewTabUrl
+//customNewTab
+
+$(loaded=>{
+    $("#customNewTab").val(localStorage["customNewTab"])
+    $("#customNewTabUrl").val(localStorage["customNewTabUrl"])
+})
+if(!localStorage["customNewTab"]){
+    localStorage["customNewTab"] = "chrome"
+}
+if(!localStorage["customNewTabUrl"]){
+    localStorage["customNewTabUrl"] = ""
+}
+
+$("#customNewTab").on("change",e=>{
+    localStorage["customNewTab"] = e.target.value
+})
+$("#customNewTabUrl").on("change",e=>{
+    localStorage["customNewTabUrl"] = e.target.value
+})

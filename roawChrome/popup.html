@@ -740,15 +740,32 @@
 												</div>
 											</div>
 										</div>
-										<hr>
-										<div><label> <input id="roawStatus" class="setLocalRoawConfig" type="checkbox" /> Enabled </label>
+										<div class="row">
+											<div class="col-sm-6">
+												<div>Domain</div>
+												<div><label> <input id="roawStatus" class="setLocalRoawConfig" type="checkbox" />
+														Enabled</label></div>
+												<div><label> <input id="default" class="setLocalRoawConfig" type="checkbox" /> SM default
+													</label>
+												</div>
+												<div><label> <input id="httpAutoStart" class="setLocalRoawConfig" type="checkbox" />
+														httpAutoStart
+													</label></div>
+												<div><label> <input id="vsmBar" class="setLocalRoawConfig" type="checkbox" /> VsmBar+Toolbox
+													</label></div>
+											</div>
+											<div class="col-sm-6">
+												<div>Extension</div>
+												<div style="margin-right:10px;">
+													<select name="customNewTab" id="customNewTab" class="form-control">
+														<option value="chrome">newTab: Chrome Default</option>
+														<option value="roaw">newTab: Roaw</option>
+														<option value="custom">newTab: Custom URL</option>
+													</select>
+													<input id="customNewTabUrl" type="text" class="form-control" placeholder="Custom Url NewTab">
+												</div>
+											</div>
 										</div>
-										<div><label> <input id="default" class="setLocalRoawConfig" type="checkbox" /> SM default </label>
-										</div>
-										<div><label> <input id="httpAutoStart" class="setLocalRoawConfig" type="checkbox" /> httpAutoStart
-											</label></div>
-										<div><label> <input id="vsmBar" class="setLocalRoawConfig" type="checkbox" /> VsmBar+Toolbox
-											</label></div>
 
 
 										<hr>

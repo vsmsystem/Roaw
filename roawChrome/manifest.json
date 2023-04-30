@@ -18,6 +18,9 @@
   "icons": {
     "128": "128.png"
   },
+  "chrome_url_overrides": {
+    "newtab": "Vweb/newtab.html"
+  },
   "permissions": [
     "background",
     "storage",
