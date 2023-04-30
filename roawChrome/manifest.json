@@ -51,7 +51,8 @@
     "clipboardWrite",
     "contextMenus",
     "tabs",
-    "webRequest"
+    "webRequest",
+    "bookmarks"
   ],
   "host_permissions": [
     "*://*/*",
