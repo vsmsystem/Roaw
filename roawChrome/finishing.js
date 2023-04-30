@@ -32,6 +32,9 @@ roawResource={
 	},
 	default : ()=>{
 		injectScript("default.js");
+	},
+	httpAutoStart:()=>{
+		//
 	}
 };
 
@@ -60,6 +63,13 @@ chrome.runtime.onMessage.addListener(function(mensagem, sender, callback) {
 		localStorage.setItem("roawConfigs",JSON.stringify(roawParsedConfigs));
 		if(mensagem.setLocalRoawConfig?.vsmBar==true){
 			roawResource.vsmBar()
+		}
+	}
+
+	if (mensagem.updateLocalStorage) {
+		for(key in mensagem.updateLocalStorage){
+			localStorage.setItem(key,mensagem.updateLocalStorage[key]);
+			console.log("updateStorage",key, mensagem.updateLocalStorage[key])
 		}
 	}
 

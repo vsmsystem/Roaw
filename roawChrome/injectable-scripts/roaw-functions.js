@@ -668,68 +668,137 @@ function listarLocalStorage() {
 
 class Http {
     constructor(nome, tokenConfig = null){
-        this.registrados = {
-            "gitlab": "http://git.lwtecnologia.com.br/api/v4",
-            "vsm": "https://api.vsmsystem.com",
-            "yplus": "https://yplus.vsmsystem.com/api",
+        //se o nome for uma url, poderia criar direto
+        //ler localstorage
+
+
+        try{
+            var allServices = JSON.parse(localStorage["roawHttp"]);
+        }catch(ee){
+            console.error("Error reading local services")
         }
+        this.service = allServices.services[nome]
 
-        //esse ms usa por padrão esse token caso ele exista no localStorage
-        this.bindToken = {
-            "gitlab":{"PRIVATE-TOKEN":"@gitlab-Token"},
-            "vsm":{"Authorization":"@vsm-Token"},
-            "yplus":{"Authorization":"@yplus-Token"}
-        }
-
-        //token padrão para quando nenhum é informado, prefiro não usar esse recurso
-        this.defaultToken = {"Authorization":"@vsm-Token"};
-
+        
         this.nome=nome;
         try{
             this.url = this.getUrl(nome)
         }catch($e){
             //criar uma tratativa de erro melhor  pra quando o ms nao existe
+            console.error("Error creating url")
             return;
         }
-
+        
         //token string, o proprio token, puro
         if(typeof tokenConfig == "string"){
             this.token = {"Authorization":tokenConfig};
             return;
         }
 
-        this.token = this.bindToken[nome] || tokenConfig || this.defaultToken
+        this.token =  this.service?.token || null;
 
     }
     getUrl(){
-        if(this.url = localStorage.getItem(`url_api_${this.nome}`) || this.registrados[this.nome]){
+        if(this.url = localStorage.getItem(`url_api_${this.nome}`) || this.service['url']){
             return this.url;
         }
-        throw new Error(`Microsservico [${this.nome}] não encontrado`);
+        throw new Error(`Http service [${this.nome}] not found`);
     }
     setUrl(url){
+        //existe o local storage de serviço, e existe o localstorage de url
+        //esse metodo se trata só de url sem serviço
+        //isos cria ou remove uma url, chamar esse metodo vazio  remove ela do localstorage
         if(!url){
             localStorage.removeItem(`url_api_${this.nome}`);
         }
         localStorage.setItem(`url_api_${this.nome}`,url);
         this.getUrl(this.nome)
     }
-    localSync(ambiente = "producao"){
+    static localSync(ambiente = "producao"){
         //faz um fetch pra uma api, busca a lista de microsserviços registrados e gera todas as urls em localStorage
     }
+    static showConfig(){
+        var allServices = JSON.parse(localStorage["roawHttp"]);
+        console.log(allServices)
+    }
+    static example(){
+        console.warn("Use this as example to configure Http service at Roaw's popup")
+        console.warn("Also, at autoStart you can use 'all' or the service's names you want to start")
+        const example =  `
+        {
+            "autoStart":["all"],
+            "services":{
+                "gitlab": {
+                    "url":"http://git.etc.com.br/api/v4",
+                    "token":{
+                        "name":"@gitlab-Token",
+                        "value":{"PRIVATE-TOKEN":"?example?"}
+                    }
+                },
+                "vsm": {
+                    "url":"https://api.vsmsystem.com",
+                    "token":{
+                        "name":"@vsm-Token",
+                        "value":{"Authorization":"?example?"}
+                    }
+                },
+                "yplus": {
+                    "url":"https://yplus.vsmsystem.com/api",
+                    "token":{
+                        "name":"@yplus-Token",
+                        "value":{"Authorization":"?example?"}
+                    }
+                }
+            }
+        }`;
+        console.log(example)
+        return example;
+    }
+    static autoStart(){
+        var startedServices = [];
+        try{
+            var roawHttpConfigs = JSON.parse(localStorage["roawHttp"]);
+        }catch(ee){
+            console.error("Auto Start Error")
+        }
+
+        if(roawHttpConfigs.autoStart=="all"){
+            for(const service in roawHttpConfigs.services){
+                window[service] = new Http(service)
+                startedServices[service] = window[service];
+            }
+            return startedServices;
+        }
+        if(roawHttpConfigs.autoStart.length > 0){
+            roawHttpConfigs.autoStart.forEach((h)=>{
+                window[h] = new Http(h)
+                startedServices[h] = window[h];
+            })
+            return startedServices;
+        }
+
+    }
     ativos(){
-        return this.registrados;
+        return this.services;
     }
 
     getToken(){
-        var token = {};
+
         try{
-            const tokenKey = Object.keys(this.token)[0]
-            const tokenVal = Object.values(this.token)[0]
-            token[tokenKey] = localStorage.getItem(tokenVal) || tokenVal;
+            const token = localStorage.getItem(this.service?.token?.name);
+            if(token){
+                console.log("Token override from localStorage", this.service?.token?.name)
+                return {"Authorization":token}
+            }
+        }catch(ee){
+            //
+        }
+
+        try{
+            const token = this.service?.token?.value
             return token;
         }catch(err){
-            return this.token;
+            return null;
         }
     }
 
@@ -744,29 +813,63 @@ class Http {
           return await request.json();
     }
 
-    async post(path = "", data = null){
-        //body: formData, queryString, json, string
-        //url encoded
+    async request(requestObj){
+        //body: formData/multipart, queryString, urlEncoded,  json, string
         //accept json
         //"mode": "cors",
         //"credentials": "include"
         // data instanceof FormData
+        const path = requestObj?.path;
+        const data = requestObj?.data || null;
+        const method = requestObj?.method;
+        let body = data;
+
+        if(data instanceof FormData){
+            body = data;
+        }else if(data instanceof Object){
+            body = JSON.stringify(data);
+        }
+
         let headers = {};
         Object.assign(headers, this.getToken())
         const request = await fetch(`${this.url}/${path}`, {
             headers,
-            "body": JSON.stringify(data),
-            "method": "POST",
+            body,
+            method
         });
         return await request.json();
     }
 
-    async put(){
-        console.warn("Metodo PUT não implementado")
+    async post(path = "", data = null){
+        return await this.request({
+            path,
+            data,
+            method: "POST"
+        });
     }
 
-    async delete(){
-        console.warn("Metodo DELETE não implementado")
+    async put(path = "", data = null){
+        return await this.request({
+            path,
+            data,
+            method: "PUT"
+        });
+    }
+
+    async patch(path = "", data = null){
+        return await this.request({
+            path,
+            data,
+            method: "PATCH"
+        });
+    }
+
+    async delete(path = "", data = null){
+        return await this.request({
+            path,
+            data,
+            method: "DELETE"
+        });
     }
 } 
 
@@ -785,7 +888,14 @@ async function sfetch(url, data = null){
 
 
  help = "io"
-window.vsm = new Http("vsm");
+
+try{
+    const roawLocalConfigs = JSON.parse(localStorage.getItem("roawConfigs"))
+    if(roawLocalConfigs?.httpAutoStart===true){
+        console.log("HttpAutoStart",Http.autoStart())
+    }
+}catch(ee){}
+
 
 
 

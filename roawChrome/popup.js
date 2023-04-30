@@ -388,7 +388,7 @@ function listarTabStorage(storage) {
         }else{
             $("#localstoragelist").append(`
             <div class="col-md-4"> &nbsp; <span class="label label-default"> ${key}</label></div>
-            <div class="col-md-8"><textarea rows="1" type="text" class="form-control">${storage[key]}</textarea></div><br>
+            <div class="col-md-8"><textarea name="${key}" rows="1" type="text" class="form-control updateLocalStorage">${storage[key]}</textarea></div><br>
             `)
         }
     }
@@ -396,6 +396,9 @@ function listarTabStorage(storage) {
 
 function setLocalStorage(param){
     chrome.tabs.sendMessage(currentTab.id, { setLocalRoawConfig: param });
+}
+function updateLocalStorage(param){
+    chrome.tabs.sendMessage(currentTab.id, { updateLocalStorage: param });
 }
 
 function getTabSource(id){
@@ -502,3 +505,31 @@ $(".setLocalRoawConfig").on("change",e=>{
     console.log(configParam)
     setLocalStorage(configParam)
 })
+
+$(loaded=>{
+    //o localstorage é montado asincronamente, existe forma melhor de registrar evento pra todos os inputs, ams por hora gerei um delayzinho pra dar tempo da função montar os inputs e depois registrar evento pra todos
+    //correto seria usar document.createElement e registrar eventos individualmente pra cada input
+    setTimeout(()=>{
+        $(".updateLocalStorage").on("change",e=>{
+            configParam = {};
+            configParam[e.target.name] = e.target.value
+            console.log(configParam)
+            updateLocalStorage(configParam)
+        })
+    },500)
+})
+
+$(".updateLocalStorageHttp").on("change",e=>{
+    configParam = {};
+    if(e.target.value.substr(0,2)=="ey"){
+        //b64decode
+        configParam[e.target.name] = atob(e.target.value);
+    }else{
+        configParam[e.target.name] = e.target.value
+    }
+    console.log(configParam)
+    updateLocalStorage(configParam)
+})
+
+
+//.substr(0,2)=="ey"
