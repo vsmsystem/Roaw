@@ -966,7 +966,7 @@ const fullHTML = `
             <div class="sf-toolbar-info-piece">
                 <b>RoawBox</b>
                 <span onclick="toggleRoawBox()" class="sf-toolbar-status">open</span>
-                <span onclick="modalTeste()" class="sf-toolbar-status">modal</span>
+                <span onclick="modalTools()" class="sf-toolbar-status">modal</span>
             </div>
 
 			<div class="sf-toolbar-info-piece">
@@ -1344,7 +1344,7 @@ function boxDocumentacoes() {
         <p>Adicionamente, se precisar usar modal, existe uma classe que ajuda com isso:</p>
         <pre>
             <code>
-            const minhaModal = new ModalPortal({
+            const minhaModal = new modalRoaw({
                 id: "ocultarImagensModal", //id do elemento principal da modal
                 title: "Ocultar Imagens",
                 show: true, //inicia ja mostrando em tela
@@ -4016,7 +4016,7 @@ setTimeout(t => {
    right: 0;
    bottom: 0;
    left: 0;
-   z-index: 1050;
+   z-index: 99999999;
    display: none;
    overflow: hidden;
    outline: 0;
@@ -4162,7 +4162,7 @@ setTimeout(t => {
    right: 0;
    bottom: 0;
    left: 0;
-   z-index: 1050;
+   z-index: 999999999;
    display: none;
    overflow: hidden;
    -webkit-overflow-scrolling: touch;
@@ -4818,454 +4818,423 @@ float: left !important;
  </style>
 
 `);
-
-
-
-    if (typeof ModalPortal != 'undefined') {
-        console.log("modal ja existe")
-    } else {
-        console.log("criando Modal")
-        function modalTesting() {
-            console.log("etc")
-        }
-        modalTesting()
-
-        class ModalPortal {
-            constructor(configs) {
-                this.configs = configs;
-                const selector = this.configs?.selector
-                const someCallback = this.configs?.someCallback || null;
-                if (configs?.debug === true) {
-                    this.configs.debug = this.internalDebugger
-                }
-                if (this.configs?.alert) {
-                    this.configs.show = true;
-                    this.configs.destroyOnClose = true;
-                    this.configs.content = this.alertContent()
-                }
-                this.configs.id = configs?.id || `modal_${Date.now()}`
-                this.configs.size = configs?.size || `md`
-                this.configs.title = configs?.title || `<img style="width:24px;background-color:#333;padding:2px;border-radius:5px;" src="img/Logo_LW_Branco.png">`;
-                this.configs.loadingTemplate = configs?.loadingTemplate || `<div style='text-align:center;'><span class='gradient-text fa fa-circle-o-notch fa-3x fa-spin'></span></div>`;
-
-                this.createModal();
-
-                if (this.configs?.show == true) {
-                    this.show()
-                }
-                if (configs?.preventCloseDropdown === true) {
-                    $(document).on('click', selector, (e) => {
-                        e.stopPropagation();
-                    });
-                }
-
-                //dentro do on do jquery o this é o elemento do dom, usar o self se necessário
-                var self = this;
-                this.$element.on('show.bs.modal', function (e) {
-                    if (self.configs?.debug) { self.configs.debug(self, e, "beforeShow") }
-                    if (self.configs?.beforeShow) {
-                        self.configs.beforeShow(self, e)
-                    }
-                })
-                this.$element.on('shown.bs.modal', function (e) {
-                    if (self.configs?.debug) { self.configs.debug(self, e, "afterShow") }
-                    if (self.configs?.afterShow) {
-                        self.configs?.afterShow(self, e)
-                    }
-                })
-                this.$element.on('hide.bs.modal', function (e) {
-                    if (self.configs?.debug) { self.configs.debug(self, e, "beforeHide") }
-                    if (self.configs?.preventClose) {
-                        if (typeof self.configs?.preventClose == "function") {
-                            self.configs?.preventClose(self, e);
-                        }
-                        e.preventDefault();
-                        return;
-                    }
-                    if (self.configs?.beforeHide) {
-                        self.configs?.beforeHide(self, e)
-                    }
-                    if (self.configs?.destroyOnClose) {
-                        self.destroy()
-                    }
-                })
-
-                this.$element.on('hidden.bs.modal', function (e) {
-                    if (self.configs?.debug) { self.configs.debug(self, e, "afterHide") }
-                    if (self.configs?.afterHide) {
-                        self.configs?.afterHide(self, e)
-                    }
-                })
-                this.$element.on('loaded.bs.modal', function (e) {
-                    if (self.configs?.debug) { self.configs.debug(self, e, "loaded") }
-                    if (self.configs?.loaded) {
-                        self.configs?.loaded(self, e)
-                    }
-                })
-
-                return this
-            }
-
-            createFooter(footerCallback = null, footerParams = null) {
-                if (footerCallback === false) {
-                    return "";
-                }
-                if (typeof footerCallback == 'function') {
-                    return footerCallback(this, footerParams);
-                }
-
-                if (footerCallback === null) {
-                    return `
-            <div class="modal-footer">
-                <div class="border-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
-                </div>
-            </div>
-            `;
-                }
-
-                return footerCallback;
-
-            }
-
-            createHeader(headerCallback = null, headerParams = null) {
-                if (headerCallback === false) {
-                    return "";
-                }
-                if (typeof headerCallback == 'function') {
-                    return headerCallback(this, headerParams);
-                }
-
-                if (headerCallback === null) {
-
-                    return `
-
-            <div class="modal-header">
-                <div class="header-buttons pull-right">
-                    <button type="button" class="right-button" data-dismiss="modal" aria-label="Close">
-                    <span class="fa fa-times"></span>
-                        <!-- <span aria-hidden="true">&times;</span> -->
-                    </button>
-                </div>
-
-                <h4 class="modal-title">${this.configs.title}</h4>
-                
-            </div>
-            `;
-                }
-
-                return headerCallback;
-
-            }
-
-            createModal() {
-                let footer = this.createFooter(this.configs?.footer);
-                let header = this.createHeader(this.configs?.header);
-                document.body.insertAdjacentHTML("beforeend", `
-            <div class="modal fade modal-portal border-none border-internals" tabindex="-1" role="dialog" id="${this.configs.id}">
-                <div class="modal-dialog modal-${this.configs.size}" role="document">
-                    <div class="modal-content">
-                        
-                        ${header}
-                        <div class="modal-body">
-                            ${this.configs?.content}
-                        </div>
-
-                        ${footer}
-
-                    </div>
-                </div>
-            </div>
-        `);
-                this.$element = $(`#${this.configs.id}`)
-                this.element = document.querySelector(`#${this.configs.id}`);
-                this.header = document.querySelector(`#${this.configs.id} .modal-header`);
-                this.body = document.querySelector(`#${this.configs.id} .modal-body`);
-                this.footer = document.querySelector(`#${this.configs.id} .modal-footer`);
-                this.title = document.querySelector(`#${this.configs.id} .modal-title`);
-
-                //acionamento de metodos via atributos html
-                this.element.addEventListener("click", (e) => {
-                    let target = e.target
-                    let action = target.getAttribute("action");
-                    let param = target.getAttribute("param") || target.value || target.innerText;
-                    if (this[action]) {
-                        if (this.configs?.debug) { this.configs.debug(this, e, { action, param }) }
-                        this[action](param);
-                    }
-                })
-
-                if (this.configs?.headerButtons == "default") {
-                    this.configs.headerButtons = [
-
-                        {
-                            className: "right-button",
-                            text: `<span class="fa fa-ellipsis-h"></span>`,
-                            onclick: (modal, event) => {
-                                console.log("er", modal)
-                                modal.toggleButtonVisibility()
-                            }
-                        }, {
-                            className: "hiddenOpacity hidden modalHeaderButtons right-button",
-                            text: `<span class="fa fa-car"></span>`,
-                            onclick: () => { }
-                        }, {
-                            className: "hiddenOpacity hidden modalHeaderButtons right-button",
-                            text: `<span class="fa fa-database"></span>`,
-                            onclick: () => { }
-                        }
-                        , {
-                            className: "hiddenOpacity hidden modalHeaderButtons right-button",
-                            text: `<span class="fa fa-table"></span>`,
-                            onclick: () => { }
-                        }
-                        , {
-                            className: "hiddenOpacity hidden modalHeaderButtons right-button",
-                            text: `<span class="fa fa-columns"></span>`,
-                            onclick: (modal, event) => {
-                                modal.loading();
-                                setTimeout(() => {
-                                    modal.setContent(mockzao);
-                                    modal.setSize("70");
-                                    modal.loading(false);
-                                }, 2000)
-
-                            }
-                        }
-                        , {
-                            className: "hiddenOpacity hidden modalHeaderButtons right-button",
-                            text: `<span class="fa fa-eye"></span>`,
-                            onclick: (modal, event) => {
-                                modal.element.classList.toggle('border-internals');
-                                event.target.classList.toggle('fa-eye-slash');
-                                event.target.classList.toggle('fa-eye');
-                            }
-                        }
-                    ]
-                }
-
-                if (Array.isArray(this.configs?.footerButtons)) {
-                    this.addButton(".border-footer", this.configs?.footerButtons);
-                }
-
-                if (Array.isArray(this.configs?.headerButtons)) {
-                    this.addButton(".header-buttons", this.configs?.headerButtons);
-                }
-
-                if (typeof this.configs?.help == "function") {
-                    this.addButton(".header-buttons", [{
-                        className: "right-button",
-                        text: `<span class="fa fa-question-circle"></span>`,
-                        onclick: this.configs.help
-                    }]);
-                }
-
-                if (typeof this.configs?.debug == "function") {
-                    this.addButton(".header-buttons", [{
-                        className: "right-button",
-                        text: `<span class="fa fa-bug"></span>`,
-                        onclick: this.configs.debug
-                    }]);
-                }
-            }
-
-            addButton(target, buttons) {
-                let newButtons = buttons.map((buttonObj => {
-                    if (this.configs?.debug) { this.configs.debug(this, buttonObj, "addButton") }
-                    let buttonElement = document.createElement(buttonObj.tagName || "button");
-                    if (buttonObj?.onclick) {
-                        buttonElement.addEventListener("click", (e) => {
-                            buttonObj.onclick(this, e);
-                        })
-                    }
-                    if (buttonObj?.id) {
-                        buttonElement.id = buttonObj.id;
-                    }
-                    if (buttonObj?.className) {
-                        buttonElement.className = buttonObj.className;
-                    }
-                    buttonElement.innerHTML = buttonObj.text || buttonObj.innerHTML;
-                    return buttonElement;
-                }))
-                newButtons.forEach((i) => {
-                    let elementPosition = i?.position || "beforeend";
-                    this.element.querySelector(target).insertAdjacentElement(elementPosition, i);
-                })
-            }
-
-            show() {
-                this.$element.modal("show")
-            }
-
-            hide() {
-                this.$element.modal("hide")
-            }
-
-            setTitle(html) {
-                this.title.innerHTML = html
-            }
-
-            setHeader(html) {
-                this.header.innerHTML = html
-            }
-
-            setFooter(html) {
-                this.footer.innerHTML = html
-            }
-
-            setContent(html) {
-                this.body.innerHTML = html;
-            }
-
-            setBody(html) {
-                this.body.innerHTML = html;
-            }
-
-            alertContent() {
-                let alertType = {
-                    success: `<span class="fa fa-check fa-3x" style="color:#4caf50"></span>`,
-                    warning: `<span class="fa fa-exclamation fa-3x" style="color:#ffc107"></span>`,
-                    error: `<span class="fa fa-times fa-3x" style="color:#f44336"></span>`,
-                    info: `<span class="fa fa-info fa-3x" style="color:#31708f"></span>`,
-                    none: ``
-                }
-
-                let icon = this.configs?.icon || alertType[this.configs.alert];
-
-                let message = `
-            <div style="text-align:center">
-                <div> ${icon}</div>
-                <br><br>
-                <div style="font-size:3rem;"> ${this.configs.message}</div>
-            </div>
-            `;
-                return message;
-            }
-
-            loading(state = true) {
-                if (state == "false") {
-                    state = false;
-                }
-
-                let timeout = parseInt(state);
-
-                if (state) {
-                    this.element.querySelector(".modal-body").style.opacity = "0.2";
-                    this.element.querySelector(".modal-body").style.overflow = "hidden";
-                    if (!this.element.querySelector(".loading-overlay")) {
-                        this.element.querySelector(".modal-body").insertAdjacentHTML("afterbegin", `
-                <div class="loading-overlay"></div>
-                `);
-                    }
-                    this.element.querySelector(".loading-overlay").innerHTML = `${this.configs.loadingTemplate}`;
-                    this.element.querySelector(".loading-overlay").style.opacity = "1";
-
-                    if (!isNaN(timeout)) {
-                        setTimeout(() => {
-                            this.loading(false)
-                        }, timeout);
-                    }
-                } else {
-                    this.element.querySelector(".modal-body").style.opacity = "1";
-                    this.element.querySelector(".loading-overlay").style.opacity = "0";
-                    setTimeout(() => {
-                        this.element.querySelector(".loading-overlay").remove();
-                        this.element.querySelector(".modal-body").style.overflow = "auto";
-                    }, 300)
-                }
-
-            }
-
-            setBorder(param) {
-                if (param == "internal") {
-                    this.element.classList.add("border-none")
-                    this.element.classList.add("border-internals")
-                }
-                if (param == "classic") {
-                    this.element.classList.remove("border-none")
-                    this.element.classList.remove("border-internals")
-                }
-                console.log(param)
-            }
-
-            setSize(newSize) {
-                if (newSize == "full") {
-                    this.element.querySelector(".modal-dialog").className = `modal-dialog modal-${newSize}`;
-                    this.element.querySelector(".modal-content").className = `modal-content`;
-                } else {
-                    this.element.querySelector(".modal-dialog").className = `modal-dialog modal-${newSize}`;
-                    this.element.querySelector(".modal-content").className = `modal-content`;
-                }
-            }
-
-            destroy() {
-                DestroyDom.all(`#${this.configs.id}`);
-                if (this.configs?.debug) { this.configs.debug(this, "Destroy") }
-            }
-
-            toggleButtonVisibility(modal) {
-                var start = 0;
-                this.header.querySelectorAll("button.modalHeaderButtons").forEach((btn) => {
-                    start += 10;
-                    if (btn.classList.contains("hidden")) {
-                        setTimeout(() => { btn.classList.toggle("hidden") }, start)
-                        setTimeout(() => { btn.classList.toggle("hiddenOpacity") }, start + 100)
-                    } else {
-                        setTimeout(() => { btn.classList.toggle("hiddenOpacity") }, start)
-                        setTimeout(() => { btn.classList.toggle("hidden") }, start + 100)
-                    }
-                })
-            }
-
-            internalDebugger(...args) {
-                let debug = console;
-                debug.warn("Debug", args)
-
-            }
-
-        }
-
-        class DestroyDom {
-
-            //precisava criar alguns loops de removeListeners de click,change,load,keys,etc, pois o dom é removido mas events ficam na memoria
-            //existe uma certa complexidade em remover eventListeners nativamente, alguns loops aninhados, o jquery ajuda um pouco
-            //na verdade é impossivel deletar objetos no js, apenas a referencia é deletada, 
-            //se nao houver mais referencia o garbage collector termina o serviço
-            //porem tem casos em que outras referencias nao obvias mantem o objeto vivo, outras referencias ao objeto que o dev não sabe que existe
-            //a principio é inefetvivo deletar, uma tentativa seria guardar a referencia do new MinhaClasse em uma variavel e depois setar ela como null, mas precisaria criar um "gerenciador externo de instancias"
-            //isso aqui é uma tentativa de limpar memoria, ela limpa pelo menos algumas coisas, por mais que fiquem rastros ocupando memoria de forma invisivel
-
-            static all(selector) {
-                $(selector).off()
-                let childrens = document.querySelector(selector)
-                while (childrens.lastElementChild) {
-                    childrens.removeChild(childrens.lastElementChild);
-                }
-                $(selector).remove()
-            }
-        }
-
-
-       
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }, 300)
 
 
+class modalRoaw {
+    constructor(configs) {
+        this.configs = configs;
+        const selector = this.configs?.selector
+        const someCallback = this.configs?.someCallback || null;
+        if (configs?.debug === true) {
+            this.configs.debug = this.internalDebugger
+        }
+        if (this.configs?.alert) {
+            this.configs.show = true;
+            this.configs.destroyOnClose = true;
+            this.configs.content = this.alertContent()
+        }
+        this.configs.id = configs?.id || `modal_${Date.now()}`
+        this.configs.size = configs?.size || `md`
+        this.configs.title = configs?.title || `<img style="width:24px;background-color:#333;padding:2px;border-radius:5px;" src="img/Logo_LW_Branco.png">`;
+        this.configs.loadingTemplate = configs?.loadingTemplate || `<div style='text-align:center;'><span class='gradient-text fa fa-circle-o-notch fa-3x fa-spin'></span></div>`;
+
+        this.createModal();
+
+        if (this.configs?.show == true) {
+            this.show()
+        }
+        if (configs?.preventCloseDropdown === true) {
+            $(document).on('click', selector, (e) => {
+                e.stopPropagation();
+            });
+        }
+
+        //dentro do on do jquery o this é o elemento do dom, usar o self se necessário
+        var self = this;
+        this.$element.on('show.bs.modal', function (e) {
+            if (self.configs?.debug) { self.configs.debug(self, e, "beforeShow") }
+            if (self.configs?.beforeShow) {
+                self.configs.beforeShow(self, e)
+            }
+        })
+        this.$element.on('shown.bs.modal', function (e) {
+            if (self.configs?.debug) { self.configs.debug(self, e, "afterShow") }
+            if (self.configs?.afterShow) {
+                self.configs?.afterShow(self, e)
+            }
+        })
+        this.$element.on('hide.bs.modal', function (e) {
+            if (self.configs?.debug) { self.configs.debug(self, e, "beforeHide") }
+            if (self.configs?.preventClose) {
+                if (typeof self.configs?.preventClose == "function") {
+                    self.configs?.preventClose(self, e);
+                }
+                e.preventDefault();
+                return;
+            }
+            if (self.configs?.beforeHide) {
+                self.configs?.beforeHide(self, e)
+            }
+            if (self.configs?.destroyOnClose) {
+                self.destroy()
+            }
+        })
+
+        this.$element.on('hidden.bs.modal', function (e) {
+            if (self.configs?.debug) { self.configs.debug(self, e, "afterHide") }
+            if (self.configs?.afterHide) {
+                self.configs?.afterHide(self, e)
+            }
+        })
+        this.$element.on('loaded.bs.modal', function (e) {
+            if (self.configs?.debug) { self.configs.debug(self, e, "loaded") }
+            if (self.configs?.loaded) {
+                self.configs?.loaded(self, e)
+            }
+        })
+
+        return this
+    }
+
+    createFooter(footerCallback = null, footerParams = null) {
+        if (footerCallback === false) {
+            return "";
+        }
+        if (typeof footerCallback == 'function') {
+            return footerCallback(this, footerParams);
+        }
+
+        if (footerCallback === null) {
+            return `
+    <div class="modal-footer">
+        <div class="border-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+        </div>
+    </div>
+    `;
+        }
+
+        return footerCallback;
+
+    }
+
+    createHeader(headerCallback = null, headerParams = null) {
+        if (headerCallback === false) {
+            return "";
+        }
+        if (typeof headerCallback == 'function') {
+            return headerCallback(this, headerParams);
+        }
+
+        if (headerCallback === null) {
+
+            return `
+
+    <div class="modal-header">
+        <div class="header-buttons pull-right">
+            <button type="button" class="right-button" data-dismiss="modal" aria-label="Close">
+            <span class="fa fa-times"></span>
+                <!-- <span aria-hidden="true">&times;</span> -->
+            </button>
+        </div>
+
+        <h4 class="modal-title">${this.configs.title}</h4>
+        
+    </div>
+    `;
+        }
+
+        return headerCallback;
+
+    }
+
+    createModal() {
+        let footer = this.createFooter(this.configs?.footer);
+        let header = this.createHeader(this.configs?.header);
+        document.body.insertAdjacentHTML("beforeend", `
+    <div class="modal fade modal-portal border-none border-internals" tabindex="-1" role="dialog" id="${this.configs.id}">
+        <div class="modal-dialog modal-${this.configs.size}" role="document">
+            <div class="modal-content">
+                
+                ${header}
+                <div class="modal-body">
+                    ${this.configs?.content}
+                </div>
+
+                ${footer}
+
+            </div>
+        </div>
+    </div>
+`);
+        this.$element = $(`#${this.configs.id}`)
+        this.element = document.querySelector(`#${this.configs.id}`);
+        this.header = document.querySelector(`#${this.configs.id} .modal-header`);
+        this.body = document.querySelector(`#${this.configs.id} .modal-body`);
+        this.footer = document.querySelector(`#${this.configs.id} .modal-footer`);
+        this.title = document.querySelector(`#${this.configs.id} .modal-title`);
+
+        //acionamento de metodos via atributos html
+        this.element.addEventListener("click", (e) => {
+            let target = e.target
+            let action = target.getAttribute("action");
+            let param = target.getAttribute("param") || target.value || target.innerText;
+            if (this[action]) {
+                if (this.configs?.debug) { this.configs.debug(this, e, { action, param }) }
+                this[action](param);
+            }
+        })
+
+        if (this.configs?.headerButtons == "default") {
+            this.configs.headerButtons = [
+
+                {
+                    className: "right-button",
+                    text: `<span class="fa fa-ellipsis-h"></span>`,
+                    onclick: (modal, event) => {
+                        console.log("er", modal)
+                        modal.toggleButtonVisibility()
+                    }
+                }, {
+                    className: "hiddenOpacity hidden modalHeaderButtons right-button",
+                    text: `<span class="fa fa-car"></span>`,
+                    onclick: () => { }
+                }, {
+                    className: "hiddenOpacity hidden modalHeaderButtons right-button",
+                    text: `<span class="fa fa-database"></span>`,
+                    onclick: () => { }
+                }
+                , {
+                    className: "hiddenOpacity hidden modalHeaderButtons right-button",
+                    text: `<span class="fa fa-table"></span>`,
+                    onclick: () => { }
+                }
+                , {
+                    className: "hiddenOpacity hidden modalHeaderButtons right-button",
+                    text: `<span class="fa fa-columns"></span>`,
+                    onclick: (modal, event) => {
+                        modal.loading();
+                        setTimeout(() => {
+                            modal.setContent(mockzao);
+                            modal.setSize("70");
+                            modal.loading(false);
+                        }, 2000)
+
+                    }
+                }
+                , {
+                    className: "hiddenOpacity hidden modalHeaderButtons right-button",
+                    text: `<span class="fa fa-eye"></span>`,
+                    onclick: (modal, event) => {
+                        modal.element.classList.toggle('border-internals');
+                        event.target.classList.toggle('fa-eye-slash');
+                        event.target.classList.toggle('fa-eye');
+                    }
+                }
+            ]
+        }
+
+        if (Array.isArray(this.configs?.footerButtons)) {
+            this.addButton(".border-footer", this.configs?.footerButtons);
+        }
+
+        if (Array.isArray(this.configs?.headerButtons)) {
+            this.addButton(".header-buttons", this.configs?.headerButtons);
+        }
+
+        if (typeof this.configs?.help == "function") {
+            this.addButton(".header-buttons", [{
+                className: "right-button",
+                text: `<span class="fa fa-question-circle"></span>`,
+                onclick: this.configs.help
+            }]);
+        }
+
+        if (typeof this.configs?.debug == "function") {
+            this.addButton(".header-buttons", [{
+                className: "right-button",
+                text: `<span class="fa fa-bug"></span>`,
+                onclick: this.configs.debug
+            }]);
+        }
+    }
+
+    addButton(target, buttons) {
+        let newButtons = buttons.map((buttonObj => {
+            if (this.configs?.debug) { this.configs.debug(this, buttonObj, "addButton") }
+            let buttonElement = document.createElement(buttonObj.tagName || "button");
+            if (buttonObj?.onclick) {
+                buttonElement.addEventListener("click", (e) => {
+                    buttonObj.onclick(this, e);
+                })
+            }
+            if (buttonObj?.id) {
+                buttonElement.id = buttonObj.id;
+            }
+            if (buttonObj?.className) {
+                buttonElement.className = buttonObj.className;
+            }
+            buttonElement.innerHTML = buttonObj.text || buttonObj.innerHTML;
+            return buttonElement;
+        }))
+        newButtons.forEach((i) => {
+            let elementPosition = i?.position || "beforeend";
+            this.element.querySelector(target).insertAdjacentElement(elementPosition, i);
+        })
+    }
+
+    show() {
+        this.$element.modal("show")
+    }
+
+    hide() {
+        this.$element.modal("hide")
+    }
+
+    setTitle(html) {
+        this.title.innerHTML = html
+    }
+
+    setHeader(html) {
+        this.header.innerHTML = html
+    }
+
+    setFooter(html) {
+        this.footer.innerHTML = html
+    }
+
+    setContent(html) {
+        this.body.innerHTML = html;
+    }
+
+    setBody(html) {
+        this.body.innerHTML = html;
+    }
+
+    alertContent() {
+        let alertType = {
+            success: `<span class="fa fa-check fa-3x" style="color:#4caf50"></span>`,
+            warning: `<span class="fa fa-exclamation fa-3x" style="color:#ffc107"></span>`,
+            error: `<span class="fa fa-times fa-3x" style="color:#f44336"></span>`,
+            info: `<span class="fa fa-info fa-3x" style="color:#31708f"></span>`,
+            none: ``
+        }
+
+        let icon = this.configs?.icon || alertType[this.configs.alert];
+
+        let message = `
+    <div style="text-align:center">
+        <div> ${icon}</div>
+        <br><br>
+        <div style="font-size:3rem;"> ${this.configs.message}</div>
+    </div>
+    `;
+        return message;
+    }
+
+    loading(state = true) {
+        if (state == "false") {
+            state = false;
+        }
+
+        let timeout = parseInt(state);
+
+        if (state) {
+            this.element.querySelector(".modal-body").style.opacity = "0.2";
+            this.element.querySelector(".modal-body").style.overflow = "hidden";
+            if (!this.element.querySelector(".loading-overlay")) {
+                this.element.querySelector(".modal-body").insertAdjacentHTML("afterbegin", `
+        <div class="loading-overlay"></div>
+        `);
+            }
+            this.element.querySelector(".loading-overlay").innerHTML = `${this.configs.loadingTemplate}`;
+            this.element.querySelector(".loading-overlay").style.opacity = "1";
+
+            if (!isNaN(timeout)) {
+                setTimeout(() => {
+                    this.loading(false)
+                }, timeout);
+            }
+        } else {
+            this.element.querySelector(".modal-body").style.opacity = "1";
+            this.element.querySelector(".loading-overlay").style.opacity = "0";
+            setTimeout(() => {
+                this.element.querySelector(".loading-overlay").remove();
+                this.element.querySelector(".modal-body").style.overflow = "auto";
+            }, 300)
+        }
+
+    }
+
+    setBorder(param) {
+        if (param == "internal") {
+            this.element.classList.add("border-none")
+            this.element.classList.add("border-internals")
+        }
+        if (param == "classic") {
+            this.element.classList.remove("border-none")
+            this.element.classList.remove("border-internals")
+        }
+        console.log(param)
+    }
+
+    setSize(newSize) {
+        if (newSize == "full") {
+            this.element.querySelector(".modal-dialog").className = `modal-dialog modal-${newSize}`;
+            this.element.querySelector(".modal-content").className = `modal-content`;
+        } else {
+            this.element.querySelector(".modal-dialog").className = `modal-dialog modal-${newSize}`;
+            this.element.querySelector(".modal-content").className = `modal-content`;
+        }
+    }
+
+    destroy() {
+        RoawDestroyDom.all(`#${this.configs.id}`);
+        if (this.configs?.debug) { this.configs.debug(this, "Destroy") }
+    }
+
+    toggleButtonVisibility(modal) {
+        var start = 0;
+        this.header.querySelectorAll("button.modalHeaderButtons").forEach((btn) => {
+            start += 10;
+            if (btn.classList.contains("hidden")) {
+                setTimeout(() => { btn.classList.toggle("hidden") }, start)
+                setTimeout(() => { btn.classList.toggle("hiddenOpacity") }, start + 100)
+            } else {
+                setTimeout(() => { btn.classList.toggle("hiddenOpacity") }, start)
+                setTimeout(() => { btn.classList.toggle("hidden") }, start + 100)
+            }
+        })
+    }
+
+    internalDebugger(...args) {
+        let debug = console;
+        debug.warn("Debug", args)
+
+    }
+
+}
+
+class RoawDestroyDom {
+
+    //precisava criar alguns loops de removeListeners de click,change,load,keys,etc, pois o dom é removido mas events ficam na memoria
+    //existe uma certa complexidade em remover eventListeners nativamente, alguns loops aninhados, o jquery ajuda um pouco
+    //na verdade é impossivel deletar objetos no js, apenas a referencia é deletada, 
+    //se nao houver mais referencia o garbage collector termina o serviço
+    //porem tem casos em que outras referencias nao obvias mantem o objeto vivo, outras referencias ao objeto que o dev não sabe que existe
+    //a principio é inefetvivo deletar, uma tentativa seria guardar a referencia do new MinhaClasse em uma variavel e depois setar ela como null, mas precisaria criar um "gerenciador externo de instancias"
+    //isso aqui é uma tentativa de limpar memoria, ela limpa pelo menos algumas coisas, por mais que fiquem rastros ocupando memoria de forma invisivel
+
+    static all(selector) {
+        $(selector).off()
+        let childrens = document.querySelector(selector)
+        while (childrens.lastElementChild) {
+            childrens.removeChild(childrens.lastElementChild);
+        }
+        $(selector).remove()
+    }
+}
 
 
 
@@ -5281,9 +5250,12 @@ float: left !important;
 
 
 
-if (typeof ModalPortal != 'undefined') {
 
-    window.portalDocs = new ModalPortal({
+
+
+if (typeof modalRoaw != 'undefined') {
+
+    window.portalDocs = new modalRoaw({
         id: "portaldocs", //id do elemento principal da modal
         title: "Documentation Box",
         size: "80",
@@ -5379,7 +5351,7 @@ if (typeof ModalPortal != 'undefined') {
             if (!request.ok) {
                 modal.element.querySelector(".searchresult").innerHTML = `<div class="alert alert-warning">Erro</div>`;
 
-                new ModalPortal({
+                new modalRoaw({
                     alert: "warning",
                     title: "ops",
                     message: "houve um erro"
@@ -5410,7 +5382,7 @@ if (typeof ModalPortal != 'undefined') {
 
 
 
-    window.ferramentas = new ModalPortal({
+    window.ferramentas = new modalRoaw({
         id: "portaltools", //id do elemento principal da modal
         title: "ToolBox",
         size: "80",
@@ -5502,7 +5474,7 @@ if (typeof ModalPortal != 'undefined') {
             if (!request.ok) {
                 modal.element.querySelector(".searchresult").innerHTML = `<div class="alert alert-warning">Erro</div>`;
 
-                new ModalPortal({
+                new modalRoaw({
                     alert: "warning",
                     title: "ops",
                     message: "houve um erro"
@@ -5529,6 +5501,133 @@ if (typeof ModalPortal != 'undefined') {
         }, 600)
     })
 
+}
+
+function modalTools(){
+    if(window.ferramentas){
+        ferramentas.show();
+        return
+    }
+
+    window.ferramentas = new modalRoaw({
+        id: "modalRoawTools", //id do elemento principal da modal
+        title: "ToolBox",
+        size: "80",
+        show: true,
+        headerButtons: "default",
+        footerButtons: [
+            {
+                text: "Acessar",
+                className: "btn btn-primary",
+                onclick: () => { }
+            }
+        ],
+        content: localStorage.getItem("roawModalContent") || 'dica: você pode inserir html em uma chave especifica no localStorage, e ele será carregado aqui. <br>Exempolo: <br> localStorage["roawModalContent"] = `&lt;h1&gt;Hello =)&lt;/h1&gt;`',
+        onCreate: (modal) => {
+            modal.loading(100)
+            $.toaster("", "criou modal", "success")
+            modal.element.addEventListener("keyup", async (e) => {
+                if (e.target.id == "searchbox") {
+                    const metodo = document.querySelector("input[name=searchFunction]:checked").value
+                    const parametro = document.querySelector("#searchbox").value
+                    await modal.configs[metodo](modal, parametro)
+                }
+            })
+            document.body.insertAdjacentHTML("beforeend", `
+      <button type="button" data-toggle="modal" data-target="#${modal.configs.id}" style="position:fixed;right:5px;bottom:50px;width:40px;height:40px;border-radius:50px;border:solid 3px #f0ad4e; color:#f0ad4e; background-color:#fff;">
+        <span class="fa fa-car"></span>
+      </button>
+      `)
+        },
+        beforeShow: (modal) => {
+            modal.loading(1000)
+        },
+        afterShow: (modal) => {
+        },
+        beforeHide: (modal) => {
+        },
+        afterHide: (modal) => {
+        },
+        buscarMenu: (modal, event) => {
+            menuFind(document.querySelector("#searchbox").value, ".searchresult")
+        },
+        toggleMinMax: (modal, event, parametro) => {
+            event.target.classList.toggle("fa-minus")
+            event.target.classList.toggle("fa-plus")
+            let viewArea = document.querySelector(`.${parametro}`)
+            viewArea.classList.toggle("hidden")
+
+        },
+        icones: (modal, event, parametro) => {
+            let video = `<div class="embed-responsive embed-responsive-16by9"><iframe width="100%" height="806" src="https://www.youtube.com/embed/lYvYWJxvxHg" title="LW Tecnologia" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`
+            document.querySelector(".searchresult").innerHTML = icones
+
+
+        },
+        alterarCliente: debounce(async (modal, parametro) => {
+
+            var host = window.location.host;
+            var id_cliente = $("#searchbox").val()
+            $.ajax("Alterar_Cliente.php")
+            $.ajax({
+                url: "json/alterar_cliente.php",
+                type: "post",
+                data: {
+                    param: "AlterarCliente",
+                    id_cliente
+                },
+                success: function () {
+                    // alert("deu boa, vou dar reload pra você")
+                    window.location.reload()
+                },
+                error: function () {
+                    alert("deu algum erro")
+                }
+            });
+        }, 600),
+        buscarAutoInfracao: debounce(async (modal, parametro) => {
+            console.log("debounced", parametro)
+            const data = new FormData();
+            data.append("post", "buscarMultaPorAuto");
+            data.append("auto", parametro);
+            modal.loading()
+            const request = await fetch("json/manutencao_alterar_auto_infracao.php", {
+                "body": data,
+                "method": "POST",
+                "mode": "cors",
+                "credentials": "include"
+            });
+            modal.loading(false)
+            if (!request.ok) {
+                modal.element.querySelector(".searchresult").innerHTML = `<div class="alert alert-warning">Erro</div>`;
+
+                new modalRoaw({
+                    alert: "warning",
+                    title: "ops",
+                    message: "houve um erro"
+                });
+
+                return;
+            }
+            const response = await request.json();
+            console.warn("debounced response")
+            if (response?.erro == "1") {
+                modal.element.querySelector(".searchresult").innerHTML = `<div class="alert alert-warning">${response?.descricao}</div>`;
+                return;
+            }
+            console.table(response.dados)
+            const autoEncontrado = response.dados[0]
+            let result = []
+            for (key in autoEncontrado) {
+                if (key == "link") {
+                    autoEncontrado[key] = `<a href="./MultaDetalhada.php?p=${autoEncontrado[key]}" target="_blank">link para multa detalhada</a>`
+                }
+                result.push(`<tr><td>${key}</td> <td>${autoEncontrado[key]}</td></tr>`)
+            }
+            modal.element.querySelector(".searchresult").innerHTML = `<table>${result.join("")}</table>`;
+        }, 600)
+    })
+    
 }
 
 
