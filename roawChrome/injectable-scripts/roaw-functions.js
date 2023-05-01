@@ -894,11 +894,23 @@ class Http {
                 return await rData.arrayBuffer()
             }
         }
+
+
         try{
-            return await responseProcessor[responseType](response)
+            var result = await responseProcessor[responseType](response)
         }catch(ee){
-            return await response.blob();
+            var result = await response.blob();
         }
+
+        if(this?.render){
+            try{
+                this.render(result)
+            }catch(ee){
+                console.warn("Error using render callback")
+            }
+        }
+
+        return result;
     }
 
     async request(requestObj){
