@@ -667,9 +667,21 @@ function listarLocalStorage() {
 
 
 class Http {
-    constructor(nome, tokenConfig = null){
-        //se o nome for uma url, poderia criar direto
-        //ler localstorage
+    constructor(nome = null, tokenConfig = null){
+        this.fetchOptions={};
+        if(nome === null || nome === undefined){
+            this.nome=document.location.host
+            this.url = document.location.origin;
+            this.token = tokenConfig;
+            this.fetchOptions={"credentials": "include"}
+            return true
+        }
+        if(nome.indexOf("http://") > -1 || nome.indexOf("https://") > -1){
+            this.nome="custom"+Date.now();
+            this.url = nome;
+            this.token = tokenConfig;
+            return true
+        }
 
 
         try{
@@ -679,7 +691,6 @@ class Http {
         }
         this.service = allServices.services[nome]
 
-        
         this.nome=nome;
         try{
             this.url = this.getUrl(nome)
@@ -717,11 +728,46 @@ class Http {
     static localSync(ambiente = "producao"){
         //faz um fetch pra uma api, busca a lista de microsserviços registrados e gera todas as urls em localStorage
     }
-    static showConfig(){
+    static getConfigs(){
         var allServices = JSON.parse(localStorage["roawHttp"]);
         console.log(allServices)
     }
-    static example(){
+    setOptions(object) {
+        this.fetchOptions = object
+    }
+
+    static exampleOptions(){
+        console.warn("Example of Fetch API Options Object")
+        /*
+
+         "referrer": "https://vsmsystem.com/", //de onde partiu essa request
+         "mode": "cors",// no-cors, *cors, same-origin
+         "cache": "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+         "credentials": "include", // include, *same-origin, omit
+         "redirect": "follow", // manual, *follow, error
+
+        Headers
+        "accept": "*\/*", // * por opadrão, se especificar algo só esse algo vai ser aceito como resposta, ex 'application/json'
+        "content-type": "application/json" // informa o tipo pro servidor, rpa que ele processe de forma adequada caso necessário
+
+        */
+        const example = `
+        {
+            "headers": {
+              "accept": "*/*",
+              "content-type": "application/json"
+            },
+            "referrer": "https://vsmsystem.com/", 
+            "referrerPolicy": "no-referrer",
+            "mode": "cors",
+            "cache": "no-cache", 
+            "credentials": "include",
+            "redirect": "follow",
+          }`;
+          console.log(example)
+          return JSON.parse(example);
+    }
+    static exampleConfig(){
         console.warn("Use this as example to configure Http service at Roaw's popup")
         console.warn("Also, at autoStart you can use 'all' or the service's names you want to start")
         const example =  `
@@ -752,7 +798,7 @@ class Http {
             }
         }`;
         console.log(example)
-        return example;
+        return JSON.parse(example);
     }
     static autoStart(){
         var startedServices = [];
@@ -778,9 +824,6 @@ class Http {
         }
 
     }
-    ativos(){
-        return this.services;
-    }
 
     getToken(){
 
@@ -801,43 +844,102 @@ class Http {
             return null;
         }
     }
+    
+    async response(response){
 
-    async get(path){
-        let headers = {};
-        Object.assign(headers, this.getToken())
-        const request = await fetch(`${this.url}/${path}`, {
-            headers,
-            "body": null,
-            "method": "GET",
-          });
-          return await request.json();
+        if(!response.ok){
+            throw new Error(`Http Status ${response.status}, response type:  ${response.type}`);
+        }
+        
+        const responseType = response.headers.get("Content-Type").split(";")[0]
+
+        const responseProcessor = {
+            "text/plain":async (rData)=>{
+                return await rData.text();
+            },
+            "text/html":async (rData)=>{
+                const htmlString = await rData.text();
+                const parser = new DOMParser();
+                const dom = parser.parseFromString(htmlString, 'text/html');
+                return dom;
+            },
+            "application/json":async (rData)=>{
+                return await rData.json();
+            },
+            "application/xml": async (rData)=>{
+                const xmlString = await rData.text();
+                const parser = new DOMParser();
+                const xml = parser.parseFromString(xmlString, 'application/xml');
+                return xml;
+            },
+            "application/pdf":async (rData)=>{
+                console.warn("pdf not implemented yet")
+                //const pdfUrl = URL.createObjectURL(pdfBlob);
+                return await rData.blob()
+            },
+            "image/png":async (rData)=>{
+                console.warn("png not implemented yet")
+                return await rData.blob()
+            },
+            "image/jpeg":async (rData)=>{
+                console.warn("jpg not implemented yet")
+                return await rData.blob()
+            },
+            "multipart/form-data":async (rData)=>{
+                console.warn("formData not implemented yet")
+                return await rData.FormData()
+            },
+            "application/octet-stream":async (rData)=>{
+                console.warn("pdf not implemented yet")
+                return await rData.arrayBuffer()
+            }
+        }
+        try{
+            return await responseProcessor[responseType](response)
+        }catch(ee){
+            return await response.blob();
+        }
     }
 
     async request(requestObj){
-        //body: formData/multipart, queryString, urlEncoded,  json, string
-        //accept json
-        //"mode": "cors",
-        //"credentials": "include"
-        // data instanceof FormData
-        const path = requestObj?.path;
-        const data = requestObj?.data || null;
-        const method = requestObj?.method;
-        let body = data;
+        //GET, POST, PUT, PATCH, DELETE
+        //body: formData/multipart, queryString, urlEncoded,  json, string, null
 
-        if(data instanceof FormData){
-            body = data;
-        }else if(data instanceof Object){
-            body = JSON.stringify(data);
+        let fetchOptions = this.fetchOptions;
+        if (!fetchOptions.headers){
+            fetchOptions.headers={}
+        }
+        Object.assign(fetchOptions.headers, this.getToken())
+
+        const path = requestObj?.path;
+        //this is to make a request with a full url, without using baseUrl
+        if(path.indexOf("http://") > -1 || path.indexOf("https://") > -1){
+            var fullUrl = path;
+        }else{
+            var fullUrl = `${this.url}/${path}`;
         }
 
-        let headers = {};
-        Object.assign(headers, this.getToken())
-        const request = await fetch(`${this.url}/${path}`, {
-            headers,
-            body,
-            method
+        fetchOptions.method = requestObj?.method;
+        fetchOptions.body = requestObj?.data || null;
+
+        //to send files, just use FormData with Headers 'Content-Type': 'multipart/form-data'
+        if(fetchOptions.body instanceof FormData){
+            //ok, the body is already configured 
+        }else if(fetchOptions.body instanceof Object){
+            //its not a FormData, but is an object, so needs to be stringfied
+            fetchOptions.body = JSON.stringify(fetchOptions.body);
+        }
+
+        const request = await fetch(fullUrl, fetchOptions);
+        return await this.response(request);
+    }
+
+    async get(path = ""){
+        return await this.request({
+            path,
+            data:null,
+            method: "GET"
         });
-        return await request.json();
     }
 
     async post(path = "", data = null){
@@ -886,6 +988,35 @@ async function sfetch(url, data = null){
 }
 
 
+
+class Roaw{
+    constructor(){
+        //
+    }
+    static renderJson(object){
+        document.querySelector("#roawbox .content").innerHTML=generateHTMLFromJSON(object)
+    }
+}
+
+  function generateHTMLFromJSON(obj) {
+    let html = '<ul>';
+    for (let key in obj) {
+      if (typeof obj[key] === 'object') {
+        html += '<li>' + key + generateHTMLFromJSON(obj[key]) + '</li>';
+      } else {
+        html += '<li>' + key + ': <b>' + obj[key] + '</b> <small style="cursor:pointer;color:orange;" onclick="exampleAction(this)">[ExecutarAlgo]</small> </li>';
+      }
+    }
+    html += '</ul>';
+    return html;
+  }
+  function exampleAction(target){
+    var item = target.parentElement.querySelector("b").innerText
+    console.log(item)
+    //fetchCancelBill(item)
+    target.parentElement.querySelector("b").innerHTML=`<small style="color:red">[Cancelado]</small> ${target.parentElement.querySelector("b").innerText}`
+
+  }
 
  help = "io"
 
