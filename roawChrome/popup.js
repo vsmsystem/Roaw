@@ -247,8 +247,43 @@ $("#roawConfigs").on("change", function () {
     chrome.storage.sync.set({"roawConfigs":$("#roawConfigs").val()});
 });
 
+async function searchMergeRequests(list = []){
+
+    document.querySelector("[view=mergeRequests] span").innerHTML=`<i style="color:red;" class="fa fa-spin fa-circle-notch"></i>`
+    var merges = await gitlab.get("groups/30/merge_requests?state=opened")
+
+    document.querySelector("[view=mergeRequests] span").innerHTML=merges.length;
+
+
+    let mergeRequests = merges;
+    mergeRequests = mergeRequests.map(function(mr){
+        console.log(mr)
+        return `
+        <li class="item" style="border:solid 1px;padding:5px;margin:5px;border-radius:5px;">
+            <div class="product-img pull-left">
+                <img width="32px" height="32px" src="${mr.author.avatar_url}" alt="Product Image" style="margin-right:5px;">
+            </div>
+            <div class="product-info">
+                <a href="${mr.web_url}" target="_blank" class="product-title"> ${mr.author.name} @${mr.author.username} <br>
+                    <span class="label label-info pull-right">MR</span>
+                </a>
+                <span class="product-description">
+                    <span class="label label-default">Branch: ${mr.source_branch}</span>
+                    <span class="label label-default">MR: ${mr.title}</span>
+                </span>
+            </div>
+        </li>
+        `
+    }).join("")
+    $('#mergeRequests').html(`
+    <ul>
+    ${mergeRequests}
+    </ul>
+    `)
+}
 
 async function loadMergeRequests(route = null){
+    return;
 
     let mergeRequests = await getMergeRequests(route);
     mergeRequests = mergeRequests.map(function(mr){
@@ -536,8 +571,13 @@ $(".updateLocalStorageHttp").on("change",e=>{
 //customNewTab
 
 $(loaded=>{
+    window.gHttp = Http.autoStart()
     $("#customNewTab").val(localStorage["customNewTab"])
     $("#customNewTabUrl").val(localStorage["customNewTabUrl"])
+
+    searchMergeRequests()
+
+
 })
 if(!localStorage["customNewTab"]){
     localStorage["customNewTab"] = "chrome"

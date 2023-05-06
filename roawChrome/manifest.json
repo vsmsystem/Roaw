@@ -101,8 +101,7 @@
         "imgs/*",
         "db/*",
         "injectable-scripts/*",
-        "Vweb/vsm-bar.html",
-        "Vweb/vsm-bar.js"
+        "Vweb/*"
       ],
       "matches":["*://*/*"]
     }

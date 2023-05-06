@@ -942,6 +942,8 @@ class Http {
             fetchOptions.body = JSON.stringify(fetchOptions.body);
         }
 
+        console.log("debug",fetchOptions)
+
         const request = await fetch(fullUrl, fetchOptions);
         return await this.response(request);
     }
@@ -1005,8 +1007,8 @@ class Roaw{
     constructor(){
         //
     }
-    static renderJson(object){
-        document.querySelector("#roawbox .content").innerHTML=generateHTMLFromJSON(object)
+    static renderJson(selector,object){
+        document.querySelector(selector).innerHTML=generateHTMLFromJSON(object)
     }
 }
 
@@ -1029,6 +1031,743 @@ class Roaw{
     target.parentElement.querySelector("b").innerHTML=`<small style="color:red">[Cancelado]</small> ${target.parentElement.querySelector("b").innerText}`
 
   }
+
+
+
+
+
+
+
+  class ModalRoaw {
+    constructor(configs) {
+        
+        this.configs=configs;
+        const selector = this.configs?.selector
+        const someCallback = this.configs?.someCallback || null;
+        if(configs?.debug === true ){
+            this.configs.debug = this.internalDebugger
+        }
+        if(this.configs?.alert){
+            this.configs.show=true;
+            this.configs.destroyOnClose=true;
+            this.configs.content = this.alertContent()
+        }
+        this.configs.id = configs?.id || `modal_${Date.now()}`
+        this.configs.size = configs?.size || `md`
+        this.configs.title = configs?.title || `<img style="width:24px;background-color:#333;padding:2px;border-radius:5px;" src="img/Logo_LW_Branco.png">`;
+        this.configs.loadingTemplate = configs?.loadingTemplate || `<div style='text-align:center;'><span class='gradient-text fa fa-circle-o-notch fa-3x fa-spin'></span></div>`;
+  
+        this.createStyle();
+        this.createModal();
+        this.createSideButtons();
+
+        if(this.configs?.show==true){
+            this.show()
+        }        
+        if(configs?.preventCloseDropdown === true){
+            // not implemented yet
+        }
+
+        return this
+    }
+
+    createFooter(footerCallback = null, footerParams = null){
+        if(footerCallback === false ){
+            return "";
+        }
+        if(typeof footerCallback == 'function'){
+            return footerCallback(this,footerParams);
+        }
+
+        if(footerCallback === null ){
+            return `
+            <footermodal>
+                <button type="button"  data-dismiss="modal">Fechar</button>
+            </footermodal>
+            `;
+        }
+
+        return footerCallback;
+
+    }
+
+    createHeader(headerCallback = null, headerParams = null){
+        if(headerCallback === false ){
+            return "";
+        }
+        if(typeof headerCallback == 'function'){
+            return headerCallback(this,headerParams);
+        }
+
+        if(headerCallback === null ){
+            
+            return `
+            <headermodal>
+                <span class="headerbuttons" style="float:right">
+                <button class="right-button"><span action="toggle" class="fa fa-times"></span></button>
+                </span>
+                <titlemodal style="float:left">${this.configs.title}</titlemodal>
+            </headermodal>
+            `;
+        }
+
+        return headerCallback;
+
+    }
+
+    createModal(){
+        let footer = this.createFooter(this.configs?.footer); 
+        let header = this.createHeader(this.configs?.header); 
+        document.body.insertAdjacentHTML("beforeend",`
+            <roawmodal id="${this.configs.id}">
+                <containermodal class="size-${this.configs.size}">
+                    <contentmodal>
+                        ${header}
+                        <bodymodal>
+                            ${this.configs?.content}
+                        </bodymodal>
+                        ${footer}
+                    </contentmodal>
+                </containermodal>
+            </roawmodal>
+        `);
+        this.element = document.querySelector(`#${this.configs.id}`);
+        this.header = document.querySelector(`#${this.configs.id} headermodal`);
+        this.body = document.querySelector(`#${this.configs.id} bodymodal`);
+        this.footer = document.querySelector(`#${this.configs.id} footermodal`);
+        this.title = document.querySelector(`#${this.configs.id} titlemodal`);
+        
+        //acionamento de metodos via atributos html
+        /* 
+        this.element.addEventListener("click",(e)=>{})
+        this.element.addEventListener("keyup",(e)=>{})
+        this.element.addEventListener("keydown",(e)=>{})
+        this.element.addEventListener("focus",(e)=>{})
+        this.element.addEventListener("blur",(e)=>{})
+        this.element.addEventListener("change",(e)=>{})
+        */
+        this.element.addEventListener("keyup",(e)=>{
+
+            //for now this event is working only with key Enter, still a draft
+
+            var eventConfig = null;
+
+            try{
+                eventConfig = JSON.parse(e.target.getAttribute("event"));
+            }catch(err){
+                console.warn("Error parsing dinamic event json")
+                return false
+            }
+
+            if(e.key == eventConfig.key){
+                let fullParams = {
+                    "modal":this,
+                    "target": e?.target,
+                    "action":eventConfig?.action || "nothing",
+                    "param":e?.target?.getAttribute("param") || e?.target?.value || e?.target?.innerText
+    
+                }
+                let execute = this[fullParams.action] || this['configs'][fullParams.action];
+                if(execute){
+                    if(this.configs?.debug){this.configs.debug("Dinamic Event Action",this,e,fullParams)}
+                    execute(fullParams);
+                }else{
+                    console.log("action do not exist")
+                }
+            }
+        })
+
+        this.element.addEventListener("click",(e)=>{
+            let fullParams = {
+                "modal":this,
+                "target": e?.target,
+                "action":e?.target?.getAttribute("action") || "nothing",
+                "param":e?.target?.getAttribute("param") || e?.target?.value || e?.target?.innerText
+
+            }
+            let execute = this[fullParams.action] || this['configs'][fullParams.action];
+            if(execute){
+                if(this.configs?.debug){this.configs.debug("Dinamic Event Action",this,e,fullParams)}
+                execute(fullParams);
+            }
+        })
+        
+        if(this.configs?.headerButtons == "default"){
+            //<li><a href="#" action="setSize">100</a></li>
+            //<li><a href="#" action="setSize">90</a></li>
+            this.configs.headerButtons=[
+                {
+                    className:"right-button",
+                    text:`<span class="fa fa-ellipsis-h"></span>`,
+                    onclick:(modal,event)=>{
+                        console.log("er",modal)
+                        modal.toggleButtonVisibility()
+                    }
+                },{
+                    className:"hiddenOpacity displaynone modalHeaderButtons right-button",
+                    text:`<span class="fa fa-car"></span>`,
+                    onclick:()=>{}
+                },{
+                    className:"hiddenOpacity displaynone modalHeaderButtons right-button",
+                    text:`<span class="fa fa-database"></span>`,
+                    onclick:()=>{}
+                }
+                ,{
+                    className:"hiddenOpacity displaynone modalHeaderButtons right-button",
+                    text:`<span class="fa fa-table"></span>`,
+                    onclick:()=>{}
+                }
+                ,{
+                    className:"hiddenOpacity displaynone modalHeaderButtons right-button",
+                    text:`<span class="fa fa-columns"></span>`,
+                    onclick:(modal,event)=>{
+                        modal.loading();
+                        setTimeout(()=>{
+                            modal.setContent(mockzao);
+                            modal.setSize("70");
+                            modal.loading(false);
+                        },2000)
+                    }
+                }
+                ,{
+                    className:"hiddenOpacity displaynone modalHeaderButtons right-button",
+                    text:`<span class="fa fa-eye"></span>`,
+                    onclick:(modal,event)=>{
+                        modal.element.classList.toggle('border-internals');
+                        event.target.classList.toggle('fa-eye-slash');
+                        event.target.classList.toggle('fa-eye');
+                    }
+                }
+            ]
+        }        
+
+        if(Array.isArray(this.configs?.footerButtons)){
+            this.addButton("footermodal",this.configs?.footerButtons);
+        }
+
+        if(Array.isArray(this.configs?.headerButtons)){
+            this.addButton(".headerbuttons",this.configs?.headerButtons);
+        }
+
+        if(typeof this.configs?.help == "function"){
+            this.addButton(".headerbuttons",[{
+                className:"right-button",
+                text:`<span class="fa fa-question-circle"></span>`,
+                onclick:this.configs.help
+            }]);
+        }
+
+        if(typeof this.configs?.debug == "function"){
+            this.addButton(".headerbuttons",[{
+                className:"right-button",
+                text:`<span class="fa fa-bug"></span>`,
+                onclick:this.configs.debug
+            }]);
+        }
+    }
+    
+    addButton(target,buttons){
+        
+        let newButtons = buttons.map((buttonObj=>{
+            if(this.configs?.debug){this.configs.debug(this,buttonObj,"addButton")}
+            let buttonElement = document.createElement(buttonObj.tagName || "button");
+            if(buttonObj?.onclick){
+                buttonElement.addEventListener("click",(e)=>{
+                    buttonObj.onclick(this,e);
+                })
+            }
+            if(buttonObj?.id){
+                buttonElement.id = buttonObj.id;
+            }
+            if(buttonObj?.className){
+                buttonElement.className = buttonObj.className;
+            }
+            buttonElement.innerHTML = buttonObj.text || buttonObj.innerHTML;
+            return buttonElement;
+        }))
+        newButtons.forEach((i)=>{
+            let elementPosition = i?.position || "beforeend";
+            console.warn(target,target)
+            this.element.querySelector(target).insertAdjacentElement(elementPosition,i);
+        })
+    }
+
+    show(){
+        this.element.style.display="block";
+    }
+
+    hide(){
+        this.element.style.display="none";
+    }
+
+    toggle(fullParams){
+        fullParams.modal.element.classList.toggle("displaynone")
+    }
+
+    setTitle(html){
+        this.title.innerHTML=html
+    }
+
+    setHeader(html){
+        this.header.innerHTML=html
+    }
+
+    setFooter(html){
+        this.footer.innerHTML=html
+    }
+
+    setContent(html){
+        this.body.innerHTML=html;
+    }
+
+    setBody(html){
+        this.body.innerHTML=html;
+    }
+
+    alertContent(){
+        let alertType={
+            success:`<span class="fa fa-check fa-3x" style="color:#4caf50"></span>`,
+            warning:`<span class="fa fa-exclamation fa-3x" style="color:#ffc107"></span>`,
+            error:`<span class="fa fa-times fa-3x" style="color:#f44336"></span>`,
+            info:`<span class="fa fa-info fa-3x" style="color:#31708f"></span>`,
+            none: ``
+        }
+
+        let icon = this.configs?.icon || alertType[this.configs.alert];
+
+        let message = `
+            <div style="text-align:center">
+                <div> ${icon}</div>
+                <br><br>
+                <div style="font-size:3rem;"> ${this.configs.message}</div>
+            </div>
+            `;
+        return message;
+    }
+
+    loading(state = true){
+        if(state == "false"){
+            state = false;
+        }
+
+        let timeout = parseInt(state);
+        
+        if(state){
+            this.element.querySelector("bodymodal").style.opacity="0.2";
+            this.element.querySelector("bodymodal").style.overflow="displaynone";
+            if(!this.element.querySelector(".loading-overlay")){
+                this.element.querySelector("bodymodal").insertAdjacentHTML("afterbegin",`
+                <div class="loading-overlay"></div>
+                `) ;
+            }
+            this.element.querySelector(".loading-overlay").innerHTML=`${this.configs.loadingTemplate}`;
+            this.element.querySelector(".loading-overlay").style.opacity="1";
+            
+            if(!isNaN(timeout)){
+                setTimeout(()=>{
+                    this.loading(false)
+                },timeout);
+            }
+        }else{
+            this.element.querySelector("bodymodal").style.opacity="1";
+            this.element.querySelector(".loading-overlay").style.opacity="0";
+            setTimeout(()=>{
+                this.element.querySelector(".loading-overlay").remove();
+                this.element.querySelector("bodymodal").style.overflow="auto";
+            },300)
+        }
+
+    }
+
+    setBorder(param){
+        if(param=="internal"){
+            this.element.classList.add("border-none")
+            this.element.classList.add("border-internals")
+        }
+        if(param=="classic"){
+            this.element.classList.remove("border-none")
+            this.element.classList.remove("border-internals")
+        }
+        console.log(param)
+    }
+
+    setSize(newSize){
+        if(newSize == "full"){
+            this.element.querySelector("containermodal").className=`size-${newSize}`;
+            this.element.querySelector("contentmodal").className=``;
+        }else{
+            this.element.querySelector("containermodal").className=`size-${newSize}`;
+            this.element.querySelector("contentmodal").className=``;
+        }
+    }
+
+    destroy(){
+        //DestroyDom.all(`#${this.configs.id}`);
+        if(this.configs?.debug){this.configs.debug(this,"Destroy")}
+    }
+
+    toggleButtonVisibility(modal){
+        var start = 0;
+        this.header.querySelectorAll("button.modalHeaderButtons").forEach((btn)=>{
+            start+=10;
+            if(btn.classList.contains("displaynone")){
+                setTimeout(()=>{btn.classList.toggle("displaynone")},start)
+                setTimeout(()=>{btn.classList.toggle("hiddenOpacity")},start+100)
+            }else{
+                setTimeout(()=>{btn.classList.toggle("hiddenOpacity")},start)
+                setTimeout(()=>{btn.classList.toggle("displaynone")},start+100)
+            }
+        })
+    }
+
+    internalDebugger(...args){
+        let debug = console;
+        debug.warn("Debug",args)
+
+    }
+    createSideButtons(){
+        if(!document.querySelector(".roaw-side-buttons")){
+            document.body.insertAdjacentHTML("beforeend",`
+                <div class="roaw-side-buttons" style="position:fixed;right:2px;bottom:40px;width:40px;z-index:99999;">
+                    <button type="button" data-toggle="modal" data-target="#${this.configs.id}" style="width:40px;height:40px;border-radius:8px;margin-top:4px;border:solid 0px ; color:#ddd; background-color:#555;">
+                        <span class="fa fa-columns"></span>
+                    </button>
+                </div>
+            `);
+        }
+
+        const roawsidebuttons = document.querySelector(".roaw-side-buttons")
+        if(roawsidebuttons){
+            roawsidebuttons.addEventListener("click",(e)=>{
+                const targetId = e.target.getAttribute("data-target") || e.target.parentElement.getAttribute("data-target")
+                const foundTarget = document.querySelector(`${targetId}`)
+                if(foundTarget){
+                    foundTarget.classList.toggle("displaynone")
+                }
+            })
+        }
+    }
+
+    createStyle(){
+        
+        const roawId = document.querySelector("roaw").innerText;
+        document.body.insertAdjacentHTML("afterbegin", `
+            <link href="chrome-extension://${roawId}/Vweb/assets/css/font-awesome.min.css" rel="stylesheet"></link>
+            <style id="roawmodalstyle">
+            
+
+            .hiddenOpacity {
+                opacity: 0;
+            }
+            .displaynone{
+                display:none;
+            }
+
+            roawmodal * {
+                transition:0.3s all !important;
+            }
+
+            roawmodal{
+                transition:0.3s all !important;
+                width:100%;
+                display: block;
+                position: fixed;
+                top: 0px;
+                z-index: 999999999;
+                color:#ddd;
+                
+            }
+            containermodal{
+                display:inline-block;
+                width:100%;
+                margin:0 auto;
+                margin-top:70px;
+                background-color:#161b22;
+                display: block;
+                border: solid 2px red;
+
+                box-shadow: 3px 3px 4px #222;
+                border-radius: 10px;
+                border: solid 1px #444;
+            }
+
+            headermodal {
+                display:inline-block;
+                width:100%;
+                border-bottom:solid 1px #444;
+                padding:8px;
+                margin-bottom:-4px;
+            }
+
+            footermodal {
+                display:none;
+                width:100%;
+                border-top:solid 1px #444;
+                padding:8px;
+            }
+
+            bodymodal {
+                overflow:auto;
+                max-height:70vh;
+
+                display: flex;
+                flex-wrap: wrap;
+                box-sizing: border-box;
+            }
+
+            titlemodal{
+                font-size:20px;
+                color:#ddd;
+            }
+
+            .headerbuttons .fa{
+                margin-top:5px;
+                color:#aaa;
+                font-size:20px;
+            }
+
+            headermodal span.headerbuttons{
+                white-space: inherit;
+            }
+
+
+            roawmodal .leftmenu {
+                border-right:solid 1px #555;
+                display:flex;
+                justify-content:center;
+                flex: 0 0 70px;
+                max-width:70px;
+                flex-direction:column;
+                padding-bottom:5px;
+                flex-shrink: 1;
+                align-items: flex-start;
+                flex-direction: inherit;
+            }
+
+            roawmodal .column-default {
+                flex: 1;
+                padding:10px;
+                max-width:50%;
+            }
+
+            roawmodal .column1 {
+                background-color:#0d1117fa;
+            }
+
+            roawmodal .column2 {
+                background-color:#040d21;
+            }
+
+            roawmodal .coluna {
+                box-sizing: border-box;
+                border: 1px solid black;
+                padding: 10px;
+                margin: 5px;
+            }
+
+            roawmodal .simplebutton{
+                float:right;border:none;background-color:transparent;
+            }
+
+            roawmodal .leftmenu button > .fa{
+                font-family: FontAwesome !important;
+            }
+
+            roawmodal .leftmenu button{
+                border:none;
+                background:transparent;
+                color:#aaa;
+                display:flex;
+                flex:1;
+                padding:15px;
+                height:50px;
+                width:85%;
+                margin:0 auto;
+            }
+
+            roawmodal .leftmenu button>*{
+                width:100%;
+            }
+
+            roawmodal .leftmenu button:hover{
+                background-color:#333333;
+                border-radius:5px;     
+                color:#fff;
+            }
+
+            roawmodal button.right-button {
+                -webkit-appearance: none;
+                padding: 0;
+                cursor: pointer;
+                background: 0 0;
+                border: 0;
+                margin-right: 8px;
+            }
+
+            roawmodal .right-button {
+                float: right;
+                font-weight: 700;
+                line-height: 1;
+                color: #000;
+                filter: alpha(opacity=20);
+                border: 0px;
+            }
+
+            roawmodal input.block{
+                width:100%;
+                height:40px;
+                background-color:#0d1117;
+                color:#ddd;
+                border:solid 1px #555;
+                border-radius:5px;
+                padding-left:15px;
+            }
+
+            roawmodal input.inline{
+                height:40px;
+                background-color:#0d1117;
+                color:#ddd;
+                border:solid 1px #555;
+                border-radius:5px;
+                padding-left:15px;
+            }
+
+
+            .size-100{
+                width: 100%;
+            }
+            .size-90{
+                width: 90%;
+            }
+            .size-80{
+                width: 80%;
+            }
+            .size-70{
+                width: 70%;
+            }
+            .size-60{
+                width: 60%;
+            }
+            .size-40{
+                width: 40%;
+            }
+            .size-30{
+                width: 30%;
+            }
+            .size-20{
+                width: 20%;
+            }
+            .size-10{
+                width: 10%;
+            }
+
+            .loading-overlay{
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                z-index: 1; /* Índice z maior que o conteúdo interno */
+            }
+
+            .gradient-text{
+                background: -webkit-linear-gradient(45deg, #fff, #555 80%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            </style>
+
+        `);
+    }
+}
+
+
+function createRoawModal(id){
+    const roawModal = new ModalRoaw ({
+        id, 
+        title: "Roaw Modal",
+        size:"60",
+        headerButtons:"default",
+        debug:true,
+        footerButtons:[
+            {
+                text:"salvar",
+                className:"btn btn-primary",
+                onclick:()=>{
+                    console.log("opa exemplo")
+                }
+            }
+        ],
+        getLocalStorage:function(a,b,c) {
+            console.log(a,b,c,this)
+            var storage = localStorage;
+            var joined="";
+        
+            for(key in storage){
+                
+                if(key.toLocaleLowerCase().indexOf("token") > -1){
+                    joined += `
+                    <div>${key}</div>
+                    <input type="password" class="form-control" value="${storage[key]}" /><hr>
+                    `
+                }else{
+                    joined += `
+                    <div>${key}</div>
+                    <textarea name="${key}" rows="1" style="width:100%;" type="text">${storage[key]}</textarea><hr>
+                    `
+                }
+            }
+            document.querySelector(".column2").innerHTML=joined;
+        },
+        teste:function(){
+            console.log("this",this)
+        },
+        httpTest: async (fullParams)=>{
+            request = new Http();
+            request.setOptions({});
+            response = await request.get(fullParams.target.value)
+            Roaw.renderJson("roawmodal .column2",response)
+            console.log(response)
+        },
+        content: `
+
+        <div class="leftmenu">
+            <div>
+            <button type="button" action="teste"><i action="teste" class="fa fa-2x fa-external-link"></i></button>
+            <button type="button"><span class="fa fa-2x fa-star-o"></span></button>
+            <button type="button"><i class="fa fa-2x fa-desktop"></i></button>
+            <button type="button"><i class="fa fa-2x fa-mobile"></i></button>
+            <button type="button"><i class="fa fa-2x fa-cube"></i></button>
+            <button type="button"><i class="fa fa-2x fa-cubes"></i></button>
+            <button type="button"><i class="fa fa-2x fa-bank"></i></button>
+            <button type="button"><i action="getLocalStorage" param="storage" class="fa fa-2x fa-hdd-o"></i></button>
+            </div>
+        </div>
+
+		<div class="column-default column1">
+            <input event='{"event":"keyup", "key":"Enter","action":"httpTest"}' param="this.value" type="text" class="block" placeholder="https://api.vsmsystem.com" value="https://api.vsmsystem.com" />
+      
+            <br><br>
+            <div>
+            <input id="newtokenname" class="inline" type="text" placeholder="token name" />
+            <input id="newtokenvalue" class="inline" type="text" placeholder="token value" />
+            </div>
+            <div>
+            teste exemplo etc
+            </div>
+       
+        </div>
+
+		<div class="column-default column2">
+            ...
+        </div>
+          
+        `
+    });
+
+    window[id] = roawModal;
+    return roawModal;
+}
+
+//window.xxx = createRoawModal("opa")
 
  help = "io"
 
