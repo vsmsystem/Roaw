@@ -668,7 +668,9 @@ function listarLocalStorage() {
 
 class Http {
     constructor(nome = null, tokenConfig = null){
-        this.fetchOptions={};
+        this.fetchOptions={
+            "cache":"no-store"
+        };
         if(nome === null || nome === undefined){
             this.nome=document.location.host
             this.url = document.location.origin;
@@ -828,7 +830,7 @@ class Http {
     getToken(){
 
         try{
-            const token = localStorage.getItem(this.service?.token?.name);
+            var token = localStorage.getItem(this.service?.token?.name);
             if(token){
                 console.log("Token override from localStorage", this.service?.token?.name)
                 return {"Authorization":token}
@@ -838,8 +840,20 @@ class Http {
         }
 
         try{
-            const token = this.service?.token?.value
-            return token;
+            var token = this.service?.token?.value
+            if(token){
+                return token;
+            }
+        }catch(err){
+            //
+        }
+
+        try{
+            var token = this?.token
+            if(token){
+                return token;
+            }
+            
         }catch(err){
             return null;
         }
@@ -917,7 +931,7 @@ class Http {
         //GET, POST, PUT, PATCH, DELETE
         //body: formData/multipart, queryString, urlEncoded,  json, string, null
 
-        let fetchOptions = this.fetchOptions;
+        var fetchOptions = this.fetchOptions;
         if (!fetchOptions.headers){
             fetchOptions.headers={}
         }
@@ -1493,6 +1507,7 @@ class Roaw{
 
             headermodal {
                 display:inline-block;
+                box-sizing:border-box;
                 width:100%;
                 border-bottom:solid 1px #444;
                 padding:8px;
@@ -1673,6 +1688,26 @@ class Roaw{
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
             }
+
+            /* custom scrollbar */
+            roawmodal ::-webkit-scrollbar {
+            width: 20px;
+            }
+
+            roawmodal ::-webkit-scrollbar-track {
+            background-color: transparent;
+            }
+
+            roawmodal ::-webkit-scrollbar-thumb {
+            background-color: #777;
+            border-radius: 20px;
+            border: 6px solid transparent;
+            background-clip: content-box;
+            }
+
+            roawmodal ::-webkit-scrollbar-thumb:hover {
+            background-color: #a8bbbf;
+            }
             </style>
 
         `);
@@ -1721,8 +1756,8 @@ function createRoawModal(id){
             console.log("this",this)
         },
         httpTest: async (fullParams)=>{
-            request = new Http();
-            request.setOptions({});
+            token = document.querySelector("#newtokenvalue").value
+            request = new Http("https://api.vsmsystem.com",{"Authorization":token});
             response = await request.get(fullParams.target.value)
             Roaw.renderJson("roawmodal .column2",response)
             console.log(response)
@@ -1768,6 +1803,323 @@ function createRoawModal(id){
 }
 
 //window.xxx = createRoawModal("opa")
+
+
+class RoawModal extends HTMLElement {
+  constructor() {
+    super();
+    const shadow = this.attachShadow({ mode: 'open' });
+    const wrapper = document.createElement('div');
+    const style = document.createElement("style");
+    style.textContent=`
+
+        .hiddenOpacity {
+            opacity: 0;
+        }
+        .displaynone{
+            display:none;
+        }
+
+        roawmodal * {
+            transition:0.3s all !important;
+        }
+
+        roawmodal{
+            transition:0.3s all !important;
+            width:100%;
+            display: block;
+            position: fixed;
+            top: 0px;
+            z-index: 999999999;
+            color:#ddd;
+            
+        }
+        containermodal{
+            display:inline-block;
+            width:100%;
+            margin:0 auto;
+            margin-top:70px;
+            background-color:#161b22;
+            display: block;
+            border: solid 2px red;
+
+            box-shadow: 3px 3px 4px #222;
+            border-radius: 10px;
+            border: solid 1px #444;
+        }
+
+        headermodal {
+            display: flex;
+            justify-content: space-between;
+
+            width:100%;
+            box-sizing: border-box;
+            border-bottom:solid 1px #444;
+            padding:8px;
+            margin-bottom:-4px;
+        }
+
+        footermodal {
+            display:none;
+            width:100%;
+            border-top:solid 1px #444;
+            padding:8px;
+        }
+
+        bodymodal {
+            overflow:auto;
+            max-height:70vh;
+
+            display: flex;
+            flex-wrap: wrap;
+            box-sizing: border-box;
+        }
+
+        titlemodal{
+            font-size:20px;
+            color:#ddd;
+        }
+
+        .headerbuttons .fa{
+            margin-top:5px;
+            color:#aaa;
+            font-size:20px;
+        }
+
+        headermodal span.headerbuttons{
+            white-space: inherit;
+        }
+
+
+        roawmodal .leftmenu {
+            border-right:solid 1px #555;
+            display:flex;
+            justify-content:center;
+            flex: 0 0 70px;
+            max-width:70px;
+            flex-direction:column;
+            padding-bottom:5px;
+            flex-shrink: 1;
+            align-items: flex-start;
+            flex-direction: inherit;
+        }
+
+        roawmodal .column-default {
+            flex: 1;
+            padding:10px;
+            max-width:50%;
+        }
+
+        roawmodal .column1 {
+            background-color:#0d1117fa;
+        }
+
+        roawmodal .column2 {
+            background-color:#040d21;
+        }
+
+        roawmodal .coluna {
+            box-sizing: border-box;
+            border: 1px solid black;
+            padding: 10px;
+            margin: 5px;
+        }
+
+        roawmodal .simplebutton{
+            float:right;border:none;background-color:transparent;
+        }
+
+        roawmodal .leftmenu button > .fa{
+            font-family: FontAwesome !important;
+        }
+
+        roawmodal .leftmenu button{
+            border:none;
+            background:transparent;
+            color:#aaa;
+            display:flex;
+            flex:1;
+            padding:15px;
+            height:50px;
+            width:85%;
+            margin:0 auto;
+        }
+
+        roawmodal .leftmenu button>*{
+            width:100%;
+        }
+
+        roawmodal .leftmenu button:hover{
+            background-color:#333333;
+            border-radius:5px;     
+            color:#fff;
+        }
+
+        roawmodal button.right-button {
+            -webkit-appearance: none;
+            padding: 0;
+            cursor: pointer;
+            background: 0 0;
+            border: 0;
+            margin-right: 8px;
+        }
+
+        roawmodal .right-button {
+            float: right;
+            font-weight: 700;
+            line-height: 1;
+            color: #000;
+            filter: alpha(opacity=20);
+            border: 0px;
+        }
+
+        roawmodal input.block{
+            width:100%;
+            height:40px;
+            background-color:#0d1117;
+            color:#ddd;
+            border:solid 1px #555;
+            border-radius:5px;
+            padding-left:15px;
+        }
+
+        roawmodal input.inline{
+            height:40px;
+            background-color:#0d1117;
+            color:#ddd;
+            border:solid 1px #555;
+            border-radius:5px;
+            padding-left:15px;
+        }
+
+
+        .size-100{
+            width: 100%;
+        }
+        .size-90{
+            width: 90%;
+        }
+        .size-80{
+            width: 80%;
+        }
+        .size-70{
+            width: 70%;
+        }
+        .size-60{
+            width: 60%;
+        }
+        .size-40{
+            width: 40%;
+        }
+        .size-30{
+            width: 30%;
+        }
+        .size-20{
+            width: 20%;
+        }
+        .size-10{
+            width: 10%;
+        }
+
+        .loading-overlay{
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1; /* Índice z maior que o conteúdo interno */
+        }
+
+        .gradient-text{
+            background: -webkit-linear-gradient(45deg, #fff, #555 80%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* custom scrollbar */
+        roawmodal ::-webkit-scrollbar {
+        width: 20px;
+        }
+
+        roawmodal ::-webkit-scrollbar-track {
+        background-color: transparent;
+        }
+
+        roawmodal ::-webkit-scrollbar-thumb {
+        background-color: #777;
+        border-radius: 20px;
+        border: 6px solid transparent;
+        background-clip: content-box;
+        }
+
+        roawmodal ::-webkit-scrollbar-thumb:hover {
+        background-color: #a8bbbf;
+        }
+    `
+    shadow.appendChild(style)
+
+    this.buttons = [
+        {
+            text: '<i class="fas fa-check"></i> Ok',
+          style: 'background-color: transparend; color: white;',
+          onClick: () => {
+            console.log('Botão Ok clicado!');
+          },
+        },
+        {
+          text: 'Cancelar',
+          style: 'background-color: red; color: white;',
+          onClick: () => {
+            console.log('Botão Cancelar clicado!');
+          },
+        },
+      ];
+
+    wrapper.innerHTML = `
+        <roawmodal>
+            <containermodal class="size-80">
+                <contentmodal>
+
+                    <headermodal>
+                        <titlemodal>titulo</titlemodal>
+                        <headerbuttons>botoes</headerbuttons>
+                    </headermodal>
+
+                    <bodymodal>
+                        t
+                    </bodymodal>
+
+                    <footermodal>
+                    x
+                    </footermodal>
+                </contentmodal>
+            </containermodal>
+        </roawmodal>
+    `;
+    this.wrapper = wrapper.querySelector('roawmodal');
+    shadow.appendChild(wrapper);
+    this.createButtons();
+}
+
+createButtons() {    
+    const headerButtons = this.wrapper.querySelector('headerbuttons');
+
+    this.buttons.forEach(button => {
+    const buttonElement = document.createElement('button');
+    buttonElement.innerText = button.text;
+    buttonElement.style = button.style;
+    buttonElement.onclick = button.onClick;
+    headerButtons.appendChild(buttonElement);
+    });
+}
+
+  teste(){
+    console.log("teste")
+  }
+}
+
+customElements.define('roawmodal-component', RoawModal);
+
+const myComponent = document.createElement('roawModal-component');
+//document.body.appendChild(myComponent);
 
  help = "io"
 
