@@ -98,6 +98,11 @@ chrome.runtime.onMessage.addListener(function(mensagem, sender, callback) {
 		
 		if(configs[host]){
 			var hostAlias = (typeof configs[host] == "string") ? configs[host] : host;
+			if(configs[hostAlias]?.inject){
+				configs[hostAlias]?.inject.forEach(inj =>{
+					injectScript(inj);
+				})
+			}
 			if(configs[hostAlias]?.vsmbar){
 				//injectScript("default.js");
 				//injectScript("vsm-bar.js");
@@ -107,7 +112,7 @@ chrome.runtime.onMessage.addListener(function(mensagem, sender, callback) {
 				document.addEventListener("mouseup", roaw_message_event, false);
 			}
 		}
-	
+		
 		console.log("roawConfig",{
 			"raw":stringfiedJson,
 			"parsed":configs,

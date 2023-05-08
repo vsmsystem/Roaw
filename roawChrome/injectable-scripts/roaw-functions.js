@@ -1133,7 +1133,7 @@ class Roaw{
         let footer = this.createFooter(this.configs?.footer); 
         let header = this.createHeader(this.configs?.header); 
         document.body.insertAdjacentHTML("beforeend",`
-            <roawmodal id="${this.configs.id}">
+            <roawmodal class="displaynone" id="${this.configs.id}">
                 <containermodal class="size-${this.configs.size}">
                     <contentmodal>
                         ${header}
@@ -1360,6 +1360,11 @@ class Roaw{
     }
 
     loading(state = true){
+
+        if(state === "template"){
+            return this.configs.loadingTemplate;
+        }
+
         if(state == "false"){
             state = false;
         }
@@ -1442,9 +1447,9 @@ class Roaw{
     createSideButtons(){
         if(!document.querySelector(".roaw-side-buttons")){
             document.body.insertAdjacentHTML("beforeend",`
-                <div class="roaw-side-buttons" style="position:fixed;right:2px;bottom:40px;width:40px;z-index:99999;">
-                    <button type="button" data-toggle="modal" data-target="#${this.configs.id}" style="width:40px;height:40px;border-radius:8px;margin-top:4px;border:solid 0px ; color:#ddd; background-color:#555;">
-                        <span class="fa fa-columns"></span>
+                <div class="roaw-side-buttons" style="position:fixed;right:2px;bottom:40px;width:40px;z-index:99999999999;">
+                    <button type="button" class="clickable" data-modaltarget="#${this.configs.id}" style="width:40px;height:40px;border-radius:8px;margin-top:4px;border:solid 0px ; color:#ddd; background-color:#555;background-image:none;">
+                        <span data-modaltarget="#${this.configs.id}" class="clickable fa fa-2x fa-credit-card"></span>
                     </button>
                 </div>
             `);
@@ -1453,7 +1458,7 @@ class Roaw{
         const roawsidebuttons = document.querySelector(".roaw-side-buttons")
         if(roawsidebuttons){
             roawsidebuttons.addEventListener("click",(e)=>{
-                const targetId = e.target.getAttribute("data-target") || e.target.parentElement.getAttribute("data-target")
+                const targetId = e.target.getAttribute("data-modaltarget") || e.target.parentElement.getAttribute("data-modaltarget")
                 const foundTarget = document.querySelector(`${targetId}`)
                 if(foundTarget){
                     foundTarget.classList.toggle("displaynone")
@@ -1487,9 +1492,14 @@ class Roaw{
                 display: block;
                 position: fixed;
                 top: 0px;
+                left: 0px;
                 z-index: 999999999;
                 color:#ddd;
-                
+                background-color: #000000ee;
+                border: 0px;
+                margin: 0px;
+                padding: 0px;
+                height: 100%;
             }
             containermodal{
                 display:inline-block;
@@ -1500,7 +1510,7 @@ class Roaw{
                 display: block;
                 border: solid 2px red;
 
-                box-shadow: 3px 3px 4px #222;
+                /* box-shadow: 3px 3px 4px #222; */
                 border-radius: 10px;
                 border: solid 1px #444;
             }
@@ -1511,7 +1521,6 @@ class Roaw{
                 width:100%;
                 border-bottom:solid 1px #444;
                 padding:8px;
-                margin-bottom:-4px;
             }
 
             footermodal {
@@ -1550,7 +1559,7 @@ class Roaw{
                 border-right:solid 1px #555;
                 display:flex;
                 justify-content:center;
-                flex: 0 0 70px;
+                /* flex: 0 0 70px; */
                 max-width:70px;
                 flex-direction:column;
                 padding-bottom:5px;
@@ -1631,7 +1640,7 @@ class Roaw{
             roawmodal input.block{
                 width:100%;
                 height:40px;
-                background-color:#0d1117;
+                background-color:#0a0c0f;
                 color:#ddd;
                 border:solid 1px #555;
                 border-radius:5px;
@@ -1640,7 +1649,7 @@ class Roaw{
 
             roawmodal input.inline{
                 height:40px;
-                background-color:#0d1117;
+                background-color:#0a0c0f;
                 color:#ddd;
                 border:solid 1px #555;
                 border-radius:5px;
