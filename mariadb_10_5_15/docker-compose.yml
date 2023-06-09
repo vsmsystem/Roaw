@@ -5,11 +5,11 @@ services:
     image: mariadb:10.5.15
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: 7#3e2f5gY!6&$856743
+      MYSQL_ROOT_PASSWORD: 7#3e2f5gY!6&856743
       MYSQL_DATABASE: roawMdb
       MYSQL_USER: someuser
       MYSQL_PASSWORD: sdF#Gf4#red!HGtr@565
     volumes:
       - ./data:/var/lib/mysql
     ports:
-      - "3306:3306"
+      - "3366:3306"
