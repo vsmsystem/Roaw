@@ -171,7 +171,63 @@ function buildTabs(tabArray){
 	$(".main-content").html(`
 	<div class="row">
 		<div id="esquerda" class="col-md-6">
+			<div class="panel panel-default" style="position: static; zoom: 1;">
+				<div class="panel-heading">
+					<div class="panel-title">Painel1</div>
+
+					<div class="panel-options">
+						<a href="#" class="bg clearRight"><i class="entypo-arrows-ccw clearRight"></i></a> 
+						<a href="#sample-modal" data-toggle="modal" data-target="#configmodal" class="bg showAsser"><i class="entypo-play showAsser"></i></a>
+						<a href="#" data-rel="collapse"><i class="entypo-down-open"></i></a>
+						<a href="#" data-rel="reload"><i class="entypo-arrows-ccw"></i></a>
+						<a href="#" data-rel="close"><i class="entypo-cancel"></i></a>
+					</div>
+				</div>
+				<div class="panel-body with-table">
+					<table class="table table-bordered table-responsive">
+						<thead>
+							<tr>
+								<th>A</th>
+								<th>B</th>
+								<th>C</th>
+							</tr>
+						</thead>
+
+						<tbody id="painel1"></tbody>
+					</table>
+
+					
+				</div>
+			</div>
+
 			<div>${htmlTabs}</div>
+
+			<div class="panel panel-default" style="position: static; zoom: 1;">
+				<div class="panel-heading">
+					<div class="panel-title">Local Storage</div>
+
+					<div class="panel-options">
+						<a href="#sample-modal" data-toggle="modal" data-target="#configmodal" class="bg"><i class="entypo-plus"></i></a>
+						<a href="#" data-rel="collapse"><i class="entypo-down-open"></i></a>
+						<a href="#" data-rel="reload"><i class="entypo-arrows-ccw"></i></a>
+						<a href="#" data-rel="close"><i class="entypo-cancel"></i></a>
+					</div>
+				</div>
+				<div class="panel-body with-table">
+					<table class="table table-bordered table-responsive">
+						<thead>
+							<tr>
+								<th width="50%">Sistema</th>
+								<th> </th>
+							</tr>
+						</thead>
+
+						<tbody id="localstoragelist"></tbody>
+					</table>
+
+					
+				</div>
+			</div>
 		</div>
 		<div id="direita" class="col-md-6">
 		</div>
@@ -179,7 +235,7 @@ function buildTabs(tabArray){
 	`)
 	$(".habilitaDebugger").on("click",e=>{
 		let tabId = parseInt(e.target.getAttribute("tabId"));
-		console.log(tabId)
+		// console.log(tabId)
 		activateDebug(tabId)
 	})
 }
@@ -214,14 +270,14 @@ function getTabs(string, debug = false){
 		
 		tabArray.forEach(t =>{
 			if(!string){
-				console.log(t)
+				// console.log(t)
 			}else{
 				if(t.url.indexOf(string) > -1){
-					console.log(t.id, t)
+					// console.log(t.id, t)
 					window.currentTab={}
 					window.currentTab.id=t.id
 					if(debug){
-						console.log("Debug", t.id, t)
+						// console.log("Debug", t.id, t)
 						activateDebug(t.id)
 					}
 				}
@@ -269,11 +325,17 @@ function allEventHandler(debuggeeId, message, params) {
                 // chrome storage has a limitation of 200 request per minute
                 // chromeStorage.pushItem("requestHistory", response)
                 try{
-                    var parsed = JSON.parse(response.body)
-                    requestHistory.unshift(parsed);
+					var parsed = JSON.parse(response.body)
+					if(localStorage['debug']=='true'){
+						console.log("RESPONSE",parsed)
+					}
+                    // requestHistory.unshift(parsed);
 					showQuestionInfo(parsed)
-                }catch(error){
-                    //
+                }catch(err){
+					if(localStorage['debug']=='true'){
+						console.error("OPS---->", response.body)
+					}
+                    
                 }
             }
             // jsonDesc = JSON.parse(response.body)
@@ -289,7 +351,7 @@ function allEventHandler(debuggeeId, message, params) {
 
 function listRequestHistory(){
     requestHistory.forEach(item => {
-        console.log(item)
+        // console.log(item)
     })
 }
 
@@ -301,13 +363,38 @@ function listQuestions(){
 }
 
 function showQuestionInfo(item){
-	if(res = item?.data?.questionById){
-		// console.log(res)
-		var el = document.createElement('html')
-		el.innerHTML=res.contentsByQuestionIdList[0].textByTextId.body;
+	// console.warn(item)
+	if(item?.identifier=="GetAssertions"){
+		console.log("GetAssertions", item.data)
 
-		// console.log(el.innerText)
-		// console.table(res.assertionsByQuestionIdList)
+		document.querySelector("#painel1").innerHTML=item.data.map(e =>{
+			return `
+			<tr>
+				<td>${e.id}</td>
+				<td>${atob(e.id).split("").reverse().join("")}</td>
+				<td class="i${e.id} i${atob(e.id).split("").reverse().join("")} i${String(e.correct)}">${String(e.correct)}</td>
+			</tr>
+			`
+		}).join("")
+	}
+	if(res = item?.data?.questionById){
+		console.log("fullQinfo",item)
+		var elq = document.createElement('html')
+		var ela = document.createElement('html')
+		//atob(e.id).split("").reverse().join("")
+		//btoa(String(12344).split("").reverse())
+		elq.innerHTML=res.contentsByQuestionIdList[0].textByTextId.body;
+
+		console.warn(elq.innerText,  res)
+		qPosition = res?.contentsByQuestionIdList[0]?.position;
+		qTypename = res?.__typename;
+		/* 
+			assertionsByQuestionIdList
+			commentsByQuestionIdList
+			contentsByQuestionIdList
+			repliesByQuestionIdList
+			solutionsByQuestionIdList
+		*/
 		convertList={
 			"0":"A",
 			"1":"B",
@@ -318,33 +405,74 @@ function showQuestionInfo(item){
 
 
 		let question = {
-			"question":el.innerText,
-			"answer":res.assertionsByQuestionIdList.filter(r=>{
-				return r.correct
-			})
+			"question":elq.innerText,
+			//"answer":res.assertionsByQuestionIdList.filter(r=>{
+			//	return r.correct
+			//})
 		}
+
+		var answers = item?.data?.questionById?.assertionsByQuestionIdList.map(i =>{
+			i.position =  i?.position
+			i.textByTextId = i?.contentsByAssertionIdList[0]?.textByTextId?.body
+			i.originalId = i.id
+			i.id = btoa(String(i.id).split("").reverse().join(""));
+			return i;
+		})
+
+	
 		//${question.answer[0].contentsByAssertionIdList[0].textByTextId.body}
 		console.log("question",question)
+		console.log("asnwers",answers)
+		asnwerList = answers.map(al =>{
+			return `
+			<div id="_${al.originalId}" class="asnwerOption a${al.id} a${al.originalId}">
+			${al.id}
+			${al.originalId}
+			${al.position}
+			${al.textByTextId}
+			</div>
+			`
+		}).join("");
 
 		$("#direita").append(`
 		<div class="panel panel-gray" data-collapsed="0">  
-			<div class="panel-heading" style="display:none"> 
-				<div class="panel-title">Gray Panel</div> 
+			<div class="panel-heading" style=""> 
+				<div class="panel-title">${qTypename} ${qPosition}</div> 
 				<div class="panel-options"> 
-					<a href="#sample-modal" data-toggle="modal" data-target="#sample-modal-dialog-1" class="bg">
-					<i class="entypo-cog"></i></a> <a href="#" data-rel="collapse"><i class="entypo-down-open"></i>
+					<a href="#sample-modal" data-toggle="modal" data-target="#sample-modal-dialog-1" class="bg showAsser">
+					<i class="entypo-play showAsser"></i></a> <a href="#" data-rel="collapse"><i class="entypo-down-open"></i>
 					</a> <a href="#" data-rel="reload"><i class="entypo-arrows-ccw"></i></a> 
 					<a href="#" data-rel="close"><i class="entypo-cancel"></i></a> 
 				</div> 
 			</div>  
 			<div class="panel-body"> 
-				${el.innerText}<br> 
-				(${convertList[question.answer[0].position]})
+				${elq?.innerText}<hr>
+				${asnwerList}<br> 
 			</div> 
 		</div>
 		`);
 	}
 }
+
+document.body.addEventListener("click", t =>{
+	if(t.target.classList.contains("clearRight")){
+		document.querySelector("#direita").innerHTML="";
+	}
+	if(t.target.classList.contains("showAsser")){
+		allOptions = document.querySelectorAll(".asnwerOption")
+		allOptions.forEach(q =>{
+			ra_class = q.id
+			ra_class = ra_class.replaceAll("_","")
+			ra_class = ra_class.replaceAll("=","")
+			ra_staus = document.querySelector(".i"+ra_class)?.innerText
+			if(ra_staus=="true"){
+				document.querySelector(".a"+ra_class).style.backgroundColor="#ccc"
+			}
+			console.log("option", ra_class, ra_staus)
+		})
+		console.log("allOptions",allOptions)
+	}
+})
 
 
 
