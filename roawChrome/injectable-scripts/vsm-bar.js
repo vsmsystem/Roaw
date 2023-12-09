@@ -3122,7 +3122,7 @@ window.mockdoc = `
                                                       </div>
                                                   </div>
 
-                                                  <div class="panel-body searchresult">
+                                                  <div class="panel-body searchresult" style="overflow:auto">
                             
                             
                             
@@ -3309,7 +3309,7 @@ window.mockzao = `
                           </div>
                       </div>
                       <!-- /.panel-heading -->
-                      <div class="panel-body searchresult">
+                      <div class="panel-body searchresult" style="overflow:auto">
 
 
 
@@ -3335,7 +3335,7 @@ window.mockzao = `
 
                       </div>
                       <!-- /.panel-heading -->
-                      <div class="panel-body timeline">
+                      <div class="panel-body timeline" style="margin:10px;">
                           <ul class="timeline">
                               <li>
                                   <div class="timeline-badge"><i class="fa fa-check"></i>
@@ -3498,6 +3498,7 @@ window.mockzao = `
                             <label><input name="searchFunction" value="clienteNome" type="radio" />Cliente Nome </label>
                             <label><input name="searchFunction" value="icones" action="icones" type="radio" />Icones </label>
                             <label><input name="searchFunction" value="alterarCliente" type="radio" />Alterar Cliente </label>
+                            <label><input action="historicoNavegacao" name="searchFunction" value="historicoNavegacao" type="radio" />Navegação </label>
 
                             
 
@@ -4082,7 +4083,7 @@ if (typeof ModalPortal != 'undefined') {
         content: mockzao,
         onCreate: (modal) => {
             modal.loading(100)
-            $.toaster("", "criou modal", "success")
+            console.log("", "criou modal", "success")
             modal.element.addEventListener("keyup", async (e) => {
                 if (e.target.id == "searchbox") {
                     const metodo = document.querySelector("input[name=searchFunction]:checked").value
@@ -4091,26 +4092,31 @@ if (typeof ModalPortal != 'undefined') {
                 }
             })
             document.body.insertAdjacentHTML("beforeend", `
-          <button type="button" data-toggle="modal" data-target="#${modal.configs.id}" style="position:fixed;right:5px;bottom:100px;width:40px;height:40px;border-radius:50px;border:solid 3px #90adff; color:#90adff; background-color:#fff;">
-            <span class="fa fa-book"></span>
+          <button type="button" data-toggle="modal" data-target="#${modal.configs.id}" style="position:fixed;right:1px;bottom:38px;width:40px;height:40px;border-radius:10px;border:solid 3px #222; color:#222; background-color:#eee;margin:1px;padding:1px;">
+            <span class="fa fa-th"></span>
           </button>
           `)
         },
         beforeShow: (modal) => {
             modal.loading(1000)
-            $.toaster("", "mostrar", "info")
+            console.log("", "mostrar", "info")
         },
         afterShow: (modal) => {
-            $.toaster("", "apareceu", "success")
+            console.log("", "apareceu", "success")
         },
         beforeHide: (modal) => {
-            $.toaster("", "fechar", "info")
+            console.log("", "fechar", "info")
         },
         afterHide: (modal) => {
-            $.toaster("", "fechou", "success")
+            console.log("", "fechou", "success")
         },
         buscarMenu: (modal, event) => {
             menuFind(document.querySelector("#searchbox").value, ".searchresult")
+        },
+        historicoNavegacao: (modal, event) => {
+            navdata = JSON.parse(localStorage.getItem("portalNavigation"));
+            reshist = navdata.history.slice(0,10).map(i=>`<div><a href="${i}">${i}</a></div>`).join("")
+            document.querySelector(".searchresult").innerHTML = reshist
         },
         toggleMinMax: (modal, event, parametro) => {
             event.target.classList.toggle("fa-minus")
@@ -4193,124 +4199,7 @@ if (typeof ModalPortal != 'undefined') {
 
 
 
-    window.ferramentas = new ModalPortal({
-        id: "portaltools", //id do elemento principal da modal
-        title: "ToolBox",
-        size: "80",
-        show: !!localStorage["portaldocs"], //inicia ja mostrando em tela
-        headerButtons: "default",
-        footerButtons: [
-            {
-                text: "Acessar",
-                className: "btn btn-primary",
-                onclick: () => { }
-            }
-        ],
-        content: mockzao,
-        onCreate: (modal) => {
-            modal.loading(100)
-            $.toaster("", "criou modal", "success")
-            modal.element.addEventListener("keyup", async (e) => {
-                if (e.target.id == "searchbox") {
-                    const metodo = document.querySelector("input[name=searchFunction]:checked").value
-                    const parametro = document.querySelector("#searchbox").value
-                    await modal.configs[metodo](modal, parametro)
-                }
-            })
-            document.body.insertAdjacentHTML("beforeend", `
-      <button type="button" data-toggle="modal" data-target="#${modal.configs.id}" style="position:fixed;right:5px;bottom:50px;width:40px;height:40px;border-radius:50px;border:solid 3px #f0ad4e; color:#f0ad4e; background-color:#fff;">
-        <span class="fa fa-car"></span>
-      </button>
-      `)
-        },
-        beforeShow: (modal) => {
-            modal.loading(1000)
-        },
-        afterShow: (modal) => {
-        },
-        beforeHide: (modal) => {
-        },
-        afterHide: (modal) => {
-        },
-        buscarMenu: (modal, event) => {
-            menuFind(document.querySelector("#searchbox").value, ".searchresult")
-        },
-        toggleMinMax: (modal, event, parametro) => {
-            event.target.classList.toggle("fa-minus")
-            event.target.classList.toggle("fa-plus")
-            let viewArea = document.querySelector(`.${parametro}`)
-            viewArea.classList.toggle("hidden")
 
-        },
-        icones: (modal, event, parametro) => {
-            let video = `<div class="embed-responsive embed-responsive-16by9"><iframe width="100%" height="806" src="https://www.youtube.com/embed/lYvYWJxvxHg" title="LW Tecnologia" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`
-            document.querySelector(".searchresult").innerHTML = icones
-
-
-        },
-        alterarCliente: debounce(async (modal, parametro) => {
-
-            var host = window.location.host;
-            var id_cliente = $("#searchbox").val()
-            $.ajax("Alterar_Cliente.php")
-            $.ajax({
-                url: "json/alterar_cliente.php",
-                type: "post",
-                data: {
-                    param: "AlterarCliente",
-                    id_cliente
-                },
-                success: function () {
-                    // alert("deu boa, vou dar reload pra você")
-                    window.location.reload()
-                },
-                error: function () {
-                    alert("deu algum erro")
-                }
-            });
-        }, 600),
-        buscarAutoInfracao: debounce(async (modal, parametro) => {
-            console.log("debounced", parametro)
-            const data = new FormData();
-            data.append("post", "buscarMultaPorAuto");
-            data.append("auto", parametro);
-            modal.loading()
-            const request = await fetch("json/manutencao_alterar_auto_infracao.php", {
-                "body": data,
-                "method": "POST",
-                "mode": "cors",
-                "credentials": "include"
-            });
-            modal.loading(false)
-            if (!request.ok) {
-                modal.element.querySelector(".searchresult").innerHTML = `<div class="alert alert-warning">Erro</div>`;
-
-                new modalRoaw({
-                    alert: "warning",
-                    title: "ops",
-                    message: "houve um erro"
-                });
-
-                return;
-            }
-            const response = await request.json();
-            console.warn("debounced response")
-            if (response?.erro == "1") {
-                modal.element.querySelector(".searchresult").innerHTML = `<div class="alert alert-warning">${response?.descricao}</div>`;
-                return;
-            }
-            console.table(response.dados)
-            const autoEncontrado = response.dados[0]
-            let result = []
-            for (key in autoEncontrado) {
-                if (key == "link") {
-                    autoEncontrado[key] = `<a href="./MultaDetalhada.php?p=${autoEncontrado[key]}" target="_blank">link para multa detalhada</a>`
-                }
-                result.push(`<tr><td>${key}</td> <td>${autoEncontrado[key]}</td></tr>`)
-            }
-            modal.element.querySelector(".searchresult").innerHTML = `<table>${result.join("")}</table>`;
-        }, 600)
-    })
 
 }
 
@@ -4336,7 +4225,7 @@ function modalTools(){
         content: localStorage.getItem("roawModalContent") || 'dica: você pode inserir html em uma chave especifica no localStorage, e ele será carregado aqui. <br>Exempolo: <br> localStorage["roawModalContent"] = `&lt;h1&gt;Hello =)&lt;/h1&gt;`',
         onCreate: (modal) => {
             modal.loading(100)
-            $.toaster("", "criou modal", "success")
+            console.log("", "criou modal", "success")
             modal.element.addEventListener("keyup", async (e) => {
                 if (e.target.id == "searchbox") {
                     const metodo = document.querySelector("input[name=searchFunction]:checked").value
@@ -4361,6 +4250,9 @@ function modalTools(){
         },
         buscarMenu: (modal, event) => {
             menuFind(document.querySelector("#searchbox").value, ".searchresult")
+        },
+        historicoNavegacao: (modal, event) => {
+            alert("1")
         },
         toggleMinMax: (modal, event, parametro) => {
             event.target.classList.toggle("fa-minus")

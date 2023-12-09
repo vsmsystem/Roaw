@@ -2083,4 +2083,4 @@ function hide_loading_bar()
 	$pct.width(0).data('pct', 0);
 }
 }
-neonCustomLoad()
+//neonCustomLoad()
