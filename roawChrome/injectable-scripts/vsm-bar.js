@@ -1147,9 +1147,13 @@ function boxVarDump() {
     const varDumps = document.querySelectorAll(".var_dump");
     if (varDumps?.length > 0) {
 
+        if (typeof hideDBG == 'function'){
+            hideDBG()
+        }
+
         document.querySelector("#vardumpcount").innerHTML = varDumps.length
         document.querySelector("#roawbox > .content").innerHTML = [...document.querySelectorAll(".var_dump")].map(d => {
-            return `<pre style="background-color:#999;padding:5px;border-radius:3px;">${d.innerHTML}</pre>`
+            return `<pre style="background-color:#ddd;padding:5px;border-radius:3px;">${d.innerHTML}</pre>`
         }).join("")
         document.querySelector(".sf-toolbar-block-vardump").classList.toggle("sf-toolbar-status-yellow")
         toggleRoawBox()
@@ -1292,10 +1296,87 @@ function boxDocumentacoes() {
     const tabPathName = window.location.pathname
     const documentacao = {
         "/MultaDetalhada.php": `
-        <h2>Multa Detalhada</h2>
+        <style>
+        #roawbox .content .title{
+            background-color: #000;
+            border-radius: 10px;
+            padding: 5px;
+            margin-right: 5px;
+        }
+        </style>
+        <h2 class="title">Multa Detalhada</h2>
         <div>
         Esta é uma das principais telas do sistema. normalmente terá 3 abas internas e a indicação de condutor pode ser iniciada na aba "indicação condutor"
         </div>
+        <i>Esta tela tem 3 Tabs, "Resumo", "Indicação Condutor", "Controle"</i>
+        <h3 class="title">TAB: Resumo</h3>
+        <div> 
+            <ul>
+                <li>Dados do Veículo</li>
+                <li>Dados da Multa</li>
+                <li>Alguns detakhes de Pagamento</li>
+                <li>Alguns detalhes de condutor</li>
+                <li>Registro de emails enviados</li>
+                <li>Reenviar email</li>
+                <li>Imagens relacionadas a multa</li>
+                <li>Genérica</li>
+            </ul>
+            
+        </div>
+
+        <h3 class="title">TAB: Indicação condutor</h3>
+        <div> 
+        <h4 class="title">
+            button[Limpar Dados]  id="btnCancelarIndicacao" onclick="Multa_Detalhada_Cancelar_Indicacao('idMulta&lt;number&gt;')"
+        </h4>
+            <pre>
+public static function exclusaoLogicaTermo($idMulta){
+    $query = "UPDATE multaDetalhadaImagensMinio SET exclusao = NOW() WHERE id_multa = {$idMulta} AND referencia = 'DT' ";
+}
+
+public static function exclusaoLogicaTermoPdf($idMulta){
+    $query = "UPDATE termo_imagem_pdf SET exclusao = 1 WHERE id_multa = {$idMulta}";
+}
+
+public function cancelarIndicacaoCondutor($MultaCondutor){
+    $query = "DELETE FROM multaDetalhadaCondutor WHERE id = {$MultaCondutor->id}";
+    inserirHistoricoIndicacaoCondutor($idMulta, $dadosIndicacao, $idUsuario, $statusIndicacao, $dataHoraEnvioEmail = false){
+        $query = " INSERT INTO multa_indicacao_condutor_historico 
+                (id_multa, id_cnh, id_usuario, status_indicacao, data_hora,id_multa_detalhada_condutor)
+                VALUES ( {$idMulta}, {$idCnh}, {$idUsuario}, {$statusIndicacao}, {$dataHoraEnvioEmail},{$idMultaDetalhadaCondutor})";
+    }
+}
+            </pre>
+            <ul>
+                <li>Ao indicar um condutor, ele é lido da tabela X e gravado na tabela Y do baco de dados </li>
+                <li>Etc.. </li>
+                <li>Etc.. </li>
+                <li>Etc.. </li>
+                <li>Etc.. </li>
+                <li>Etc.. </li>
+                <li>Etc.. </li>
+                <li>Etc.. </li>
+                <li>Etc.. </li>
+            </ul>
+        </div>
+
+        <h3 class="title">TAB: Controle</h3>
+        <div> 
+            <ul>
+                <li>Etc.. </li>
+                <li>Etc.. </li>
+                <li>Etc.. </li>
+                <li>Etc.. </li>
+                <li>Etc.. </li>
+                <li>Etc.. </li>
+                <li>Etc.. </li>
+                <li>Etc.. </li>
+                <li>Etc.. </li>
+            </ul>
+        </div>
+
+        <hr>
+        <h3 class="title">Processos envolvendo esta tela:</h3>
         <div>
         <b>Como indicar um condutor?</b>
         <ul>

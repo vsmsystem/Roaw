@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="description" content="Neon Admin Panel" />
+	<meta name="author" content="" />
+
+	<title>VSMonitor Options</title>
+
+	<link rel="stylesheet" href="assets/js/jquery-ui/css/no-theme/jquery-ui-1.10.3.custom.min.css">
+	<link rel="stylesheet" href="assets/css/font-icons/entypo/css/entypo.css">
+	<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Noto+Sans:400,700,400italic">
+	<link rel="stylesheet" href="assets/css/bootstrap.css">
+	<link rel="stylesheet" href="assets/css/neon-core.css">
+	<link rel="stylesheet" href="assets/css/neon-theme.css">
+	<link rel="stylesheet" href="assets/css/neon-forms.css">
+	<link rel="stylesheet" href="assets/css/custom.css">
+	<link rel="stylesheet" href="assets/css/skins/blue.css" id="style-resource-9">
+
+	<!-- <script src="assets/js/jquery-1.11.0.min.js"></script> -->
+	<script src="../injectable-scripts/jquery-3.6.0.min.js"></script>
+	<link href="assets/css/font-awesome.min.css" rel="stylesheet">
+	</link>
+
+
+
+	<script src="../injectable-scripts/roaw-functions.js"></script>
+
+	<span style="display:none;">$.noConflict();</span>
+
+
+</head>
+
+<body class="page-body skin-blue loaded" data-url="http://neon.dev">
+	<roaw style="display: none;"></roaw>
+	<div id="tela" style="border:solid 1px #ff0000;position:absolute;margin-top:100px;">teste</div>
+	<div class="page-container sidebar-collapsed">
+		<!-- add class "sidebar-collapsed" to close sidebar by default, "chat-visible" to make chat appear always -->
+
+		<div id="vsmlmenu" class="sidebar-menu hidden-xs hidden-sm">
+			<!-- <script src="painel_menu.js"></script> -->
+		</div>
+
+		<div class="main-content">
+			<div id="a1" class="col-sm-12">
+			</div>
+			<div class="col-sm-12">
+				<div class="row">
+					<div id="b1" class="col-sm-6">
+
+
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<div class="panel-title">Testes 1</div>
+
+								<div class="panel-options">
+									<a href="#" id="updatetokens" class="bg"><i class="fa fa-retweet"></i></a>
+									<a href="#" id="runtest1" class="bg"><i class="entypo-play"></i></a>
+									<a href="#" data-rel="collapse"><i class="entypo-down-open"></i></a>
+									<a href="#" data-rel="reload"><i class="entypo-arrows-ccw"></i></a>
+									<a href="#" data-rel="close"><i class="entypo-cancel"></i></a>
+								</div>
+							</div>
+							<div class="panel-body with-table">
+								<table class="table table-bordered table-responsive">
+									<thead>
+										<tr>
+											<th width="">ms</th>
+											<th> url </th>
+										</tr>
+									</thead>
+									<tbody id="resultadoteste1" class="etcetcetc">
+									</tbody>
+								</table>
+							</div>
+						</div>
+
+
+
+						<div id="request1" class="panel panel-default">
+							<div class="panel-heading">
+								<div class="panel-title">Request1</div>
+
+								<div class="panel-options">
+									<a href="#sample-modal" data-toggle="modal" data-target="#configmodal" class="bg"><i
+											class="entypo-plus"></i></a>
+									<a href="#" data-rel="collapse"><i class="entypo-down-open"></i></a>
+									<a href="#" data-rel="reload"><i class="entypo-arrows-ccw"></i></a>
+									<a href="#" data-rel="close"><i class="entypo-cancel"></i></a>
+								</div>
+							</div>
+							<div class="panel-body">
+								<div class="input-group"> 
+									<div class="input-group-btn"> 
+
+										<button id="service1" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Select Service</button>
+										<ul class="dropdown-menu dropdown dropdownservices1">
+											<li><a href="#"><strong>Http Services</strong></a></li>
+											<li class="divider"></li>
+										</ul>
+									</div>
+									<input id="route1" type="text" class="form-control">
+									<div class="input-group-btn"> 
+
+										<button id="service1" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Json</button> 
+										<ul class="dropdown-menu dropdown">
+											<li><a href="#"><strong>Response Type</strong></a></li>
+											<li class="divider"></li>
+											<li><a href="#">Json</a></li>
+											<li><a href="#">Text</a></li>
+											<li><a href="#">Html</a></li>
+											<li><a href="#">Jpg</a></li>
+											<li><a href="#">Png</a></li>
+											<li><a href="#">Pdf</a></li>
+											<li><a href="#">Blob</a></li>
+										
+										</ul>
+
+										<button id="doRequest1" type="button" class="btn btn-info">Send</button> 
+									</div>
+								</div><br>
+								<div class="row">
+									<div class="col-md-6">
+										<select id="method1" class="form-control">
+											<option>GET</option>
+											<option>POST</option>
+											<option>PUT</option>
+											<option>PATCH</option>
+											<option>DELETE</option>
+										</select>
+									</div>
+									<div class="col-md-6">
+										<textarea id="payload1" style="width:100%;height: 100px;">
+
+										</textarea>
+									</div>
+								</div>
+								<hr>
+								<div id="response1">...</div>
+						
+							</div>
+						</div>
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<div class="panel-title">Microserviços</div>
+
+								<div class="panel-options">
+									<a href="#sample-modal" data-toggle="modal" data-target="#configmodal" class="bg"><i
+											class="entypo-plus"></i></a>
+									<a href="#" data-rel="collapse"><i class="entypo-down-open"></i></a>
+									<a href="#" data-rel="reload"><i class="entypo-arrows-ccw"></i></a>
+									<a href="#" data-rel="close"><i class="entypo-cancel"></i></a>
+								</div>
+							</div>
+							<div class="panel-body with-table">
+								<table class="table table-bordered table-responsive">
+									<thead>
+										<tr>
+											<th width="">ms</th>
+											<th> url </th>
+											<th> token </th>
+										</tr>
+									</thead>
+									<tbody class="msboxes">
+									</tbody>
+								</table>
+							</div>
+						</div>
+
+
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<div class="panel-title">Tokens</div>
+
+								<div class="panel-options">
+									<a href="#sample-modal" data-toggle="modal" data-target="#configmodal" class="bg"><i
+											class="entypo-plus"></i></a>
+									<a href="#" data-rel="collapse"><i class="entypo-down-open"></i></a>
+									<a href="#" data-rel="reload"><i class="entypo-arrows-ccw"></i></a>
+									<a href="#" data-rel="close"><i class="entypo-cancel"></i></a>
+								</div>
+							</div>
+							<div class="panel-body with-table">
+								<table class="table table-bordered table-responsive">
+									<thead>
+										<tr>
+											<th width="">ms</th>
+											<th> url </th>
+											<th> token </th>
+										</tr>
+									</thead>
+									<tbody class="etcetcetc">
+									</tbody>
+								</table>
+							</div>
+						</div>
+
+					</div>
+
+
+
+
+					<div id="b2" class="col-sm-6">
+
+
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<div class="panel-title">Testes 2</div>
+
+								<div class="panel-options">
+									<a href="#sample-modal" id="runtest2" class="bg"><i
+											class="entypo-play"></i></a>
+									<a href="#" data-rel="collapse"><i class="entypo-down-open"></i></a>
+									<a href="#" data-rel="reload"><i class="entypo-arrows-ccw"></i></a>
+									<a href="#" data-rel="close"><i class="entypo-cancel"></i></a>
+								</div>
+							</div>
+							<div class="panel-body with-table">
+								<table class="table table-bordered table-responsive">
+									<thead>
+										<tr>
+											<th width="">ms</th>
+											<th> url </th>
+										</tr>
+									</thead>
+									<tbody id="resultadoteste2" class="etcetcetc">
+									</tbody>
+								</table>
+							</div>
+						</div>
+
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<div class="panel-title">Request2</div>
+
+								<div class="panel-options">
+									<a href="#sample-modal" data-toggle="modal" data-target="#configmodal" class="bg"><i
+											class="entypo-plus"></i></a>
+									<a href="#" data-rel="collapse"><i class="entypo-down-open"></i></a>
+									<a href="#" data-rel="reload"><i class="entypo-arrows-ccw"></i></a>
+									<a href="#" data-rel="close"><i class="entypo-cancel"></i></a>
+								</div>
+							</div>
+							<div class="panel-body with-table">
+								<table class="table table-bordered table-responsive">
+									<thead>
+										<tr>
+											<th width="">ms</th>
+											<th> url </th>
+											<th> token </th>
+										</tr>
+									</thead>
+									<tbody class="etcetcetc">
+									</tbody>
+								</table>
+							</div>
+						</div>
+
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<div class="panel-title">Fetch Options</div>
+
+								<div class="panel-options">
+									<a href="#sample-modal" data-toggle="modal" data-target="#configmodal" class="bg"><i
+											class="entypo-plus"></i></a>
+									<a href="#" data-rel="collapse"><i class="entypo-down-open"></i></a>
+									<a href="#" data-rel="reload"><i class="entypo-arrows-ccw"></i></a>
+									<a href="#" data-rel="close"><i class="entypo-cancel"></i></a>
+								</div>
+							</div>
+							<div class="panel-body with-table">
+								<textarea style="min-width:99%;height:100%;border: none;margin:1px;" name="" id=""
+									cols="30" rows="10"></textarea>
+							</div>
+						</div>
+
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<div class="panel-title">Rotas/Endpoints</div>
+
+								<div class="panel-options">
+									<a href="#sample-modal" data-toggle="modal" data-target="#configmodal" class="bg"><i
+											class="entypo-plus"></i></a>
+									<a href="#" data-rel="collapse"><i class="entypo-down-open"></i></a>
+									<a href="#" data-rel="reload"><i class="entypo-arrows-ccw"></i></a>
+									<a href="#" data-rel="close"><i class="entypo-cancel"></i></a>
+								</div>
+							</div>
+							<div class="panel-body with-table">
+								<table class="table table-bordered table-responsive">
+									<thead>
+										<tr>
+											<th width="">ms</th>
+											<th> url </th>
+											<th> token </th>
+										</tr>
+									</thead>
+									<tbody class="etcetcetc">
+									</tbody>
+								</table>
+							</div>
+						</div>
+
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<div class="panel-title">Habilitar interação</div>
+
+								<div class="panel-options">
+									<a href="#sample-modal" data-toggle="modal" data-target="#sample-modal-dialog-1"
+										class="bg"><i class="entypo-cog"></i></a>
+									<a href="#" data-rel="collapse"><i class="entypo-down-open"></i></a>
+									<a href="#" data-rel="reload"><i class="entypo-arrows-ccw"></i></a>
+									<a href="#" data-rel="close"><i class="entypo-cancel"></i></a>
+								</div>
+							</div>
+							<div class="panel-body with-table">
+								<table class="table table-bordered table-responsive">
+									<thead>
+										<tr>
+											<th>Sistema</th>
+											<th width="80px">Interação</th>
+											<th width="80px">Barra</th>
+										</tr>
+									</thead>
+
+									<tbody>
+
+
+
+
+									</tbody>
+								</table>
+							</div>
+						</div>
+
+					</div>
+
+				</div>
+
+
+
+			</div>
+		</div>
+
+
+
+	</div>
+
+
+
+
+	<!-- Bottom scripts (common) -->
+	<script src="assets/js/gsap/main-gsap.js"></script>
+	<script src="assets/js/jquery-ui/js/jquery-ui-1.10.3.minimal.min.js"></script>
+	<script src="assets/js/bootstrap.js"></script>
+	<script src="assets/js/joinable.js"></script>
+	<script src="assets/js/resizeable.js"></script>
+	<script src="assets/js/neon-api.js"></script>
+
+
+	<!-- JavaScripts initializations and stuff -->
+	<script src="assets/js/neon-custom.js"></script>
+
+
+	<!-- Demo Settings -->
+	<script src="assets/js/neon-demo.js"></script>
+
+
+	<script src="testing.js"></script>
+
+</body>
+
+</html>

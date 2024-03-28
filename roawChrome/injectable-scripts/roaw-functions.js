@@ -666,11 +666,44 @@ function listarLocalStorage() {
   }
 
 
+  class FormDataJson{
+    constructor(data = null){
+        
+        let parsedData;
+
+        if(typeof data == "object"){
+            parsedData = data
+        }
+
+        if(typeof data == "string"){
+            try{
+                parsedData = JSON.parse(data)
+    
+            }catch(err){
+                throw new Error("Error Parsing JSON: "+err)
+            }
+        }
+
+
+        let formData = new FormData()
+        for(const [key,value] of Object.entries(parsedData)){
+            formData.append(key,value)
+        }
+        return formData;
+        
+    }
+
+  }
 class Http {
     constructor(nome = null, tokenConfig = null){
+        this.render={};
         this.fetchOptions={
-            "cache":"no-store"
-        };
+            "headers": {
+              "accept": "*/*",
+              "content-type": "application/json"
+            },
+            "cache": "no-cache"
+          };
         if(nome === null || nome === undefined){
             this.nome=document.location.host
             this.url = document.location.origin;
@@ -736,6 +769,10 @@ class Http {
     }
     setOptions(object) {
         this.fetchOptions = object
+    }
+
+    setHeader(headerObject){
+        this.fetchOptions.headers = headerObject
     }
 
     static exampleOptions(){
@@ -830,7 +867,7 @@ class Http {
     getToken(){
 
         try{
-            var token = localStorage.getItem(this.service?.token?.name);
+            const token = localStorage.getItem(this.service?.token?.name);
             if(token){
                 console.log("Token override from localStorage", this.service?.token?.name)
                 return {"Authorization":token}
@@ -840,7 +877,7 @@ class Http {
         }
 
         try{
-            var token = this.service?.token?.value
+            const token = this.service?.token?.value
             if(token){
                 return token;
             }
@@ -878,7 +915,12 @@ class Http {
                 return dom;
             },
             "application/json":async (rData)=>{
-                return await rData.json();
+                const json = await rData.json();
+                try{
+                    return this.render?.json(json)
+                }catch(err){
+                    return json
+                }
             },
             "application/xml": async (rData)=>{
                 const xmlString = await rData.text();
@@ -896,8 +938,13 @@ class Http {
                 return await rData.blob()
             },
             "image/jpeg":async (rData)=>{
-                console.warn("jpg not implemented yet")
-                return await rData.blob()
+                const blob = await rData.blob()
+                try{
+                    return await this.render.jpg(blob)
+                }catch(err){
+                    //return blob
+                }
+          
             },
             "multipart/form-data":async (rData)=>{
                 console.warn("formData not implemented yet")
@@ -909,20 +956,13 @@ class Http {
             }
         }
 
-
         try{
             var result = await responseProcessor[responseType](response)
         }catch(ee){
             var result = await response.blob();
         }
 
-        if(this?.render){
-            try{
-                this.render(result)
-            }catch(ee){
-                console.warn("Error using render callback")
-            }
-        }
+        
 
         return result;
     }
@@ -930,6 +970,33 @@ class Http {
     async request(requestObj){
         //GET, POST, PUT, PATCH, DELETE
         //body: formData/multipart, queryString, urlEncoded,  json, string, null
+
+        
+        if(typeof requestObj.path == "string"){
+            //
+        }
+        
+        if(typeof requestObj.path == "object"){
+            requestObj = requestObj.path;
+            if(requestObj.body instanceof FormData){
+                //
+            }else if(requestObj.body instanceof Object){
+                requestObj.body = JSON.stringify(requestObj.body);
+            }
+            if(requestObj.url.indexOf("http://") > -1 || requestObj.url.indexOf("https://") > -1){
+                var fullUrl = requestObj.url;
+            }else{
+                var fullUrl = `${this.url}/${requestObj.url}`;
+            }
+            delete requestObj.url;
+        
+            const request = await fetch(fullUrl, requestObj);
+            
+            
+            
+            console.warn("Request Object mode", requestObj)
+            return await this.response(request);
+        }
 
         var fetchOptions = this.fetchOptions;
         if (!fetchOptions.headers){
@@ -956,9 +1023,11 @@ class Http {
             fetchOptions.body = JSON.stringify(fetchOptions.body);
         }
 
-        console.log("debug",fetchOptions)
-
+        
         const request = await fetch(fullUrl, fetchOptions);
+        console.warn("Request Default Mode")
+        console.warn(fetchOptions)
+        console.warn(request)
         return await this.response(request);
     }
 
@@ -1002,6 +1071,7 @@ class Http {
         });
     }
 } 
+window.roawHttp = new Http();
 
 
 async function sfetch(url, data = null){
@@ -1009,7 +1079,6 @@ async function sfetch(url, data = null){
 	
 	options.method = (data) ? "post" : "get";
 	if (data) options.body = JSON.stringify(data)
-	console.log(options)
 
 	let response = await fetch(url,options);
 	return await response.text()
@@ -1022,22 +1091,96 @@ class Roaw{
         //
     }
     static renderJson(selector,object){
+        if(typeof selector == "object"){
+            return generateHTMLFromJSON(selector)
+        }
         document.querySelector(selector).innerHTML=generateHTMLFromJSON(object)
     }
-}
 
-  function generateHTMLFromJSON(obj) {
+    static renderJsonDropdown(selector,object){
+        if(typeof selector == "object"){
+            return generateDropdownFromJSON(selector)
+        }
+        document.querySelector(selector).innerHTML=generateDropdownFromJSON(object)
+    }
+
+    static returnImg(blob,options){
+        var img = document.createElement("img")
+        img.style.width="100px"
+        img.src =URL.createObjectURL(blob)
+        if (typeof options == 'object'){
+            // Object.assign(img,options)
+        }
+        return img.outerHTML
+    }
+
+    static getParams(...params){
+        let searchParams = params.filter(p => p)
+        let urlParams = new URLSearchParams(window.location.search)
+        let resultParams = {};
+
+        if(searchParams.length==0){
+            for(const [key,value] of urlParams.entries()){
+                resultParams[key]=value
+            }
+            return resultParams;
+        }
+
+        for (let key of searchParams){
+            resultParams[key] = urlParams.get(key)
+        }
+        return resultParams;
+    }
+}
+/* 
+
+*/
+
+  function generateDropdownFromJSON(obj) {
+    console.log(obj)
+    var html = generateUlFromJSON(obj);
+    return `
+    <ul class="file-list">  
+        ${html}
+    </ul>
+    `;
+  }
+
+  function generateUlFromJSON(obj) {
     let html = '<ul>';
     for (let key in obj) {
       if (typeof obj[key] === 'object') {
-        html += '<li>' + key + generateHTMLFromJSON(obj[key]) + '</li>';
+        html += '<li> <i class="fa fa-folder"></i> ' + key + generateDropdownFromJSON(obj[key]) + '</li>';
       } else {
-        html += '<li>' + key + ': <b>' + obj[key] + '</b> <small style="cursor:pointer;color:orange;" onclick="exampleAction(this)">[ExecutarAlgo]</small> </li>';
+        var classtype = (typeof obj[key]).replace("string","info").replace("number","primary")
+        html += `
+        <li> 
+            <a href="#">
+                <i class="fa fa-file"></i> 
+                <span class="label label-default"> ${key} 
+                    <span class="label label-${classtype}">  ${typeof obj[key]} </span><span class="label label-${classtype}"> ${obj[key]}</span> 
+                </span> 
+            </a>
+        </li>`;
       }
     }
     html += '</ul>';
     return html;
   }
+
+  function generateHTMLFromJSON(obj) {
+    let html = '<ol class="foirst   ">';
+    for (let key in obj) {
+      if (typeof obj[key] === 'object') {
+        html += '<li>' + key + generateHTMLFromJSON(obj[key]) + '</li>';
+      } else {
+        html += '<li>' + key + ': <b>' + obj[key] + '</b> <small style="cursor:pointer;color:orange;" onclick="exampleAction(this)"> &nbsp;</small> </li>';
+      }
+    }
+    html += '</ol>';
+    return html;
+  }
+
   function exampleAction(target){
     var item = target.parentElement.querySelector("b").innerText
     console.log(item)
@@ -1133,7 +1276,7 @@ class Roaw{
         let footer = this.createFooter(this.configs?.footer); 
         let header = this.createHeader(this.configs?.header); 
         document.body.insertAdjacentHTML("beforeend",`
-            <roawmodal class="displaynone" id="${this.configs.id}">
+            <roawmodal class="displaynone backdrop" id="${this.configs.id}">
                 <containermodal class="size-${this.configs.size}">
                     <contentmodal>
                         ${header}
@@ -1160,6 +1303,8 @@ class Roaw{
         this.element.addEventListener("blur",(e)=>{})
         this.element.addEventListener("change",(e)=>{})
         */
+
+        
         this.element.addEventListener("keyup",(e)=>{
 
             //for now this event is working only with key Enter, still a draft
@@ -1192,6 +1337,9 @@ class Roaw{
         })
 
         this.element.addEventListener("click",(e)=>{
+            if(e.target.classList.contains("backdrop")){
+                this.hide()
+            }
             let fullParams = {
                 "modal":this,
                 "target": e?.target,
@@ -1301,21 +1449,32 @@ class Roaw{
         }))
         newButtons.forEach((i)=>{
             let elementPosition = i?.position || "beforeend";
-            console.warn(target,target)
             this.element.querySelector(target).insertAdjacentElement(elementPosition,i);
         })
     }
 
-    show(){
-        this.element.style.display="block";
+    show(fullParams){
+        try{
+            fullParams.modal.element.classList.remove("displaynone")
+        }catch(ee){
+            this.element.classList.remove("displaynone")
+        }
     }
 
-    hide(){
-        this.element.style.display="none";
+    hide(fullParams){
+        try{
+            fullParams.modal.element.classList.add("displaynone")
+        }catch(ee){
+            this.element.classList.add("displaynone")
+        }
     }
 
     toggle(fullParams){
-        fullParams.modal.element.classList.toggle("displaynone")
+        try{
+            fullParams.modal.element.classList.toggle("displaynone")
+        }catch(ee){
+            this.element.classList.toggle("displaynone")
+        }
     }
 
     setTitle(html){
@@ -1469,9 +1628,20 @@ class Roaw{
 
     createStyle(){
         
-        const roawId = document.querySelector("roaw").innerText;
-        document.body.insertAdjacentHTML("afterbegin", `
+        const roawId = document.querySelector("roaw").innerText || chrome.runtime.id;
+        if (!document.querySelector("#roawmodalstylevars")){
+            document.body.insertAdjacentHTML("afterbegin", `
             <link href="chrome-extension://${roawId}/Vweb/assets/css/font-awesome.min.css" rel="stylesheet"></link>
+            <style id="roawmodalstylevars">
+                :root{
+                    --roawmodal-textcolor:#ddd;
+                    --roawmodal-backfrop:rgba(50, 31, 78, 0.6);
+                }
+            </style>
+        `);
+
+        if (!document.querySelector("#roawmodalstyle")){
+            document.body.insertAdjacentHTML("afterbegin", `
             <style id="roawmodalstyle">
             
 
@@ -1494,12 +1664,19 @@ class Roaw{
                 top: 0px;
                 left: 0px;
                 z-index: 999999999;
-                color:#ddd;
-                background-color: #000000ee;
-                border: 0px;
+                color:var(--roawmodal-textcolor);
                 margin: 0px;
                 padding: 0px;
                 height: 100%;
+
+                /* From https://css.glass */
+                background: var(--roawmodal-backfrop);
+                border-radius: 16px;
+                box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+                backdrop-filter: blur(5.3px);
+                -webkit-backdrop-filter: blur(5.3px);
+                border: 0px solid rgba(0, 0, 0, 0.3);
+                border-radius: 0px;
             }
             containermodal{
                 display:inline-block;
@@ -1517,10 +1694,10 @@ class Roaw{
 
             headermodal {
                 display:inline-block;
-                box-sizing:border-box;
                 width:100%;
                 border-bottom:solid 1px #444;
                 padding:8px;
+                margin-bottom:-4px;
             }
 
             footermodal {
@@ -1559,13 +1736,14 @@ class Roaw{
                 border-right:solid 1px #555;
                 display:flex;
                 justify-content:center;
-                /* flex: 0 0 70px; */
+                flex: 0 0 70px;
                 max-width:70px;
                 flex-direction:column;
                 padding-bottom:5px;
                 flex-shrink: 1;
                 align-items: flex-start;
                 flex-direction: inherit;
+                padding-top:5px;
             }
 
             roawmodal .column-default {
@@ -1717,9 +1895,34 @@ class Roaw{
             roawmodal ::-webkit-scrollbar-thumb:hover {
             background-color: #a8bbbf;
             }
-            </style>
 
+
+
+            .file-list ul {
+                list-style: none; /* remove bullets */
+                padding:0px;
+                margin:5px;
+       
+              }
+              
+              .file-list li {
+        
+              }
+              
+              
+              .file-list a {
+                text-decoration: none;
+          
+              }
+            </style>
+            
+            
         `);
+
+
+        }
+        }
+
     }
 }
 
@@ -1813,7 +2016,9 @@ function createRoawModal(id){
 
 //window.xxx = createRoawModal("opa")
 
-
+/*
+codigo da RoawModal v3, usando web component, ainda um rascunho inicial
+*/
 class RoawModal extends HTMLElement {
   constructor() {
     super();
@@ -2062,6 +2267,39 @@ class RoawModal extends HTMLElement {
         roawmodal ::-webkit-scrollbar-thumb:hover {
         background-color: #a8bbbf;
         }
+
+
+
+
+    .file-list ul {
+        list-style: none; /* remove bullets */
+        margin: 0;
+        padding: 0;
+      }
+      
+      .file-list li {
+        display: flex;
+        align-items: center;
+        margin: 0.5rem 0;
+      }
+      
+      .file-list li:before {
+        content: "\f016"; /* FontAwesome file icon */
+        font-family: FontAwesome;
+        margin-right: 0.5rem;
+        font-size: 1.2rem;
+        color: #777;
+      }
+      
+      .file-list a {
+        text-decoration: none;
+        color: #333;
+        font-weight: 600;
+        font-size: 1rem;
+      }
+
+
+
     `
     shadow.appendChild(style)
 
@@ -2141,4 +2379,258 @@ try{
 
 
 
+function startMercury(){
+    
+    var mercury = new ModalRoaw ({
+        id: "mercuryinterface", 
+        title: "Mercury",
+        size:"60",
+        headerButtons:"default",
+        debug:true,
+        content:`<div></div>`,
+    });
 
+    //iniciando serviços http
+    mercury.wow = new Http("wow");
+    mercury.live = new Http("live");
+    mercury.ms = new Http("ms");
+
+    //configurando rotas/endpoints
+    //wow
+    mercury.wow.buscarFatura = async function(id){
+        resultado = await this.get(`v1/etc/${id}`)
+        mercury.render(".column2",Roaw.renderJson(resultado));
+    }
+    mercury.wow.cancelarFatura = async function(id){}
+    //live
+    mercury.live.buscarFatura = async function(id){}
+    mercury.live.cancelarFatura = async function(id){}
+    //ms
+    mercury.ms.buscarFatura = async function(id){}
+    mercury.ms.cancelarFatura = async function(id){}
+
+    return mercury;
+}
+
+
+
+String.prototype.toJson = function(){
+    try {
+        return JSON.parse(this);
+    }catch(err){
+        throw new Error("Not a valid Json")
+    }
+}
+
+function roawPlaceholderTyping(inputSelector, string = null, speed = null){
+    const input = document.querySelector(inputSelector);
+    var i = 0;
+    var txt = string || "Carregando.....";
+    var originalPlaceholder = input.placeholder;
+    var speed = speed || 100;
+    input.placeholder = "";
+    function typeWriter() {
+    if (i < txt.length) {
+        input.placeholder += txt.charAt(i);
+        i++;
+        setTimeout(typeWriter, speed);
+    }else{
+        setTimeout(function(){
+            input.placeholder=originalPlaceholder
+        },5000)
+    }
+    }
+    typeWriter()
+
+}
+
+
+function createGenericModal(id,title,http){
+    endpoints = {
+        "servico1":{
+            "buscarEtc":(id)=>{return `etc/buscar/${id}`},
+            "buscarDetalhesEtc":(id)=>{return `etc/${id}/detalhes`},
+            "cancelarEtc":(id)=>{return `etc/${id}/cancelar`}
+        },
+        "servico2":"",
+        "servico3":"",
+        "servico4":""
+    };
+    services=[];
+    
+    window[id+"modal"] = roawModal = new ModalRoaw ({
+        id, 
+        title,
+        size:"80",
+		http,
+		endpoints,
+        headerButtons:"default",
+        getLocalStorage:function() {
+            var storage = localStorage;
+            var joined="";
+        
+            for(key in storage){
+                
+                if(key.toLocaleLowerCase().indexOf("token") > -1){
+                    joined += `
+                    <div>${key}</div>
+                    <input type="password" class="form-control" value="${storage[key]}" /><hr>
+                    `
+                }else{
+                    joined += `
+                    <div>${key}</div>
+                    <textarea name="${key}" rows="1" style="width:100%;" type="text">${storage[key]}</textarea><hr>
+                    `
+                }
+            }
+            document.querySelector(".column2").innerHTML=joined;
+        },
+        teste:function(){
+        },
+        httpTest: async (fullParams)=>{
+            
+            token = document.querySelector("#newtokenvalue").value
+            request = new Http("https://api.vsmsystem.com",{"Authorization":token});
+            response = await request.get(fullParams.target.value)
+            Roaw.renderJson("roawmodal .column2",response)
+        },
+        content: `
+
+        <div class="leftmenu">
+            <div>
+            <button type="button" action="teste"><i action="teste" class="fa fa-2x fa-external-link"></i></button>
+            <button type="button"><span class="fa fa-2x fa-star-o"></span></button>
+            <button type="button"><i class="fa fa-2x fa-desktop"></i></button>
+            <button type="button"><i class="fa fa-2x fa-mobile"></i></button>
+            <button type="button"><i class="fa fa-2x fa-cube"></i></button>
+            <button type="button"><i class="fa fa-2x fa-cubes"></i></button>
+            <button type="button"><i class="fa fa-2x fa-bank"></i></button>
+            <button type="button"><i action="getLocalStorage" param="storage" class="fa fa-2x fa-hdd-o"></i></button>
+            </div>
+        </div>
+
+		<div class="column-default column1">
+            <input event='{"event":"keyup", "key":"Enter","action":"httpTest"}' param="this.value" type="text" class="block" placeholder="https://api.vsmsystem.com" value="https://api.vsmsystem.com" />
+      
+            <br><br>
+            <div>
+            <input id="newtokenname" class="inline" type="text" placeholder="token name" />
+            <input id="newtokenvalue" class="inline" type="text" placeholder="token value" />
+            </div>
+            <div>
+            teste exemplo etc
+            </div>
+       
+        </div>
+
+		<div class="column-default column2">
+            ...
+        </div>
+          
+        `
+    });
+
+    window[id] = roawModal;
+    return roawModal;
+}
+
+document.querySelector("body").insertAdjacentHTML("afterbegin",`
+
+<style>
+#roawContextMenu {
+  display: none;
+  position: absolute;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  color:#000;
+  padding: 5px;
+  z-index: 1000;
+}
+
+#roawContextMenu ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+#roawContextMenu ul li {
+  padding: 5px;
+  cursor: pointer;
+}
+
+#roawContextMenu ul li:hover {
+  background-color: #f0f0f0;
+}
+</style>
+<div id="roawContextMenu" style="display:none;margin-top:-1000">
+  <ul>
+    <li>Opção 1</li>
+    <li>Opção 2</li>
+    <li>Opção 3</li>
+  </ul>
+</div>
+
+`)
+
+document.addEventListener('contextmenu', function(event) {
+
+    if (event.altKey){
+        event.preventDefault(); // Impede o menu de contexto padrão do navegador
+        var contextMenu = document.getElementById('roawContextMenu');
+        contextMenu.style.display = 'block';
+        contextMenu.style.left = event.pageX + 'px';
+        contextMenu.style.top = event.pageY + 'px';
+        setRoawContextMenu(contextMenu, event.target)
+    }
+});
+  
+document.addEventListener('click', function(event) {
+var contextMenu = document.getElementById('roawContextMenu');
+contextMenu.style.display = 'none';
+});
+
+function setRoawContextMenu(menu, target){
+    console.log(menu, target)
+    menu.innerHTML=`
+    <ul>
+        <li><strong>Editar </strong> <small> &lt;${target.tagName.toLocaleLowerCase()}&gt; </small> </li>
+        <li><strong>id: </strong> <small> ${target.id} </small> </li>
+        <li><strong>class: </strong> <small> ${target.className} </small> </li>
+        <li><strong>console.log(this) </strong> </li>
+        <li><strong>console.table(this) </strong> </li>
+    </ul>
+    `
+}
+
+
+function hellow(){
+    console.info(`\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣠⣤⣤⣤⣤⣤⣄⢶⣶⣶⣶⣶⣶⣶⣶⣤⣤⡤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡠⣒⣵⣿⣿⣿⠟⢉⣭⣭⣿⡿⣮⢻⣿⣿⡿⡻⣿⡞⠛⠋⠹⢗⣮⣗⠦⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠠⠄⠀⡀⡖⠒⠒⢩⣾⣿⣿⣿⣿⣷⣮⣿⣿⠁⠈⢉⣿⢧⡹⣿⣷⡦⠿⠷⠤⠤⠤⠤⠭⠵⠭⠪⢝⣦⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⣀⠀⠀⠀⠀⠉⠉⠉⢉⠉⡉⠉⠉⠉⠉⠉⠉⠛⠉⠉⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⣀⠎⠀⠀⠀⠀⠀⠀⠀⠈⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⡄⠀⠀⠀⣀⣀⣀⠀⠀⠀⠀⠀⠀⢠⢶⣶⣶⣶⣶⣦⣤⣤⡄⠐⠒⠀⠒⠂⠀⠂⠠⣦⠀⠀⠀⠀
+⠀⠀⠀⢀⣴⣿⣶⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⣰⣿⡿⣿⣿⣷⣄⠀⠀⠀⠀⠈⠛⠛⠚⠛⠛⠛⠿⠿⠷⠘⣿⠿⣿⢿⣿⢿⡇⠸⢧⡀⠀⠀
+⢸⠀⠀⢸⣿⣿⣿⣿⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣇⡀⢰⣿⣿⣿⣿⣿⣿⣿⡆⢤⠀⠀⠀⠀⠀⠀⢰⣶⢲⡆⠀⠀⠀⣀⣀⣠⠀⠀⠠⢀⢠⠀⡇⠀⠀
+⠀⢇⡀⢸⠻⣿⣿⣿⣇⠀⠀⠀⠑⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠃⢀⣼⣿⣿⣿⣿⣿⡟⣿⣿⠀⢃⠀⠀⠀⠀⠀⣬⣭⣭⣤⡄⠀⠀⣿VSM0000⣿⢆⠇⠀⠀
+⠀⠀⠉⠻⣿⣷⣿⣿⣿⣀⣀⣀⣀⣠⣀⣀⣀⣀⣀⣀⣀⣀⣀⠈⠀⠀⢻⣿⣿⣿⣿⣿⣯⣿⣿⣀⣘⣀⣀⣀⣀⣘⣉⣉⣉⣉⣁⣀⣀⣛⣛⣛⣛⣛⠭⣥⣭⣼⠀⠀⠀
+⠀⠀⠀⠀⠹⣿⣿⣿⣿⣿⣯⣭⣭⣭⣭⣭⣭⣤⣤⣤⣼⣿⣿⣿⣿⣏⣉⣹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣶⣶⣶⡶⠶⠶⠾⠿⠛⠂⠀⠀
+⠀⠀⠀⠀⠀⠀⠉⠉⠉⠉⠀⠀⠀⠉⠉⠉⠉⠉⠉⠉⠉⠛⠛⠛⠛⠛⠻⠿⠿⢿⣿⣿⣿⣿⣿⣿⣿⣶⣶⣶⣶⣶⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣶⡦⠤⠀⠀⠀⠀⠉⠐
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n`)
+
+console.log("%c "+document.title+"                                                                                   	", 'width:100%;padding:10px;margin:0px;background-color: #000; color: #777;font-size: 20px;margin-top:10px;margin-bottom:10px;');
+// var timeline1 = 'New York 2012';
+// var timeline2 = 'Camp Lehigh 1970';
+// console.group(timeline1);
+// console.info('Mind');
+// console.info('Time');
+// console.group(timeline2);
+// console.info('Space');
+// console.info('Extra Pym Particles');
+// console.groupEnd(timeline2);
+// console.groupEnd(timeline1);
+var rwxwl = window.location
+rwxwl.referrer = document.referrer
+console.table(rwxwl)
+
+}
+hellow()

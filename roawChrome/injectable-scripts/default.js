@@ -6,22 +6,31 @@ if (window.location.host == 'git.lwtecnologia.com.br') {
 			return false;
 		}
 		const springfieldMembers = localStorage.getItem("springfieldMembers").split(";")
-		springfieldMembers.forEach(member => {
-			console.log(member)
-			try {
-				getElementsByText("span", member)[0].click()
-			} catch (e) {
-				console.log(e)
+		console.log("springfield",springfieldMembers)
+		document.querySelectorAll(".dropdown-menu-user-username").forEach(e => {
+			console.log(e)
+			if(springfieldMembers.includes(e.innerText)){
+				e.click()
 			}
 		})
+
+		// springfieldMembers.forEach(member => {
+		// 	console.log(member)
+		// 	try {
+		// 		getElementsByText("span", member)[0].click()
+		// 	} catch (e) {
+		// 		console.log(e)
+		// 	}
+		// })
 	}
 
 	if (gitLabAssignBox = document.querySelector(".js-assignee-search")) {
 		gitLabAssignBox.click()
-		document.querySelector(".issuable-form-select-holder").insertAdjacentHTML("afterend", ` &nbsp; <button id="autoAssign" type="button" onclick="assignSpringfield(this)" class="gl-button btn btn-confirm gl-mr-2"> Assign to Springfield</button> `)
+		document.querySelector(".assign-to-me-link").insertAdjacentHTML("beforebegin", ` &nbsp; <button id="autoAssign" type="button" onclick="assignSpringfield(this)" class="gl-button btn btn-confirm gl-mr-2"> Assign to Springfield</button> `)
 		console.log("localizei uma assignbox e cliquei nela", gitLabAssignBox)
 		setTimeout(() => {
-			document.querySelector("#autoAssign").click()
+			// document.querySelector("#autoAssign").click()
+			assignSpringfield()
 		}, 2000)
 
 	}
@@ -630,6 +639,19 @@ function etaGetSID() {
 				background-color: #000;
 				border: 1px solid #646464;
 			}
+
+			.night .breadcrumb {
+				background-color: #000000;
+			}
+			.night .boxshadow {
+				box-shadow: 3px 3px 4px #000;
+				border-radius: 10px;
+				border: solid 1px #333;
+			}
+
+			.night .modal-header .fa {
+				color:#bbb;
+			}
 			
 
 		</style>
@@ -892,7 +914,8 @@ function loginBackgroundRotator() {
 window.initVid = 0;
 window.limitVid = 27;
 window.addEventListener("keydown", e => {
-	if (e.key == "Alt") {
+
+	if (e.key == "Alt" && $("#entrar").text().trim() == "Entrar") {
 		if (e.ctrlKey) {
 			ajeita()
 		}
@@ -942,7 +965,10 @@ function nightToggle() {
 // 	$(".darkbg").hide()
 // }
 
-function blockScreen() {
+function blockScreen(mode = "show") {
+	if(mode == "hide"){
+		return unblockScreen()
+	}
 	console.log("Ativa blocking")
 	$(".darkbg").show()
 	$(".darkbg").addClass("darkbg-show")
@@ -959,6 +985,7 @@ function unblockScreen() {
 
 
 function ajeita() {
+	
 	if (!document.querySelector("#browserAutoFill")) {
 		$("head").append(`
 		<style id="browserAutoFill">
@@ -1938,11 +1965,11 @@ function createEnvSelector() {
 		const botaoEntrarLogin = document.querySelector(".container-login100-form-btn > #entrar");
 		if (botaoEntrarLogin) {
 			botaoEntrarLogin.insertAdjacentHTML("beforebegin", `
-            <select name="env" id="env" class="form-control" style="width:100%;height:50px;padding:5px;border:solid 0px #fff; background-color:#333;color:#ddd;border-radius:8px;">
-                <option value="http://localhost:8006/vsmApiLogin.php">Production</option>
-                <option value="http://localhost:8006/vsmApiLogin.php">Homolog</option>
-                <option value="https://api.lwtecnologia.com.br/api/login">QA</option>
-                <option value="http://localhost:8006/vsmApiLogin.php">Custom</option>
+            <select name="env" id="env" class="form-control formdata extrainfo" style="width:100%;height:50px;padding:5px;border:solid 0px #fff; background-color:#333;color:#ddd;border-radius:8px;">
+                <option value="Production">Production</option>
+                <option value="Homolog">Homolog</option>
+                <option value="QA">QA</option>
+                <option value="Custom">Custom</option>
             </select>
             `);
 			document.querySelectorAll("#env option").forEach(op => {
@@ -1959,18 +1986,18 @@ function createEnvSelector() {
 
 createEnvSelector();//gambi pra extensão, no portal eh dentro do DOMContentLoaded
 
-function buscarTokenApi() {
+function buscarTokenApi_2() {
 
 	const email = $('input[name=email]').val()
 	const senha = $('input[name=senha]').val()
 	const envLink = document.querySelector("#env")?.value;
-	const loginUrl = envLink || 'https://api.lwtecnologia.com.br/api/login';
+	const loginUrl = envLink || 'https://api.vsmsystem.com/api/login';
 	const data = {
 		login: email,
 		senha
 	}
 
-	if (loginUrl != 'https://api.lwtecnologia.com.br/api/login') {
+	if (loginUrl != 'https://api.vsmsystem.com/api/login') {
 		data.env = document.querySelector("#env").options[document.querySelector("#env").options.selectedIndex].innerText;
 	}
 	const requestOptions = {

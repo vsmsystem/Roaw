@@ -264,12 +264,13 @@ async function searchMergeRequests(list = []){
                 <img width="32px" height="32px" src="${mr.author.avatar_url}" alt="Product Image" style="margin-right:5px;">
             </div>
             <div class="product-info">
-                <a href="${mr.web_url}" target="_blank" class="product-title"> ${mr.author.name} @${mr.author.username} <br>
+                <a href="${mr.web_url}" target="_blank" class="product-title"> ${mr.author.name} <span style="color:#777">[@${mr.author.username}]</span> <br>
                     <span class="label label-info pull-right">MR</span>
                 </a>
+                <br>
                 <span class="product-description">
-                    <span class="label label-default">Branch: ${mr.source_branch}</span>
-                    <span class="label label-default">MR: ${mr.title}</span>
+                    <span class="label label-default">${mr.source_branch}</span> > <span class="label label-default">${mr.target_branch}</span>
+                    <div class="">${mr.title}</div>
                 </span>
             </div>
         </li>
